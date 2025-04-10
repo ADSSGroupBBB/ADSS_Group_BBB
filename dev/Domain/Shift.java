@@ -1,6 +1,7 @@
 package Domain;
 
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Map;
 
 public class Shift {
     private String id;
-    private  LocalDate date;
+    private LocalDate date;
     private ShiftType shiftType;
     private Map<Position, Employee> assignedEmployees;
     private Employee shiftManager;
@@ -51,10 +52,21 @@ public class Shift {
         return shiftType == ShiftType.EVENING ? EVENING_SHIFT_START : MORNING_SHIFT_START;
     }
 
+    public LocalDate getDate() {
+        return date;
+    }
 
-    //@Override
-   // public String toString() {
-            //return "משמרת " + getShiftTypeString() + " בתאריך " + date;
-   //}
+
+    @Override
+    public String toString() {
+            return "shift " + getShiftTypeString() + " on date " + date;
+   }
+
+    public String getShiftTypeString() {
+        return shiftType == ShiftType.EVENING ? "Evening" : "Morning";
+    }
 
 }
+
+
+
