@@ -1,7 +1,7 @@
 package Domain;
 
 
-import java.time.Instant;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -36,15 +36,18 @@ public class Shift {
 
 
     public Employee getAssignedEmployee(Position position) {
+
         return assignedEmployees.get(position);
     }
 
 
     public Map<Position, Employee> getAllAssignedEmployees() {
+
         return new HashMap<>(assignedEmployees);
     }
 
     public LocalTime getEndTime() {
+
         return shiftType == ShiftType.EVENING ? EVENING_SHIFT_END : MORNING_SHIFT_END;
     }
 
@@ -64,6 +67,56 @@ public class Shift {
 
     public String getShiftTypeString() {
         return shiftType == ShiftType.EVENING ? "Evening" : "Morning";
+    }
+
+
+    public boolean assignEmployee(Position position, Employee employee) {
+        // בדיקה שהעובד מוסמך לתפקיד
+        if (!employee.isQualifiedFor(position)) {
+            return false;
+        }
+
+        // בדיקת זמינות העובד למשמרת
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        if (!employee.getAvailability().isAvailable(dayOfWeek, shiftType)) {
+            return false;
+        }
+
+        // אם זה תפקיד מנהל משמרת, עדכן את מנהל המשמרת
+        if (position.isRequiresShiftManager()) {
+            shiftManager = employee;
+        }
+
+        // שיבוץ העובד לתפקיד
+        assignedEmployees.put(position, employee);
+        return true;
+    }
+
+
+    public boolean removeAssignment(Position position) {
+        Employee removedEmployee = assignedEmployees.remove(position);
+
+        // אם הוסר מנהל משמרת, עדכן את השדה המתאים
+        if (removedEmployee != null && position.isRequiresShiftManager()) {
+            shiftManager = null;
+        }
+
+        return removedEmployee != null;
+    }
+
+
+    public ShiftType getShiftType() {
+        return shiftType;
+    }
+
+
+    public String getId() {
+        return id;
+    }
+
+
+    public boolean hasShiftManager() {
+        return shiftManager != null;
     }
 
 }

@@ -1,16 +1,17 @@
 package Domain;
-import java.util.stream.Collectors;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
+// singleton
 public class EmployeeManager {
     private static EmployeeManager instance = null;
     private Map<String, Employee> employees; // מיפוי לפי ת"ז
-    private Map<String, Position> positions; // מיפוי לפי מזהה תפקיד
+    private Map<String, Position> positions; // מיפוי לפי שם תפקיד
     private RequiredPositions requiredPositions;
     private Map<String, Shift> shifts; // מיפוי לפי מזהה משמרת
-
 
     private EmployeeManager() {
         employees = new HashMap<>();
@@ -38,7 +39,7 @@ public class EmployeeManager {
 
 
     public Employee removeEmployee(String employeeId) {
-        // יש לבדוק שהעובד לא משובץ למשמרות עתידיות
+        // בדיקה שהעובד לא משובץ למשמרות עתידיות
         LocalDate today = LocalDate.now();
         boolean isAssignedToFutureShift = shifts.values().stream()
                 .filter(shift -> shift.getDate().isAfter(today))
@@ -63,18 +64,22 @@ public class EmployeeManager {
         return new ArrayList<>(employees.values());
     }
 
-    public List<Employee> getQualifiedEmployeesForPosition(Position position) {
+
+    public List<Employee> getQualifiedEmployeesForPosition(Position position) {// ger all workers that qualified for a specific role
         return employees.values().stream().filter(employee -> employee.isQualifiedFor(position)).collect(Collectors.toList());
     }
 
+
     public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-        return employees.values().stream().filter(employee -> employee.getAvailability().isAvailable(dayOfWeek, shiftType)).collect(Collectors.toList());
+        return employees.values().stream()
+                .filter(employee -> employee.getAvailability().isAvailable(dayOfWeek, shiftType))
+                .collect(Collectors.toList());
     }
 
-    public boolean addQualificationToEmployee(String employeeId, String positionId) {
+    public boolean addQualificationToEmployee(String employeeId, String positionName) {
         Employee employee = employees.get(employeeId);
-        Position position = positions.get(positionId);
+        Position position = positions.get(positionName);
 
         if (employee == null || position == null) {
             return false;
@@ -82,6 +87,31 @@ public class EmployeeManager {
 
         return employee.addQualifiedPosition(position);
     }
+
+
+    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
+                                              boolean morningAvailable, boolean eveningAvailable) {
+        Employee employee = employees.get(employeeId);
+        if (employee == null) {
+            return false;
+        }
+
+        employee.getAvailability().updateAvailability(dayOfWeek, morningAvailable, eveningAvailable);
+        return true;
+    }
+
+
+    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
+                                              ShiftType shiftType, boolean available) {
+        Employee employee = employees.get(employeeId);
+        if (employee == null) {
+            return false;
+        }
+
+        employee.getAvailability().updateAvailability(dayOfWeek, shiftType, available);
+        return true;
+    }
+
 
     public boolean addPosition(Position position) {
         if (position == null || positions.containsKey(position.getName())) {
@@ -91,13 +121,17 @@ public class EmployeeManager {
         return true;
     }
 
+
+    public Position getPosition(String positionName) {
+        return positions.get(positionName);
+    }
+
     public List<Position> getAllPositions() {
         return new ArrayList<>(positions.values());
     }
 
-
-    public boolean addRequiredPosition(ShiftType shiftType, String positionId, int count) {
-        Position position = positions.get(positionId);
+    public boolean addRequiredPosition(ShiftType shiftType, String positionName, int count) {
+        Position position = positions.get(positionName);
         if (position == null || count <= 0) {
             return false;
         }
@@ -106,9 +140,13 @@ public class EmployeeManager {
         return true;
     }
 
+
     public RequiredPositions getRequiredPositions() {
         return requiredPositions;
     }
+
+
+
 
     public Shift createShift(LocalDate date, ShiftType shiftType) {
         // יצירת מזהה ייחודי למשמרת
@@ -130,7 +168,6 @@ public class EmployeeManager {
         return shifts.get(shiftId);
     }
 
-
     public Shift getShift(String shiftId) {
         return shifts.get(shiftId);
     }
@@ -140,21 +177,21 @@ public class EmployeeManager {
     }
 
 
-    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionId) {
+    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
         Shift shift = shifts.get(shiftId);
         Employee employee = employees.get(employeeId);
-        Position position = positions.get(positionId);
+        Position position = positions.get(positionName);
 
         if (shift == null || employee == null || position == null) {
             return false;
         }
 
-        return shift.assignEmployee(position, employee); /////?????
+        return shift.assignEmployee(position, employee);
     }
 
-    public boolean removeAssignmentFromShift(String shiftId, String positionId) {
+    public boolean removeAssignmentFromShift(String shiftId, String positionName) {
         Shift shift = shifts.get(shiftId);
-        Position position = positions.get(positionId);
+        Position position = positions.get(positionName);
 
         if (shift == null || position == null) {
             return false;
@@ -164,27 +201,24 @@ public class EmployeeManager {
     }
 
 
-    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
-        Employee employee = employees.get(employeeId);
-        if (employee == null) {
+    public boolean areAllRequiredPositionsCovered(String shiftId) {
+        Shift shift = shifts.get(shiftId);
+        if (shift == null) {
             return false;
         }
 
-        employee.getAvailability().updateAvailability(dayOfWeek, morningAvailable, eveningAvailable);
-        return true;
+        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
     }
 
-    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
-                                              ShiftType shiftType, boolean available) {
-        Employee employee = employees.get(employeeId);
-        if (employee == null) {
+
+    public boolean hasShiftManager(String shiftId) {
+        Shift shift = shifts.get(shiftId);
+        if (shift == null) {
             return false;
         }
 
-        employee.getAvailability().updateAvailability(dayOfWeek, shiftType, available);
-        return true;
+        return shift.hasShiftManager(); // קוראת למתודה של shift
     }
-
 
     public void resetAll() {
         employees.clear();

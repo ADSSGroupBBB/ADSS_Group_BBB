@@ -1,6 +1,6 @@
 
 package Domain;
-import Domain.ShiftType;
+
 import java.time.DayOfWeek;
 import java.util.EnumMap;
 import java.util.Map;
