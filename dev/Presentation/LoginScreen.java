@@ -1,31 +1,23 @@
 package Presentation;
 
-import Domain.Employee;
+import Service.EmployeeDTO;
 import Service.EmployeeService;
-
-import java.util.Scanner;
 
 /**
  * Screen for system login
  * Implements high cohesion by focusing only on login functionality
  */
-public class LoginScreen {
+public class LoginScreen extends BaseScreen {
     private final EmployeeService employeeService;
-    private final Scanner scanner;
-    private Employee loggedInEmployee;
+    private EmployeeDTO loggedInEmployee;
 
-    /**
-     * Constructor - receives employee service as dependency
-     * @param employeeService The employee service
-     */
+
     public LoginScreen(EmployeeService employeeService) {
         this.employeeService = employeeService;
-        this.scanner = new Scanner(System.in);
         this.loggedInEmployee = null;
     }
-    /**
-     * Display the login screen
-     */
+
+    @Override
     public void display() {
         displayTitle("Employee Management System - Super-Li");
         displayMessage("Welcome to the Employee Management System");
@@ -49,21 +41,22 @@ public class LoginScreen {
         } while (choice != 0 && loggedInEmployee == null);
     }
 
-    /**
-     * Process user login
-     */
+
     private void login() {
         displayTitle("System Login");
         String id = getInput("Enter your ID");
+
         // Check if employee exists
-        Employee employee = employeeService.getEmployee(id);
+        EmployeeDTO employee = employeeService.getEmployee(id);
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
         }
+
         // In a real system, we would check password here
         loggedInEmployee = employee;
         displayMessage("Welcome, " + employee.getFullName() + "!");
+
         // Check if employee is a manager
         boolean isManager = checkIfManager(employee);
         if (isManager) {
@@ -72,115 +65,35 @@ public class LoginScreen {
             displayMessage("You are logged in as a regular employee");
         }
     }
-    /**
-     * Check if employee is a manager
-     * @param employee Employee to check
-     * @return True if employee is a manager
-     */
-    private boolean checkIfManager(Employee employee) {
+
+    private boolean checkIfManager(EmployeeDTO employee) {
         // Check if employee is qualified for shift manager position
-        return employee.getQualifiedPositions().stream()
-                .anyMatch(position -> position.isRequiresShiftManager());
+        // In DTO we have position names as strings, not Position objects
+        for (String position : employee.getQualifiedPositions()) {
+            // Here we need to check if any of the positions is a manager position
+            // This would ideally check with the service, but for simplicity:
+            if (position.toLowerCase().contains("manager")) {
+                return true;
+            }
+        }
+        return false;
     }
-    /**
-     * Get the logged in employee
-     * @return The logged in employee or null if no one is logged in
-     */
-    public Employee getLoggedInEmployee() {
+
+
+    public EmployeeDTO getLoggedInEmployee() {
         return loggedInEmployee;
     }
-    /**
-     * Check if a user is logged in
-     * @return True if a user is logged in
-     */
-    public boolean isLoggedIn() {// לבדוק?
+
+
+    public boolean isLoggedIn() {
         return loggedInEmployee != null;
     }
-    /**
-     * Log out the current user
-     */
+
+
     public void logout() {
         if (loggedInEmployee != null) {
             displayMessage(loggedInEmployee.getFullName() + " has been logged out");
             loggedInEmployee = null;
         }
-    }
-    /**
-     * Display a menu and get user choice
-     * @param title Menu title
-     * @param options Menu options
-     * @return User's choice (0 for back/exit)
-     */
-    private int displayMenu(String title, String[] options) {
-        displayTitle(title);
-
-        for (int i = 0; i < options.length; i++) {
-            System.out.println((i + 1) + ". " + options[i]);
-        }
-        System.out.println("0. Exit");
-
-        int choice;
-        do {
-            choice = getIntInput("Select option");
-        } while (choice < 0 || choice > options.length);
-
-        return choice;
-    }
-
-    /**
-     * Display a title with emphasis
-     * @param title Title to display
-     */
-    private void displayTitle(String title) {
-        System.out.println("\n===== " + title + " =====");
-    }
-
-    /**
-     * Display a message to the user
-     * @param message Message to display
-     */
-    private void displayMessage(String message) {
-        System.out.println(message);
-    }
-
-    /**
-     * Display an error message to the user
-     * @param error Error message
-     */
-    private void displayError(String error) {
-        System.out.println("Error: " + error);
-    }
-
-    /**
-     * Get text input from user
-     * @param prompt Input prompt
-     * @return Text entered by user
-     */
-    private String getInput(String prompt) {
-        System.out.print(prompt + ": ");
-        return scanner.nextLine();
-    }
-
-    /**
-     * Get integer input from user
-     * @param prompt Input prompt
-     * @return Integer entered by user
-     */
-    private int getIntInput(String prompt) {
-        while (true) {
-            try {
-                System.out.print(prompt + ": ");
-                return Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                displayError("Please enter a valid number");
-            }
-        }
-    }
-
-    /**
-     * Close resources when screen is no longer needed
-     */
-    public void close() {
-        // Only the main application should close the scanner
     }
 }

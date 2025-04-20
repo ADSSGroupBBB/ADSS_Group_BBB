@@ -4,6 +4,7 @@ package Domain;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+
 public class Employee{
     private String id; // id
     private String firstName;
@@ -73,16 +74,16 @@ public class Employee{
         return availability;
     }
 
-    public void setAvailability(EmployeeAvailability availability) {
-        this.availability = availability;
-    }
+//    public void setAvailability(EmployeeAvailability availability) {
+//        this.availability = availability;
+//    }
 
     public boolean addQualifiedPosition(Position position) {
         return qualifiedPositions.add(position);
     }
-    public boolean removeQualifiedPosition(Position position) {
-        return qualifiedPositions.remove(position);
-    }
+//    public boolean removeQualifiedPosition(Position position) {
+//        return qualifiedPositions.remove(position);
+//    }
 
     public boolean isQualifiedFor(Position position) {
         return qualifiedPositions.contains(position);

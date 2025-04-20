@@ -100,17 +100,16 @@ public class EmployeeManager {
         return true;
     }
 
-
-    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
-                                              ShiftType shiftType, boolean available) {
-        Employee employee = employees.get(employeeId);
-        if (employee == null) {
-            return false;
-        }
-
-        employee.getAvailability().updateAvailability(dayOfWeek, shiftType, available);
-        return true;
-    }
+//
+//    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, ShiftType shiftType, boolean available) {
+//        Employee employee = employees.get(employeeId);
+//        if (employee == null) {
+//            return false;
+//        }
+//
+//        employee.getAvailability().updateAvailability(dayOfWeek, shiftType, available);
+//        return true;
+//    }
 
 
     public boolean addPosition(Position position) {
@@ -211,19 +210,19 @@ public class EmployeeManager {
     }
 
 
-    public boolean hasShiftManager(String shiftId) {
-        Shift shift = shifts.get(shiftId);
-        if (shift == null) {
-            return false;
-        }
+//    public boolean hasShiftManager(String shiftId) {
+//        Shift shift = shifts.get(shiftId);
+//        if (shift == null) {
+//            return false;
+//        }
+//
+//        return shift.hasShiftManager(); // קוראת למתודה של shift
+//    }
 
-        return shift.hasShiftManager(); // קוראת למתודה של shift
-    }
-
-    public void resetAll() {
-        employees.clear();
-        positions.clear();
-        shifts.clear();
-        requiredPositions = new RequiredPositions();
-    }
+//    public void resetAll() {
+//        employees.clear();
+//        positions.clear();
+//        shifts.clear();
+//        requiredPositions = new RequiredPositions();
+//    }
 }

@@ -52,18 +52,11 @@ public class EmployeeAvailability {
         } else return availability.isMorningAvailable();
     }
 
-    public boolean isAvailable(DayOfWeek day, boolean isEveningShift) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return isAvailable(day, shiftType);
-    }
 
-    public DailyAvailability getDailyAvailability(DayOfWeek day) {
-        return weeklyAvailability.get(day);
-    }
-
-    public String getEmployeeId() {
-        return employeeId;
-    }
+//
+//    public String getEmployeeId() {
+//        return employeeId;
+//    }
 
     public static class DailyAvailability {
         private boolean morningAvailable;

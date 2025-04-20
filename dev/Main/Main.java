@@ -8,10 +8,6 @@ import Presentation.NavigationManager;
  */
 public class Main {
 
-    /**
-     * Main method - application entry point
-     * @param args Command line arguments (not used)
-     */
     public static void main(String[] args) {
         System.out.println("===========================================");
         System.out.println("  Super-Li Employee Management System");

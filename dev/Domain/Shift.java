@@ -35,10 +35,10 @@ public class Shift {
     }
 
 
-    public Employee getAssignedEmployee(Position position) {
-
-        return assignedEmployees.get(position);
-    }
+//    public Employee getAssignedEmployee(Position position) {
+//
+//        return assignedEmployees.get(position);
+//    }
 
 
     public Map<Position, Employee> getAllAssignedEmployees() {
@@ -116,10 +116,10 @@ public class Shift {
     }
 
 
-    public boolean hasShiftManager() {
-
-        return shiftManager != null;
-    }
+//    public boolean hasShiftManager() {
+//
+//        return shiftManager != null;
+//    }
 
 }
 

@@ -17,16 +17,16 @@ public class Position {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+//    public void setName(String name) {
+//        this.name = name;
+//    }
     public boolean isRequiresShiftManager() {
         return requiresShiftManager;
     }
 
-    public void setRequiresShiftManager(boolean requiresShiftManager) {
-        this.requiresShiftManager = requiresShiftManager;
-    }
+//    public void setRequiresShiftManager(boolean requiresShiftManager) {
+//        this.requiresShiftManager = requiresShiftManager;
+//    }
 
 
     @Override

@@ -22,21 +22,21 @@ public class RequiredPositions {
     }
 
 
-    public boolean removeRequiredPosition(ShiftType shiftType, Position position) {
-        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-        return requiredPositions.remove(position) != null;
-    }
-
-    public int getRequiredCount(ShiftType shiftType, Position position) {
-        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-        return requiredPositions.getOrDefault(position, 0);
-    }
-
-
-    public Set<Position> getAllRequiredPositions(ShiftType shiftType) {
-        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-        return new HashSet<>(requiredPositions.keySet());
-    }
+//    public boolean removeRequiredPosition(ShiftType shiftType, Position position) {
+//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
+//        return requiredPositions.remove(position) != null;
+//    }
+//
+//    public int getRequiredCount(ShiftType shiftType, Position position) {
+//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
+//        return requiredPositions.getOrDefault(position, 0);
+//    }
+//
+//
+//    public Set<Position> getAllRequiredPositions(ShiftType shiftType) {
+//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
+//        return new HashSet<>(requiredPositions.keySet());
+//    }
 
 
     public Map<Position, Integer> getRequiredPositionsMap(ShiftType shiftType) {
@@ -53,10 +53,7 @@ public class RequiredPositions {
             int requiredCount = entry.getValue();
 
             // מספר העובדים שמשובצים לתפקיד זה
-            // stream.count() מחזיר long ולכן נשמר המספר כ-long
-            long assignedCount = assignedPositions.entrySet().stream()
-                    .filter(e -> e.getKey().equals(position))
-                    .count();
+            long assignedCount = assignedPositions.entrySet().stream().filter(e -> e.getKey().equals(position)).count();
 
             if (assignedCount < requiredCount) {
                 return false;
@@ -67,39 +64,6 @@ public class RequiredPositions {
     }
 
 
-    public void setRequiredPosition(boolean isEveningShift, Position position, int count) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        setRequiredPosition(shiftType, position, count);
-    }
-
-
-    public boolean removeRequiredPosition(boolean isEveningShift, Position position) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return removeRequiredPosition(shiftType, position);
-    }
-
-
-    public int getRequiredCount(boolean isEveningShift, Position position) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return getRequiredCount(shiftType, position);
-    }
-
-
-    public Set<Position> getAllRequiredPositions(boolean isEveningShift) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return getAllRequiredPositions(shiftType);
-    }
-
-    public Map<Position, Integer> getRequiredPositionsMap(boolean isEveningShift) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return getRequiredPositionsMap(shiftType);
-    }
-
-
-    public boolean areAllRequiredPositionsCovered(boolean isEveningShift, Map<Position, Employee> assignedPositions) {
-        ShiftType shiftType = isEveningShift ? ShiftType.EVENING : ShiftType.MORNING;
-        return areAllRequiredPositionsCovered(shiftType, assignedPositions);
-    }
 
     @Override
     public String toString() {
