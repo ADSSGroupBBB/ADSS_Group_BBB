@@ -111,11 +111,13 @@ public class Shift {
 
 
     public String getId() {
+
         return id;
     }
 
 
     public boolean hasShiftManager() {
+
         return shiftManager != null;
     }
 
