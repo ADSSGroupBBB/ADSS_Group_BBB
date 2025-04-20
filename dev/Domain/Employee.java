@@ -25,7 +25,6 @@ public class Employee{
         this.qualifiedPositions = new HashSet<>();
         this.availability = new EmployeeAvailability(id);
     }
-
     public String getId() {
         return id;
     }

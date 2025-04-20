@@ -2,13 +2,11 @@ package Domain;
 
 public class Position {
     private String name;
-    private String description;
     private boolean requiresShiftManager; // האם תפקיד של מנהל משמרת
 
 
-    public Position( String name, String description, boolean requiresShiftManager) {
+    public Position( String name, boolean requiresShiftManager) {
         this.name = name;
-        this.description = description;
         this.requiresShiftManager = requiresShiftManager;
     }
 
@@ -22,15 +20,6 @@ public class Position {
     public void setName(String name) {
         this.name = name;
     }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public boolean isRequiresShiftManager() {
         return requiresShiftManager;
     }
