@@ -2,8 +2,7 @@ package Domain;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+
 
 public class RequiredPositions {
     // מיפוי בין סוג המשמרת לבין התפקידים הנדרשים ומספרם
@@ -21,22 +20,6 @@ public class RequiredPositions {
         requiredPositions.put(position, count);
     }
 
-
-//    public boolean removeRequiredPosition(ShiftType shiftType, Position position) {
-//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-//        return requiredPositions.remove(position) != null;
-//    }
-//
-//    public int getRequiredCount(ShiftType shiftType, Position position) {
-//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-//        return requiredPositions.getOrDefault(position, 0);
-//    }
-//
-//
-//    public Set<Position> getAllRequiredPositions(ShiftType shiftType) {
-//        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-//        return new HashSet<>(requiredPositions.keySet());
-//    }
 
 
     public Map<Position, Integer> getRequiredPositionsMap(ShiftType shiftType) {
@@ -62,6 +45,8 @@ public class RequiredPositions {
 
         return true;
     }
+
+
 
 
 

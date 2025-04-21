@@ -14,17 +14,28 @@ public class Employee{
     private double salary; // salary
     private Set<Position> qualifiedPositions; // תפקידים שהעובד מוסמך לבצע
     private EmployeeAvailability availability; // זמינות העובד למשמרות
+    private UserRole role;
+    private String password;
 
     public Employee(String id, String firstName, String lastName, String bankAccount,
-                   LocalDate startDate, double salary) {
+                   LocalDate startDate, double salary, UserRole role, String password) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.bankAccount = bankAccount;
         this.startDate = startDate;
         this.salary = salary;
+        this.role = role;
+        this.password = password;
+
         this.qualifiedPositions = new HashSet<>();
         this.availability = new EmployeeAvailability(id);
+    }
+
+    public enum UserRole {
+        REGULAR_EMPLOYEE,  // עובד רגיל
+        SHIFT_MANAGER,     // מנהל משמרת
+        HR_MANAGER         // מנהל כח אדם
     }
     public String getId() {
         return id;
@@ -115,5 +126,37 @@ public class Employee{
                 ", lastName='" + lastName + '\'' +
                 ", startDate=" + startDate +
                 '}';
+    }
+
+
+
+    // גטרים וסטרים פשוטים
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    // שיטות עזר לבדיקת הרשאות
+    public boolean isManager() {
+        return role == UserRole.SHIFT_MANAGER || role == UserRole.HR_MANAGER;
+    }
+
+    public boolean isHRManager() {
+        return role == UserRole.HR_MANAGER;
+    }
+
+    public boolean isShiftManager() {
+        return role == UserRole.SHIFT_MANAGER;
     }
 }

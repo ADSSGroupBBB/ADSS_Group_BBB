@@ -55,6 +55,10 @@ public class EmployeeManager {
     }
 
 
+
+
+
+
     public Employee getEmployee(String employeeId) {
         return employees.get(employeeId);
     }
@@ -100,16 +104,6 @@ public class EmployeeManager {
         return true;
     }
 
-//
-//    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, ShiftType shiftType, boolean available) {
-//        Employee employee = employees.get(employeeId);
-//        if (employee == null) {
-//            return false;
-//        }
-//
-//        employee.getAvailability().updateAvailability(dayOfWeek, shiftType, available);
-//        return true;
-//    }
 
 
     public boolean addPosition(Position position) {
@@ -162,6 +156,8 @@ public class EmployeeManager {
     }
 
 
+
+
     public Shift getShift(LocalDate date, ShiftType shiftType) {
         String shiftId = date.toString() + "_" + (shiftType == ShiftType.EVENING ? "evening" : "morning");
         return shifts.get(shiftId);
@@ -188,6 +184,8 @@ public class EmployeeManager {
         return shift.assignEmployee(position, employee);
     }
 
+
+
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
         Shift shift = shifts.get(shiftId);
         Position position = positions.get(positionName);
@@ -209,20 +207,4 @@ public class EmployeeManager {
         return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
     }
 
-
-//    public boolean hasShiftManager(String shiftId) {
-//        Shift shift = shifts.get(shiftId);
-//        if (shift == null) {
-//            return false;
-//        }
-//
-//        return shift.hasShiftManager(); // קוראת למתודה של shift
-//    }
-
-//    public void resetAll() {
-//        employees.clear();
-//        positions.clear();
-//        shifts.clear();
-//        requiredPositions = new RequiredPositions();
-//    }
 }

@@ -53,10 +53,7 @@ public class EmployeeAvailability {
     }
 
 
-//
-//    public String getEmployeeId() {
-//        return employeeId;
-//    }
+
 
     public static class DailyAvailability {
         private boolean morningAvailable;

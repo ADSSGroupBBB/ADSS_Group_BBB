@@ -105,9 +105,6 @@ public class Shift {
     }
 
 
-    public ShiftType getShiftType() {
-        return shiftType;
-    }
 
 
     public String getId() {
@@ -115,12 +112,9 @@ public class Shift {
         return id;
     }
 
-
-//    public boolean hasShiftManager() {
-//
-//        return shiftManager != null;
-//    }
-
+    public ShiftType getShiftType() {
+        return shiftType;
+    }
 }
 
 
