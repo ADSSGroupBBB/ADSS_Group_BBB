@@ -336,8 +336,8 @@ public class EmployeeManagementScreen extends BaseScreen {
                 "View All Employees",
                 "Search Employee by ID",
                 "Update Employee",
-                "Remove Employee",
-                "Manage Employee Roles"  // אפשרות חדשה
+                "Remove Employee"
+
         };
 
         int choice;
@@ -359,9 +359,6 @@ public class EmployeeManagementScreen extends BaseScreen {
                     break;
                 case 5:
                     removeEmployee();
-                    break;
-                case 6:
-                    manageEmployeeRoles();  // קריאה לפונקציה החדשה
                     break;
                 case 0:
                     // Return to previous menu
@@ -584,7 +581,6 @@ public class EmployeeManagementScreen extends BaseScreen {
                 "Update Last Name",
                 "Update Bank Account",
                 "Update Salary",
-                "Update Role",
                 "Update Password"
         };
 
@@ -628,9 +624,6 @@ public class EmployeeManagementScreen extends BaseScreen {
                 }
                 break;
             case 5:
-                updateEmployeeRole(id);
-                break;
-            case 6:
                 updateEmployeePassword(id);
                 break;
             case 0:
@@ -639,31 +632,31 @@ public class EmployeeManagementScreen extends BaseScreen {
         }
     }
 
-    private void updateEmployeeRole(String employeeId) {
-        String[] roleOptions = {
-                "Regular Employee",
-                "Shift Manager",
-                "HR Manager"
-        };
-
-        int roleChoice = displayMenu("Select New Role", roleOptions);
-        if (roleChoice == 0) {
-            return; // ביטול
-        }
-
-        String role = "REGULAR_EMPLOYEE";
-        if (roleChoice == 2) {
-            role = "SHIFT_MANAGER";
-        } else if (roleChoice == 3) {
-            role = "HR_MANAGER";
-        }
-
-        if (employeeService.updateEmployeeRole(employeeId, role)) {
-            displayMessage("Role updated successfully");
-        } else {
-            displayError("Error updating role");
-        }
-    }
+//    private void updateEmployeeRole(String employeeId) {
+//        String[] roleOptions = {
+//                "Regular Employee",
+//                "Shift Manager",
+//                "HR Manager"
+//        };
+//
+//        int roleChoice = displayMenu("Select New Role", roleOptions);
+//        if (roleChoice == 0) {
+//            return; // ביטול
+//        }
+//
+//        String role = "REGULAR_EMPLOYEE";
+//        if (roleChoice == 2) {
+//            role = "SHIFT_MANAGER";
+//        } else if (roleChoice == 3) {
+//            role = "HR_MANAGER";
+//        }
+//
+//        if (employeeService.updateEmployeeRole(employeeId, role)) {
+//            displayMessage("Role updated successfully");
+//        } else {
+//            displayError("Error updating role");
+//        }
+//    }
 
     private void updateEmployeePassword(String employeeId) {
         String password = getInput("Enter new password");
@@ -703,56 +696,56 @@ public class EmployeeManagementScreen extends BaseScreen {
             }
         }
     }
-
-    private void manageEmployeeRoles() {
-        displayTitle("Manage Employee Roles");
-
-        // בחר עובד
-        String id = getInput("Enter ID of employee to update role");
-        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
-
-        if (employee == null) {
-            displayError("No employee found with ID " + id);
-            return;
-        }
-
-        // הצג פרטי עובד
-        displayEmployeeDetails(employee);
-
-        // הצג אפשרויות תפקיד
-        String[] roleOptions = {
-                "Regular Employee",
-                "Shift Manager"
-        };
-
-        int choice = displayMenu("Select New Role", roleOptions);
-        if (choice == 0) {
-            return; // ביטול
-        }
-
-        String role = "REGULAR_EMPLOYEE";
-        if (choice == 2) {
-            role = "SHIFT_MANAGER";
-
-            // בקש סיסמה אם מעלים לתפקיד מנהל
-            String password = getInput("Enter password for shift manager");
-            if (password.isEmpty()) {
-                displayError("Password cannot be empty for managers");
-                return;
-            }
-
-            // עדכן סיסמה
-            if (!employeeService.updateEmployeePassword(id, password)) {
-                displayError("Error updating password");
-                return;
-            }
-        }
-
-        // עדכן תפקיד
-        if (employeeService.updateEmployeeRole(id, role)) {
-            displayMessage("Role updated successfully");
-        } else {
-            displayError("Error updating role");
-        }
-    }
+// משו שהורדנו
+//    private void manageEmployeeRoles() {
+//        displayTitle("Manage Employee Roles");
+//
+//        // בחר עובד
+//        String id = getInput("Enter ID of employee to update role");
+//        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
+//
+//        if (employee == null) {
+//            displayError("No employee found with ID " + id);
+//            return;
+//        }
+//
+//        // הצג פרטי עובד
+//        displayEmployeeDetails(employee);
+//
+//        // הצג אפשרויות תפקיד
+//        String[] roleOptions = {
+//                "Regular Employee",
+//                "Shift Manager"
+//        };
+//
+//        int choice = displayMenu("Select New Role", roleOptions);
+//        if (choice == 0) {
+//            return; // ביטול
+//        }
+//
+//        String role = "REGULAR_EMPLOYEE";
+//        if (choice == 2) {
+//            role = "SHIFT_MANAGER";
+//
+//            // בקש סיסמה אם מעלים לתפקיד מנהל
+//            String password = getInput("Enter password for shift manager");
+//            if (password.isEmpty()) {
+//                displayError("Password cannot be empty for managers");
+//                return;
+//            }
+//
+//            // עדכן סיסמה
+//            if (!employeeService.updateEmployeePassword(id, password)) {
+//                displayError("Error updating password");
+//                return;
+//            }
+//        }
+//
+//        // עדכן תפקיד
+//        if (employeeService.updateEmployeeRole(id, role)) {
+//            displayMessage("Role updated successfully");
+//        } else {
+//            displayError("Error updating role");
+//        }
+//    }
 }

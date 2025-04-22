@@ -159,4 +159,8 @@ public class Employee{
     public boolean isShiftManager() {
         return role == UserRole.SHIFT_MANAGER;
     }
+
+    public boolean removeQualifiedPosition(Position position) {
+        return qualifiedPositions.remove(position);
+    }
 }

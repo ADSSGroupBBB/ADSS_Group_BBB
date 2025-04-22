@@ -278,6 +278,7 @@ public class QualificationManagementScreen extends BaseScreen {
                 "Add New Position",
                 "View All Positions",
                 "Add Qualification to Employee",
+                "Remove Qualification from Employee",  // אופציה חדשה
                 "View Qualified Employees for Position",
                 "Update Required Positions for Shifts"
         };
@@ -297,9 +298,12 @@ public class QualificationManagementScreen extends BaseScreen {
                     addEmployeeQualification();
                     break;
                 case 4:
-                    displayQualifiedEmployees();
+                    removeEmployeeQualification();  // קריאה לפונקציה חדשה
                     break;
                 case 5:
+                    displayQualifiedEmployees();
+                    break;
+                case 6:
                     updateRequiredPositions();
                     break;
                 case 0:
@@ -385,6 +389,47 @@ public class QualificationManagementScreen extends BaseScreen {
             displayMessage("Qualification added successfully");
         } else {
             displayError("Error adding qualification");
+        }
+    }
+
+    private void removeEmployeeQualification() {
+        displayTitle("Remove Qualification from Employee");
+
+        // בחירת עובד
+        EmployeeDTO employee = selectEmployee();
+        if (employee == null) {
+            return;
+        }
+
+        // הצגת הסמכות נוכחיות
+        displayMessage("Current qualifications for " + employee.getFullName() + ":");
+        if (employee.getQualifiedPositions().isEmpty()) {
+            displayMessage("None");
+            return;  // אם אין הסמכות, חזור
+        } else {
+            for (String position : employee.getQualifiedPositions()) {
+                displayMessage("- " + position);
+            }
+        }
+
+        // בניית מערך של שמות הסמכות לתצוגה בתפריט
+        String[] positionNames = new String[employee.getQualifiedPositions().size()];
+        employee.getQualifiedPositions().toArray(positionNames);
+
+        int choice = displayMenu("Select Qualification to Remove", positionNames);
+        if (choice == 0) {
+            return;  // המשתמש בחר לחזור
+        }
+
+        String positionToRemove = positionNames[choice - 1];
+
+        // הסר הסמכה דרך הservice
+        boolean success = employeeService.removeQualificationFromEmployee(employee.getId(), positionToRemove);
+
+        if (success) {
+            displayMessage("Qualification successfully removed");
+        } else {
+            displayError("Error removing qualification");
         }
     }
 
