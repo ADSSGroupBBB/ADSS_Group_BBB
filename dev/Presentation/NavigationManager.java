@@ -87,11 +87,9 @@ public class NavigationManager {
         this.loginScreen = new LoginScreen(employeeService);
         this.loggedInEmployee = null;
     }
-
     public void start() {
         // תחילה הצג את מסך ההתחברות
         loginScreen.display();
-
         // אם ההתחברות הצליחה, שמור את פרטי המשתמש ועבור למסך הראשי
         if (loginScreen.isLoggedIn()) {
             loggedInEmployee = loginScreen.getLoggedInEmployee();
@@ -99,7 +97,6 @@ public class NavigationManager {
             mainScreen.display();
         }
     }
-
     public void showEmployeeManagement() {
         // אופציה 1 - רק למנהל כח אדם
         if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
@@ -109,7 +106,6 @@ public class NavigationManager {
             displayUnauthorizedMessage();
         }
     }
-
     public void showEmployeeAvailability() {
         // אופציה 2 - לכולם (כולל עובדים רגילים)
         if (loggedInEmployee != null) {
@@ -133,21 +129,20 @@ public class NavigationManager {
     public void showShiftScheduling() {
         // אופציה 4 - רק למנהל משמרת ומנהל כח אדם
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
-            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeService, shiftService);
+            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeService, shiftService,loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
         }
     }
-
     public void showShiftHistory() {
-        // אופציה 5 - כל עובד יכול לראות רק את שלו, מנהלים יכולים לראות את כולם
-        if (loggedInEmployee != null) {
-            ShiftHistoryScreen screen = new ShiftHistoryScreen(employeeService, shiftService, loggedInEmployee);
-            screen.display();
-        } else {
-            displayUnauthorizedMessage();
-        }
+        ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
+        screen.displayShiftHistory();   // ניצור מתודה ייעודית
+    }
+
+    public void showFutureShifts() {
+        ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
+        screen.displayFutureShifts();   // קיימת אצלך כבר
     }
 
     private void displayUnauthorizedMessage() {
@@ -173,6 +168,7 @@ public class NavigationManager {
     public EmployeeDTO getLoggedInEmployee() {
         return loggedInEmployee;
     }
+
 
     public void logout() {
         loginScreen.logout();

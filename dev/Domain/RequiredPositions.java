@@ -25,8 +25,6 @@ public class RequiredPositions {
     public Map<Position, Integer> getRequiredPositionsMap(ShiftType shiftType) {
         return new HashMap<>(shiftTypeToRequiredPositions.get(shiftType));
     }
-
-
     public boolean areAllRequiredPositionsCovered(ShiftType shiftType, Map<Position, Employee> assignedPositions) {
         Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
 
@@ -34,20 +32,14 @@ public class RequiredPositions {
         for (Map.Entry<Position, Integer> entry : requiredPositions.entrySet()) {
             Position position = entry.getKey();
             int requiredCount = entry.getValue();
-
             // מספר העובדים שמשובצים לתפקיד זה
             long assignedCount = assignedPositions.entrySet().stream().filter(e -> e.getKey().equals(position)).count();
-
             if (assignedCount < requiredCount) {
                 return false;
             }
         }
-
         return true;
     }
-
-
-
 
     @Override
     public String toString() {
@@ -64,4 +56,9 @@ public class RequiredPositions {
 
         return sb.toString();
     }
+    public int getRequiredCount(ShiftType shiftType, Position position) {
+        Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
+        return requiredPositions.getOrDefault(position, 0);
+    }
+
 }

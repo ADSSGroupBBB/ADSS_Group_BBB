@@ -84,9 +84,9 @@ public class MainScreen extends BaseScreen {
                 "Qualification Management",
                 "Shift Scheduling",
                 "Shift History",
+                "View Future Shifts",
                 "Logout"
         };
-
         int choice;
         do {
             choice = displayMenu("Main Menu", options);
@@ -105,17 +105,20 @@ public class MainScreen extends BaseScreen {
                     navigationManager.showShiftScheduling();
                     break;
                 case 5:
-                    navigationManager.showShiftHistory();
+                    navigationManager.showShiftHistory();   // כאן רואים גם היסטוריה וגם משמרות עתידיות
                     break;
                 case 6:
+                    navigationManager.showFutureShifts();   // גם כאן כי זו אותה פונקציה
+                    break;
+                case 7:
                     navigationManager.logout();
                     displayMessage("Logged out successfully");
-                    return; // חזרה להתחברות
+                    return;
                 case 0:
-                    navigationManager.logout();
                     displayMessage("Exiting system...");
-                    break;
+                    return;
             }
         } while (choice != 0);
     }
+
 }

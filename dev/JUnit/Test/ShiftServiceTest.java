@@ -196,9 +196,6 @@
 //        assertEquals("Should have 2 missing positions after assignment", 2, missingPositions.size());
 //    }
 //}
-
-
-
 package JUnit.Test;
 
 import Service.*;
@@ -438,4 +435,42 @@ public class ShiftServiceTest {
         ShiftDTO nonExistingShift = shiftService.getShiftById("non-existing-id");
         assertNull(nonExistingShift);
     }
+    @Test
+    void testRegularEmployeeCanViewFullFutureShiftAssignments() {
+        // יצירת משמרת עתידית
+        LocalDate futureDate = LocalDate.now().plusDays(2);
+        ShiftDTO shift = employeeService.createShift(futureDate, "MORNING");
+        assertNotNull(shift);
+
+        // הוספת עובדים
+        employeeService.addNewEmployee("2001", "Alice", "Worker", "IL0001", LocalDate.now(), 30.0);
+        employeeService.addNewEmployee("2002", "Bob", "Worker", "IL0002", LocalDate.now(), 30.0);
+
+        // הוספת תפקידים והסמכות
+        employeeService.addPosition("Cashier", false);
+        employeeService.addQualificationToEmployee("2001", "Cashier");
+        employeeService.addQualificationToEmployee("2002", "Cashier");
+
+        // שיבוץ שני עובדים למשמרת
+        boolean assigned1 = employeeService.assignEmployeeToShift(shift.getId(), "2001", "Cashier");
+        boolean assigned2 = employeeService.assignEmployeeToShift(shift.getId(), "2002", "Cashier");
+
+        assertTrue(assigned1);
+        assertTrue(assigned2);
+
+        // קבלת המשמרות של העובד Alice (2001)
+        List<ShiftDTO> futureShifts = shiftService.getEmployeeFutureShifts("2001");
+
+
+        assertFalse(futureShifts.isEmpty());
+
+        ShiftDTO retrievedShift = futureShifts.get(0);
+        Map<String, String> assignments = retrievedShift.getAssignments();
+
+        // בדיקה שהעובד רואה גם את עצמו וגם את Bob
+        assertEquals(2, assignments.size());
+        assertTrue(assignments.containsValue("Alice Worker"));
+        assertTrue(assignments.containsValue("Bob Worker"));
+    }
+
 }

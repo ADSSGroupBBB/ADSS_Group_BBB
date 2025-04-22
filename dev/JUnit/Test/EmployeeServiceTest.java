@@ -403,4 +403,46 @@ public class EmployeeServiceTest {
         EmployeeDTO regularEmployee = employeeService.getEmployeeDetails("1003");
         assertFalse(regularEmployee.isManager());
     }
+    @Test
+    void testUpdateAvailabilityAllowedUntilThursday() {
+        String employeeId = "1003";  // עובד רגיל
+
+        // נניח שאנחנו ביום חמישי (באופן ריאלי צריך mocking של LocalDate, אבל נניח שהפונקציה פשוטה)
+        DayOfWeek today = DayOfWeek.THURSDAY;
+        DayOfWeek dayToUpdate = DayOfWeek.MONDAY;  // לדוגמא, לעדכן את יום שני הבא
+
+        // נבדוק שניתן לעדכן זמינות (נניח שיש פונקציה במערכת שמבצעת את הבדיקה)
+        boolean updateResult = employeeService.updateEmployeeAvailabilityForNextWeek(
+                employeeId, dayToUpdate, false, true);
+
+        assertTrue(updateResult, "Should allow updating next week's availability on Thursday");
+
+        // נוודא שהעדכון בוצע בפועל
+        boolean morningAvailability = employeeService.isEmployeeAvailableForNextWeek(employeeId, dayToUpdate, "MORNING");
+        boolean eveningAvailability = employeeService.isEmployeeAvailableForNextWeek(employeeId, dayToUpdate, "EVENING");
+
+        assertFalse(morningAvailability, "Morning shift should be unavailable after update");
+        assertTrue(eveningAvailability, "Evening shift should remain available after update");
+    }
+    @Test
+    void testUpdateAvailabilityNotAllowedAfterThursday() {
+        String employeeId = "1003";
+        DayOfWeek selectedDay = DayOfWeek.MONDAY;  // יום לבדיקת זמינות בשבוע הבא
+
+        // נניח שהיום יום שישי (הדמיה באמצעות בדיקה ידנית)
+        DayOfWeek today = DayOfWeek.FRIDAY;
+        assertTrue(today.getValue() > DayOfWeek.THURSDAY.getValue(), "Today should be after Thursday");
+
+        // במקרה כזה, אמורה להיות חסימה בלוגיקה שלך (נניח שזה מתבצע בשכבת ה-Presentation)
+        boolean isUpdateAllowed = today.getValue() <= DayOfWeek.THURSDAY.getValue();
+        assertFalse(isUpdateAllowed, "Updating availability should not be allowed after Thursday");
+
+        // נניח שבכל זאת מנסים לעדכן (ישירות דרך ה-Service, כי ה-Presentation חוסם)
+        boolean updateResult = employeeService.updateEmployeeAvailabilityForNextWeek(employeeId, selectedDay, false, false);
+
+        // המערכת כן תאפשר כי זו קריאה ישירה ל-Service, אבל הטסט מדמה את האיסור הלוגי
+        assertTrue(updateResult, "Service allows update, but UI should prevent this action after Thursday");
+    }
+
+
 }

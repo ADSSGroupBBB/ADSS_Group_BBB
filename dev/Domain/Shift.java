@@ -14,12 +14,8 @@ public class Shift {
     private ShiftType shiftType;
     private Map<Position, Employee> assignedEmployees;
     private Employee shiftManager;
-
-
-    public static final LocalTime MORNING_SHIFT_START = LocalTime.of(7, 0);  // 7:00
-    public static final LocalTime MORNING_SHIFT_END = LocalTime.of(14, 0);   // 14:00
-    public static final LocalTime EVENING_SHIFT_START = LocalTime.of(14, 0); // 14:00
-    public static final LocalTime EVENING_SHIFT_END = LocalTime.of(21, 0);   // 21:00
+    private String startTime;
+    private String endTime;
 
 
     public Shift(String id, LocalDate date, ShiftType shiftType) {
@@ -28,13 +24,19 @@ public class Shift {
         this.shiftType = shiftType;
         this.assignedEmployees = new HashMap<>();
         this.shiftManager = null;
+
+        // קבלת שעות משמרת דינאמיות
+        String[] hours = EmployeeManager.getInstance().getShiftHours(shiftType);
+        this.startTime = hours[0];
+        this.endTime = hours[1];
     }
+
 
     public Employee getShiftManager() {
         return shiftManager;
     }
 
-//
+
 //    public Employee getAssignedEmployee(Position position) {
 //
 //        return assignedEmployees.get(position);
@@ -46,13 +48,13 @@ public class Shift {
         return new HashMap<>(assignedEmployees);
     }
 
-    public LocalTime getEndTime() {
-
-        return shiftType == ShiftType.EVENING ? EVENING_SHIFT_END : MORNING_SHIFT_END;
-    }
 
     public LocalTime getStartTime() {
-        return shiftType == ShiftType.EVENING ? EVENING_SHIFT_START : MORNING_SHIFT_START;
+        return LocalTime.parse(startTime);  // המרה ל-LocalTime
+    }
+
+    public LocalTime getEndTime() {
+        return LocalTime.parse(endTime);    // המרה ל-LocalTime
     }
 
     public LocalDate getDate() {
@@ -62,15 +64,18 @@ public class Shift {
 
     @Override
     public String toString() {
-            return "shift " + getShiftTypeString() + " on date " + date;
-   }
+        return "shift " + getShiftTypeString() + " on date " + date;
+    }
 
     public String getShiftTypeString() {
         return shiftType == ShiftType.EVENING ? "Evening" : "Morning";
     }
-
-
     public boolean assignEmployee(Position position, Employee employee) {
+        // בדיקה שהעובד כבר לא משובץ למשמרת
+        if (assignedEmployees.containsValue(employee)) {
+            return false;  // העובד כבר משובץ למשמרת זו
+        }
+
         // בדיקה שהעובד מוסמך לתפקיד
         if (!employee.isQualifiedFor(position)) {
             return false;
@@ -93,6 +98,30 @@ public class Shift {
     }
 
 
+
+//    public boolean assignEmployee(Position position, Employee employee) {
+//        // בדיקה שהעובד מוסמך לתפקיד
+//        if (!employee.isQualifiedFor(position)) {
+//            return false;
+//        }
+//
+//        // בדיקת זמינות העובד למשמרת
+//        DayOfWeek dayOfWeek = date.getDayOfWeek();
+//        if (!employee.getAvailability().isAvailable(dayOfWeek, shiftType)) {
+//            return false;
+//        }
+//
+//        // אם זה תפקיד מנהל משמרת, עדכן את מנהל המשמרת
+//        if (position.isRequiresShiftManager()) {
+//            shiftManager = employee;
+//        }
+//
+//        // שיבוץ העובד לתפקיד
+//        assignedEmployees.put(position, employee);
+//        return true;
+//    }
+
+
     public boolean removeAssignment(Position position) {
         Employee removedEmployee = assignedEmployees.remove(position);
 
@@ -103,10 +132,6 @@ public class Shift {
 
         return removedEmployee != null;
     }
-
-
-
-
     public String getId() {
 
         return id;
@@ -116,6 +141,5 @@ public class Shift {
         return shiftType;
     }
 }
-
 
 

@@ -11,14 +11,24 @@ public class EmployeeManager {
     private Map<String, Employee> employees; // מיפוי לפי ת"ז
     private Map<String, Position> positions; // מיפוי לפי שם תפקיד
     private RequiredPositions requiredPositions;
+    private Map<ShiftType, String[]> shiftHoursMap;
     private Map<String, Shift> shifts; // מיפוי לפי מזהה משמרת
+    private static final String[] DEFAULT_MORNING_SHIFT = { "07:00", "14:00" };
+    private static final String[] DEFAULT_EVENING_SHIFT = { "14:00", "21:00" };
+
 
     private EmployeeManager() {
         employees = new HashMap<>();
         positions = new HashMap<>();
         requiredPositions = new RequiredPositions();
         shifts = new HashMap<>();
+        shiftHoursMap = new HashMap<>();   //
+
+        // אתחול שעות ברירת מחדל
+        shiftHoursMap.put(ShiftType.MORNING, DEFAULT_MORNING_SHIFT);
+        shiftHoursMap.put(ShiftType.EVENING, DEFAULT_EVENING_SHIFT);
     }
+
 
 
     public static EmployeeManager getInstance() {
@@ -36,8 +46,27 @@ public class EmployeeManager {
         employees.put(employee.getId(), employee);
         return true;
     }
+    public String[] getShiftHours(ShiftType shiftType) {
+        return shiftHoursMap.getOrDefault(shiftType, shiftType == ShiftType.MORNING ? DEFAULT_MORNING_SHIFT : DEFAULT_EVENING_SHIFT);
+    }
 
-
+    //  עדכון שעות משמרת
+    public boolean updateShiftHours(ShiftType shiftType, String newStartTime, String newEndTime) {
+        if (!isValidTimeFormat(newStartTime) || !isValidTimeFormat(newEndTime)) {
+            return false;  // פורמט שגוי
+        }
+        shiftHoursMap.put(shiftType, new String[]{ newStartTime, newEndTime });
+        return true;
+    }
+    // בדיקת תקינות פורמט שעה (HH:mm)
+    private boolean isValidTimeFormat(String time) {
+        try {
+            java.time.LocalTime.parse(time);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
     public Employee removeEmployee(String employeeId) {
         // בדיקה שהעובד לא משובץ למשמרות עתידיות
         LocalDate today = LocalDate.now();
@@ -74,13 +103,35 @@ public class EmployeeManager {
     }
 
 
+    //    public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
+//        DayOfWeek dayOfWeek = date.getDayOfWeek();
+//        return employees.values().stream()
+//                .filter(employee -> employee.getAvailability().isAvailable(dayOfWeek, shiftType))
+//                .collect(Collectors.toList());
+//    }
     public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
+        Shift shift = getShift(date, shiftType);
+
+        if (shift == null) {
+            return new ArrayList<>();
+        }
+
+        // מקבל את רשימת התפקידים הנדרשים למשמרת זו
+        Map<Position, Integer> requiredPositionsForShift = requiredPositions.getRequiredPositionsMap(shiftType);
+
         return employees.values().stream()
-                .filter(employee -> employee.getAvailability().isAvailable(dayOfWeek, shiftType))
+                .filter(employee ->
+                        // זמינות ביום ובסוג משמרת
+                        employee.getAvailability().isAvailable(dayOfWeek, shiftType) &&
+                                // לא שובץ כבר למשמרת
+                                !shift.getAllAssignedEmployees().containsValue(employee) &&
+                                // מוסמך לפחות לאחד מהתפקידים הנדרשים
+                                employee.getQualifiedPositions().stream()
+                                        .anyMatch(requiredPositionsForShift::containsKey)
+                )
                 .collect(Collectors.toList());
     }
-
 
 
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
@@ -186,8 +237,6 @@ public class EmployeeManager {
         return shift.assignEmployee(position, employee);
     }
 
-
-
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
         Shift shift = shifts.get(shiftId);
         Position position = positions.get(positionName);
@@ -200,24 +249,14 @@ public class EmployeeManager {
     }
 
 
-//    public boolean areAllRequiredPositionsCovered(String shiftId) {
-//        Shift shift = shifts.get(shiftId);
-//        if (shift == null) {
-//            return false;
-//        }
-//
-//        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
-//    }
-
     public boolean areAllRequiredPositionsCovered(String shiftId) {
         Shift shift = shifts.get(shiftId);
         if (shift == null) {
             return false;
         }
 
-        // מעביר את הטסט אל RequiredPositions
-        Map<Position, Employee> assignedEmployees = shift.getAllAssignedEmployees();
-        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), assignedEmployees);
+        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
     }
+
 
 }

@@ -280,7 +280,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         this.loggedInEmployee = loggedInEmployee;
     }
 
-//    @Override
+    //    @Override
 //    public void display() {
 //        // אם נשלח אובייקט של משתמש מחובר (הקונסטרוקטור השני)
 //        // ואם המשתמש הוא לא מנהל כח אדם, אז אין גישה
@@ -323,52 +323,52 @@ public class EmployeeManagementScreen extends BaseScreen {
 //            }
 //        } while (choice != 0);
 //    }
-@Override
-public void display() {
-    // בדיקת הרשאות אם צריך
-    if (loggedInEmployee != null && !loggedInEmployee.isHRManager()) {
-        displayError("Access denied. Only HR Managers can access this functionality.");
-        return;
-    }
-
-    String[] options = {
-            "Add New Employee",
-            "View All Employees",
-            "Search Employee by ID",
-            "Update Employee",
-            "Remove Employee",
-            "Manage Employee Roles"  // אפשרות חדשה
-    };
-
-    int choice;
-    do {
-        choice = displayMenu("Employee Management", options);
-
-        switch (choice) {
-            case 1:
-                addNewEmployee();
-                break;
-            case 2:
-                displayAllEmployees();
-                break;
-            case 3:
-                findEmployeeById();
-                break;
-            case 4:
-                updateEmployee();
-                break;
-            case 5:
-                removeEmployee();
-                break;
-            case 6:
-                manageEmployeeRoles();  // קריאה לפונקציה החדשה
-                break;
-            case 0:
-                // Return to previous menu
-                break;
+    @Override
+    public void display() {
+        // בדיקת הרשאות אם צריך
+        if (loggedInEmployee != null && !loggedInEmployee.isHRManager()) {
+            displayError("Access denied. Only HR Managers can access this functionality.");
+            return;
         }
-    } while (choice != 0);
-}
+
+        String[] options = {
+                "Add New Employee",
+                "View All Employees",
+                "Search Employee by ID",
+                "Update Employee",
+                "Remove Employee",
+                "Manage Employee Roles"  // אפשרות חדשה
+        };
+
+        int choice;
+        do {
+            choice = displayMenu("Employee Management", options);
+
+            switch (choice) {
+                case 1:
+                    addNewEmployee();
+                    break;
+                case 2:
+                    displayAllEmployees();
+                    break;
+                case 3:
+                    findEmployeeById();
+                    break;
+                case 4:
+                    updateEmployee();
+                    break;
+                case 5:
+                    removeEmployee();
+                    break;
+                case 6:
+                    manageEmployeeRoles();  // קריאה לפונקציה החדשה
+                    break;
+                case 0:
+                    // Return to previous menu
+                    break;
+            }
+        } while (choice != 0);
+    }
 
 //    private void addNewEmployee() { // Add a new employee to the system
 //        displayTitle("Add New Employee");

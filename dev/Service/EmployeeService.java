@@ -437,10 +437,37 @@ public class EmployeeService {
         employee.setPassword(password);
         return true;
     }
+    public boolean updateEmployeeAvailabilityForNextWeek(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
+        Employee employee = employeeManager.getEmployee(employeeId);
+        if (employee == null) {
+            return false;
+        }
+        // כאן מניחים שה-EmployeeAvailability כבר מתייחס לשבוע הבא
+        employee.getAvailability().updateAvailability(dayOfWeek, morningAvailable, eveningAvailable);
+        return true;
+    }
+
+    public boolean isEmployeeAvailableForNextWeek(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
+        Employee employee = employeeManager.getEmployee(employeeId);
+        if (employee == null) {
+            return false;
+        }
+        ShiftType type = ShiftType.valueOf(shiftType);
+        return employee.getAvailability().isAvailable(dayOfWeek, type);
+    }
+
+    private boolean canUpdateNextWeekAvailability() {
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        return today.getValue() <= DayOfWeek.THURSDAY.getValue();
+    }
 
     public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
+        if (!canUpdateNextWeekAvailability()) {
+            return false;
+        }
         return employeeManager.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
     }
+
 
     public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
         Employee employee = employeeManager.getEmployee(employeeId);
@@ -550,31 +577,42 @@ public class EmployeeService {
 
         return convertShiftToDTO(shift);
     }
-
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-        // וודא שכל האובייקטים קיימים
         Shift shift = employeeManager.getShift(shiftId);
         Employee employee = employeeManager.getEmployee(employeeId);
         Position position = employeeManager.getPosition(positionName);
 
         if (shift == null || employee == null || position == null) {
+            return false;  // פשוט מחזיר false בלי הדפסה
+        }
+
+        RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
+        int requiredCount = requiredPositions.getRequiredCount(shift.getShiftType(), position);
+
+        if (requiredCount == 0) {
             return false;
         }
 
-        // בדוק אם העובד לא מוסמך ואם כן, הוסף הסמכה
+        long currentAssigned = shift.getAllAssignedEmployees().entrySet().stream()
+                .filter(entry -> entry.getKey().equals(position))
+                .count();
+
+        if (currentAssigned >= requiredCount) {
+            return false;
+        }
+
         if (!employee.isQualifiedFor(position)) {
             employee.addQualifiedPosition(position);
         }
 
-        // בדוק זמינות ועדכן אם צריך
         DayOfWeek dayOfWeek = shift.getDate().getDayOfWeek();
         if (!employee.getAvailability().isAvailable(dayOfWeek, shift.getShiftType())) {
             employee.getAvailability().updateAvailability(dayOfWeek, true, true);
         }
 
-        // עכשיו העבר למנהל
         return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
     }
+
 
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
         return employeeManager.removeAssignmentFromShift(shiftId, positionName);
@@ -618,6 +656,37 @@ public class EmployeeService {
         }
         return result;
     }
+    public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
+        ShiftType shiftType;
+        if ("MORNING".equalsIgnoreCase(shiftTypeStr)) {
+            shiftType = ShiftType.MORNING;
+        } else if ("EVENING".equalsIgnoreCase(shiftTypeStr)) {
+            shiftType = ShiftType.EVENING;
+        } else {
+            return false;  // סוג משמרת לא חוקי
+        }
+
+        return EmployeeManager.getInstance().updateShiftHours(shiftType, newStart, newEnd);
+    }
+    public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
+        Shift shift = employeeManager.getShift(shiftId);
+        Employee employee = employeeManager.getEmployee(employeeId);
+
+        if (shift == null || employee == null) {
+            return false;
+        }
+
+        return shift.getAllAssignedEmployees().containsValue(employee);
+    }
+    public int getRequiredPositionsCount(String shiftTypeStr, String positionName) {
+        ShiftType shiftType = ShiftType.valueOf(shiftTypeStr.toUpperCase());
+        Position position = employeeManager.getPosition(positionName);
+        if (position == null) {
+            return 0;
+        }
+        return employeeManager.getRequiredPositions().getRequiredCount(shiftType, position);
+    }
+
 
 
 }
