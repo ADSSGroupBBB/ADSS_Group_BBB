@@ -103,35 +103,35 @@ public class EmployeeManager {
     }
 
 
-    //    public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
+//    public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
 //        DayOfWeek dayOfWeek = date.getDayOfWeek();
 //        return employees.values().stream()
 //                .filter(employee -> employee.getAvailability().isAvailable(dayOfWeek, shiftType))
 //                .collect(Collectors.toList());
 //    }
-    public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
-        DayOfWeek dayOfWeek = date.getDayOfWeek();
-        Shift shift = getShift(date, shiftType);
+public List<Employee> getAvailableEmployeesForShift(LocalDate date, ShiftType shiftType) {
+    DayOfWeek dayOfWeek = date.getDayOfWeek();
+    Shift shift = getShift(date, shiftType);
 
-        if (shift == null) {
-            return new ArrayList<>();
-        }
-
-        // מקבל את רשימת התפקידים הנדרשים למשמרת זו
-        Map<Position, Integer> requiredPositionsForShift = requiredPositions.getRequiredPositionsMap(shiftType);
-
-        return employees.values().stream()
-                .filter(employee ->
-                        // זמינות ביום ובסוג משמרת
-                        employee.getAvailability().isAvailable(dayOfWeek, shiftType) &&
-                                // לא שובץ כבר למשמרת
-                                !shift.getAllAssignedEmployees().containsValue(employee) &&
-                                // מוסמך לפחות לאחד מהתפקידים הנדרשים
-                                employee.getQualifiedPositions().stream()
-                                        .anyMatch(requiredPositionsForShift::containsKey)
-                )
-                .collect(Collectors.toList());
+    if (shift == null) {
+        return new ArrayList<>();
     }
+
+    // מקבל את רשימת התפקידים הנדרשים למשמרת זו
+    Map<Position, Integer> requiredPositionsForShift = requiredPositions.getRequiredPositionsMap(shiftType);
+
+    return employees.values().stream()
+            .filter(employee ->
+                    // זמינות ביום ובסוג משמרת
+                    employee.getAvailability().isAvailable(dayOfWeek, shiftType) &&
+                            // לא שובץ כבר למשמרת
+                            !shift.getAllAssignedEmployees().containsValue(employee) &&
+                            // מוסמך לפחות לאחד מהתפקידים הנדרשים
+                            employee.getQualifiedPositions().stream()
+                                    .anyMatch(requiredPositionsForShift::containsKey)
+            )
+            .collect(Collectors.toList());
+}
 
 
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
