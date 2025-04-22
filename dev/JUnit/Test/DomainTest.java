@@ -723,35 +723,81 @@ public class DomainTest {
         assertFalse(employeeManager.removeAssignmentFromShift(morningShift.getId(), "Cashier"));
     }
 
-    @Test
-    void testAreAllRequiredPositionsCovered() {
-        // Create a shift
-        LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
-        Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
+//    @Test
+//    void testAreAllRequiredPositionsCovered() {
+//        // Create a shift
+//        LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
+//        Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
+//
+//        // Check that positions are not covered initially
+//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+//
+//        // Assign manager (but still need 2 cashiers)
+//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
+//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+//
+//        // Assign one cashier (still need one more)
+//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
+//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+//
+//        // Create and assign another cashier to fulfill requirements
+//        Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
+//                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
+//        employee3.addQualifiedPosition(cashierPosition);
+//        employeeManager.addEmployee(employee3);
+//
+//        // Now assign the third employee
+//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
+//
+//        // Check that all positions are now covered
+//        assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+//    }
+@Test
+void testAreAllRequiredPositionsCovered() {
+    // Create a shift
+    LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
+    Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
 
-        // Check that positions are not covered initially
-        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+    // Check that positions are not covered initially
+    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-        // Assign manager (but still need 2 cashiers)
-        employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
-        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+    // Assign manager (but still need 2 cashiers)
+    employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
+    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-        // Assign one cashier (still need one more)
-        employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
-        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+    // Assign one cashier (still need one more)
+    employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
+    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-        // Create and assign another cashier to fulfill requirements
-        Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
-                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
-        employee3.addQualifiedPosition(cashierPosition);
-        employeeManager.addEmployee(employee3);
+    // Create and assign another cashier to fulfill requirements
+    Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
+            LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
+    employee3.addQualifiedPosition(cashierPosition);
+    employeeManager.addEmployee(employee3);
 
-        // Now assign the third employee
-        employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
+    // Now assign the third employee
+    employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
 
-        // Check that all positions are now covered
-        assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+    // הוספת הדפסות לניפוי שגיאות
+    System.out.println("========= DEBUG INFO =========");
+    System.out.println("Required Positions: " + employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING));
+    System.out.println("Assigned Employees: " + morningShift.getAllAssignedEmployees());
+
+    // הדפסת שמות התפקידים במפת התפקידים הנדרשים
+    System.out.println("Required Position Names:");
+    for (Position pos : employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING).keySet()) {
+        System.out.println("  - " + pos.getName());
     }
+
+    // הדפסת שמות התפקידים במפת התפקידים המוקצים
+    System.out.println("Assigned Position Names:");
+    for (Position pos : morningShift.getAllAssignedEmployees().keySet()) {
+        System.out.println("  - " + pos.getName());
+    }
+
+    // Check that all positions are now covered
+    assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+}
 
     // בדיקה חדשה למערכת ההרשאות
     @Test
@@ -992,17 +1038,24 @@ class ShiftTest {
 
     @Test
     void testShiftCreation() {
+        // קבלת שעות משמרת דינמיות מהמנהל
+        String[] morningHours = EmployeeManager.getInstance().getShiftHours(ShiftType.MORNING);
+        String[] eveningHours = EmployeeManager.getInstance().getShiftHours(ShiftType.EVENING);
+
+        // בדיקות עבור משמרת בוקר
         assertEquals("2025-04-15_morning", morningShift.getId());
         assertEquals(testDate, morningShift.getDate());
         assertEquals(ShiftType.MORNING, morningShift.getShiftType());
-        assertEquals(Shift.MORNING_SHIFT_START, morningShift.getStartTime());
-        assertEquals(Shift.MORNING_SHIFT_END, morningShift.getEndTime());
+        assertEquals(java.time.LocalTime.parse(morningHours[0]), morningShift.getStartTime());
+        assertEquals(java.time.LocalTime.parse(morningHours[1]), morningShift.getEndTime());
 
+        // בדיקות עבור משמרת ערב
         assertEquals("2025-04-15_evening", eveningShift.getId());
         assertEquals(ShiftType.EVENING, eveningShift.getShiftType());
-        assertEquals(Shift.EVENING_SHIFT_START, eveningShift.getStartTime());
-        assertEquals(Shift.EVENING_SHIFT_END, eveningShift.getEndTime());
+        assertEquals(java.time.LocalTime.parse(eveningHours[0]), eveningShift.getStartTime());
+        assertEquals(java.time.LocalTime.parse(eveningHours[1]), eveningShift.getEndTime());
     }
+
 
     @Test
     void testAssignEmployee() {

@@ -60,14 +60,31 @@ public class ShiftService {
     }
 
     public List<ShiftDTO> getEmployeeShiftHistory(String employeeId) {
-        return employeeService.getAllShiftsAsDTO().stream().filter(shift -> shift.getAssignments().values().stream().anyMatch(employeeName -> employeeService.getEmployeeDetails(employeeId) != null &&
-                employeeService.getEmployeeDetails(employeeId).getFullName().equals(employeeName))).collect(Collectors.toList());
+        LocalDate today = LocalDate.now();
+
+        return employeeService.getAllShiftsAsDTO().stream()
+                .filter(shift ->
+                        shift.getDate().isBefore(today) &&  // רק משמרות עבר
+                                shift.getAssignments().values().stream()
+                                        .anyMatch(employeeName -> {
+                                            EmployeeDTO employee = employeeService.getEmployeeDetails(employeeId);
+                                            return employee != null && employee.getFullName().equals(employeeName);
+                                        })
+                )
+                .collect(Collectors.toList());
     }
+
 
     public List<ShiftDTO> getEmployeeFutureShifts(String employeeId) {
         LocalDate today = LocalDate.now();
-        return getEmployeeShiftHistory(employeeId).stream().filter(shift -> !shift.getDate().isBefore(today)).collect(Collectors.toList());
+        return employeeService.getAllShiftsAsDTO().stream()
+                .filter(shift ->
+                        !shift.getDate().isBefore(today) &&   // משמרות עתידיות בלבד
+                                shift.getAssignments().values().contains(employeeService.getEmployeeDetails(employeeId).getFullName())
+                )
+                .collect(Collectors.toList());
     }
+
 
     public List<PositionDTO> getMissingPositionsForShift(String shiftId) {
         // Get domain shift

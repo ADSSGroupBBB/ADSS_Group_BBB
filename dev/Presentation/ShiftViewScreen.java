@@ -255,13 +255,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-public class ShiftHistoryScreen extends BaseScreen {
+public class ShiftViewScreen extends BaseScreen {
     private final EmployeeService employeeService;
     private final ShiftService shiftService;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
-    public ShiftHistoryScreen(EmployeeService employeeService, ShiftService shiftService, EmployeeDTO loggedInEmployee) {
+    public ShiftViewScreen(EmployeeService employeeService, ShiftService shiftService, EmployeeDTO loggedInEmployee) {
         this.employeeService = employeeService;
         this.shiftService = shiftService;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -525,4 +525,53 @@ public class ShiftHistoryScreen extends BaseScreen {
             return null;
         }
     }
+    public void displayShiftHistory() {
+        if (loggedInEmployee.isManager()) {
+            displayManagerOptions();
+        } else {
+            displayEmployeeOptions();
+        }
+    }
+    public void displayFutureShifts() {
+        displayTitle("Future Shifts");
+
+        List<ShiftDTO> futureShifts;
+
+        if (loggedInEmployee.isManager()) {
+            futureShifts = shiftService.getFutureShifts();  // מנהל רואה הכל
+        } else {
+            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());  // עובד רגיל רואה רק את עצמו
+        }
+
+        if (futureShifts.isEmpty()) {
+            displayMessage("No future shifts found.");
+            return;
+        }
+
+        futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
+
+        for (ShiftDTO shift : futureShifts) {
+            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
+            displayMessage("Start Time: " + shift.getStartTime() + ", End Time: " + shift.getEndTime());
+
+            if (shift.hasShiftManager()) {
+                displayMessage("Shift Manager: " + shift.getShiftManagerName());
+            } else {
+                displayMessage("Shift Manager: Not assigned");
+            }
+
+            Map<String, String> assignments = shift.getAssignments();
+            if (assignments.isEmpty()) {
+                displayMessage("Assigned Employees: None");
+            } else {
+                displayMessage("Assigned Employees:");
+                for (Map.Entry<String, String> entry : assignments.entrySet()) {
+                    displayMessage("- " + entry.getKey() + ": " + entry.getValue());
+                }
+            }
+
+            displayMessage("------------------------------------");
+        }
+    }
+
 }

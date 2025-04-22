@@ -223,6 +223,7 @@ package Presentation;
 import Service.EmployeeDTO;
 import Service.EmployeeService;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 // Screen for managing employee availability
@@ -352,41 +353,78 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         }
         updateEmployeeAvailabilityForEmployee(employee);
     }
-
     private void updateMyAvailability() {
         updateEmployeeAvailabilityForEmployee(loggedInEmployee);
     }
-
     private void updateEmployeeAvailabilityForEmployee(EmployeeDTO employee) {
         displayTitle("Update Availability for: " + employee.getFullName());
-        int dayIndex = selectDayOfWeek();   // Select day to update
-        if (dayIndex < 0) {
-            return; // User canceled
+
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        if (today == DayOfWeek.FRIDAY || today == DayOfWeek.SATURDAY) {
+            displayError("You can only update next week's availability until Thursday.");
+            return;
         }
+
+        int dayIndex = selectDayOfWeek();
+        if (dayIndex < 0) {
+            return;
+        }
+
         DayOfWeek selectedDay = DAYS_OF_WEEK[dayIndex];
         String dayName = DAYS_IN_HEBREW[dayIndex];
-        displayTitle("Update Availability for " + dayName);
+        displayTitle("Update Availability for " + dayName + " (Next Week)");
 
-        // Get current availability for display
-        boolean currentMorningAvailable = employeeService.isEmployeeAvailable(employee.getId(), selectedDay, "MORNING");
-        boolean currentEveningAvailable = employeeService.isEmployeeAvailable(employee.getId(), selectedDay, "EVENING");
+        boolean currentMorningAvailable = employeeService.isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "MORNING");
+        boolean currentEveningAvailable = employeeService.isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "EVENING");
 
-        displayMessage("Current availability: Morning - " + (currentMorningAvailable ? "Available" : "Unavailable") + ", Evening - " + (currentEveningAvailable ? "Available" : "Unavailable"));
+        displayMessage("Current availability: Morning - " + (currentMorningAvailable ? "Available" : "Unavailable")
+                + ", Evening - " + (currentEveningAvailable ? "Available" : "Unavailable"));
 
-        // Get new availability from user
         boolean morningAvailable = getBooleanInput("Is employee available for morning shift?");
         boolean eveningAvailable = getBooleanInput("Is employee available for evening shift?");
 
-        // Update availability through employee service
-        boolean success = employeeService.updateEmployeeAvailability(
+        boolean success = employeeService.updateEmployeeAvailabilityForNextWeek(
                 employee.getId(), selectedDay, morningAvailable, eveningAvailable);
 
         if (success) {
-            displayMessage("Employee availability updated successfully");
+            displayMessage("Employee availability updated successfully for next week");
         } else {
-            displayError("Error updating employee availability");
+            displayError("Error updating availability");
         }
     }
+
+
+
+//    private void updateEmployeeAvailabilityForEmployee(EmployeeDTO employee) {
+//        displayTitle("Update Availability for: " + employee.getFullName());
+//        int dayIndex = selectDayOfWeek();   // Select day to update
+//        if (dayIndex < 0) {
+//            return; // User canceled
+//        }
+//        DayOfWeek selectedDay = DAYS_OF_WEEK[dayIndex];
+//        String dayName = DAYS_IN_HEBREW[dayIndex];
+//        displayTitle("Update Availability for " + dayName);
+//
+//        // Get current availability for display
+//        boolean currentMorningAvailable = employeeService.isEmployeeAvailable(employee.getId(), selectedDay, "MORNING");
+//        boolean currentEveningAvailable = employeeService.isEmployeeAvailable(employee.getId(), selectedDay, "EVENING");
+//
+//        displayMessage("Current availability: Morning - " + (currentMorningAvailable ? "Available" : "Unavailable") + ", Evening - " + (currentEveningAvailable ? "Available" : "Unavailable"));
+//
+//        // Get new availability from user
+//        boolean morningAvailable = getBooleanInput("Is employee available for morning shift?");
+//        boolean eveningAvailable = getBooleanInput("Is employee available for evening shift?");
+//
+//        // Update availability through employee service
+//        boolean success = employeeService.updateEmployeeAvailability(
+//                employee.getId(), selectedDay, morningAvailable, eveningAvailable);
+//
+//        if (success) {
+//            displayMessage("Employee availability updated successfully");
+//        } else {
+//            displayError("Error updating employee availability");
+//        }
+//    }
 
     private void generateWeeklyAvailabilityReport() {
         displayTitle("Weekly Availability Report");
