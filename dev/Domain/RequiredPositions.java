@@ -49,7 +49,6 @@ public class RequiredPositions {
 
 
 
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Required Positions:\n");

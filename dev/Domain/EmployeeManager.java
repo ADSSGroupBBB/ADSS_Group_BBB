@@ -81,6 +81,8 @@ public class EmployeeManager {
                 .collect(Collectors.toList());
     }
 
+
+
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
         Employee employee = employees.get(employeeId);
         Position position = positions.get(positionName);
@@ -198,13 +200,24 @@ public class EmployeeManager {
     }
 
 
+//    public boolean areAllRequiredPositionsCovered(String shiftId) {
+//        Shift shift = shifts.get(shiftId);
+//        if (shift == null) {
+//            return false;
+//        }
+//
+//        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
+//    }
+
     public boolean areAllRequiredPositionsCovered(String shiftId) {
         Shift shift = shifts.get(shiftId);
         if (shift == null) {
             return false;
         }
 
-        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
+        // מעביר את הטסט אל RequiredPositions
+        Map<Position, Employee> assignedEmployees = shift.getAllAssignedEmployees();
+        return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), assignedEmployees);
     }
 
 }
