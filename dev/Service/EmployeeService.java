@@ -686,7 +686,16 @@ public class EmployeeService {
         }
         return employeeManager.getRequiredPositions().getRequiredCount(shiftType, position);
     }
+    public boolean removeQualificationFromEmployee(String employeeId, String positionName) {
+        Employee employee = employeeManager.getEmployee(employeeId);
+        Position position = employeeManager.getPosition(positionName);
 
+        if (employee == null || position == null) {
+            return false;
+        }
+
+        return employee.removeQualifiedPosition(position);
+    }
 
 
 }
