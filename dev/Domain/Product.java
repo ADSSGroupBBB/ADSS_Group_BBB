@@ -11,6 +11,8 @@ public class Product {
         this.productNumber=productNumber;
         this.unitOfMeasure=unitOfMeasure;
         this.manufacturer=manufacturer;
+        AllProducts.addProduct(productNumber,this);
+
     }
 
 
@@ -26,8 +28,8 @@ public class Product {
     public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
-    public void printProduct(){
-        System.out.println("Product name:"+this.productName+" Product number"+this.productNumber+" Units of measurement:"+this.unitOfMeasure+" the manufacturer"+this.manufacturer);
+    public String printProduct(){
+        return "Product name:"+this.productName+"\nProduct number:"+this.productNumber+"\nUnits of measurement:"+this.unitOfMeasure+"\nmanufacturer:"+this.manufacturer;
     }
 
     public String getProductName() {
