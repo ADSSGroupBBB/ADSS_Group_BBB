@@ -16,7 +16,7 @@ public class Agreement {
         this.date=date;
     }
     public void addProductAgreement(String productName,int productNumber, unit unitOfMeasure,String manufacturer, int supplierNumber,int price,int catalogNumber,int amountToDiscount,int discount){
-        this.productsList.add(new QuantityAgreement( productName, productNumber,  unitOfMeasure, manufacturer,  supplierNumber, price, catalogNumber, amountToDiscount, discount));
+        this.productsList.add(new QuantityAgreement( productName, productNumber,  unitOfMeasure, manufacturer, price, catalogNumber, amountToDiscount, discount));
     }
 
 
