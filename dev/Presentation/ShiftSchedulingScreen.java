@@ -432,68 +432,6 @@ public class ShiftSchedulingScreen extends BaseScreen {
         return employees.get(choice - 1);
     }
 
-    /**
-     * Displays a menu for selecting an existing shift or creating a new one.
-     *
-     * @return The selected or created shift DTO, or null if canceled
-     */
-    private ShiftDTO selectOrCreateShift() {
-        String[] options = {
-                "Select existing shift", "Create new shift for specific date"
-        };
-        int choice = displayMenu("Shift Selection", options);
-        switch (choice) {
-            case 1:
-                return selectFutureShift();
-            case 2:
-                return createShiftForDate();
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Creates a new shift for a specific date and shift type.
-     * Checks if a shift already exists before creating it.
-     *
-     * @return The created shift DTO, or null if creation failed
-     */
-    private ShiftDTO createShiftForDate() {
-        LocalDate date = null;
-        while (date == null) {
-            try {
-                String dateStr = getInput("Enter date (DD/MM/YYYY)");
-                date = LocalDate.parse(dateStr, dateFormatter);
-            } catch (DateTimeParseException e) {
-                displayError("Invalid date format. Please use DD/MM/YYYY");
-            }
-        }
-        String[] shiftOptions = {
-                "Morning Shift",
-                "Evening Shift"
-        };
-
-        int shiftChoice = displayMenu("Select Shift Type", shiftOptions);
-        if (shiftChoice == 0) {
-            return null;
-        }
-        String shiftType = (shiftChoice == 1) ? "MORNING" : "EVENING";
-        // Check if shift already exists
-        ShiftDTO existingShift = employeeService.getShift(date, shiftType);
-        if (existingShift != null) {
-            displayMessage("Shift already exists for this date and type");
-            return existingShift;
-        }
-        // Create new shift
-        ShiftDTO newShift = employeeService.createShift(date, shiftType);
-        if (newShift != null) {
-            displayMessage("Shift created successfully");
-            return newShift;
-        } else {
-            displayError("Error creating shift");
-            return null;
-        }
-    }
 
     /**
      * Manages the configuration of shift hours.

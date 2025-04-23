@@ -86,7 +86,6 @@ public class EmployeeDTO {
     public boolean isShiftManager() {
         return role == UserRole.SHIFT_MANAGER;
     }
-    // Getters לתנאי העסקה
     public int getSickDays() { return sickDays; }
     public int getVacationDays() { return vacationDays; }
     public String getPensionFundName() { return pensionFundName; }
