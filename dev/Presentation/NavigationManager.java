@@ -1,70 +1,3 @@
-//package Presentation;
-//
-//import Service.EmployeeService;
-//import Service.ShiftService;
-//
-///**
-// * Navigation manager for the application.
-// * Responsible for initializing and navigating between screens.
-// */
-//public class NavigationManager {
-//    private final EmployeeService employeeService;
-//    private final ShiftService shiftService;
-//
-//
-//    public NavigationManager() {
-//        this.employeeService = new EmployeeService();
-//        this.shiftService = new ShiftService();
-//    }
-//
-//
-//    public void start() {
-//        // Start with main screen
-//        MainScreen mainScreen = new MainScreen(this);
-//        mainScreen.display();
-//    }
-//
-//
-//    public void showEmployeeManagement() {
-//        EmployeeManagementScreen screen = new EmployeeManagementScreen(employeeService);
-//        screen.display();
-//    }
-//
-//
-//    public void showEmployeeAvailability() {
-//        EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(employeeService);
-//        screen.display();
-//    }
-//
-//
-//    public void showQualificationManagement() {
-//        QualificationManagementScreen screen = new QualificationManagementScreen(employeeService);
-//        screen.display();
-//    }
-//
-//
-//    public void showShiftScheduling() {
-//        ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeService, shiftService);
-//        screen.display();
-//    }
-//
-//
-//    public void showShiftHistory() {
-//        ShiftHistoryScreen screen = new ShiftHistoryScreen(employeeService, shiftService);
-//        screen.display();
-//    }
-//
-//
-//    public EmployeeService getEmployeeService() {
-//        return employeeService;
-//    }
-//
-//
-//    public ShiftService getShiftService() {
-//        return shiftService;
-//    }
-//}
-
 package Presentation;
 
 import Service.EmployeeDTO;
@@ -81,24 +14,39 @@ public class NavigationManager {
     private LoginScreen loginScreen;
     private EmployeeDTO loggedInEmployee;
 
+
+    /**
+     * Constructs a NavigationManager instance.
+     * Initializes the core services and the login screen.
+     */
     public NavigationManager() {
         this.employeeService = new EmployeeService();
         this.shiftService = new ShiftService();
         this.loginScreen = new LoginScreen(employeeService);
         this.loggedInEmployee = null;
     }
+    /**
+     * Starts the application by displaying the login screen.
+     * If login is successful, proceeds to the main screen.
+     * This method represents the main entry point for the UI flow.
+     */
     public void start() {
-        // תחילה הצג את מסך ההתחברות
+        // First show the login screen
         loginScreen.display();
-        // אם ההתחברות הצליחה, שמור את פרטי המשתמש ועבור למסך הראשי
+        // If login is successful, store user details and proceed to main screen
         if (loginScreen.isLoggedIn()) {
             loggedInEmployee = loginScreen.getLoggedInEmployee();
             MainScreen mainScreen = new MainScreen(this);
             mainScreen.display();
         }
     }
+
+    /**
+     * Shows the employee management screen.
+     * Restricts access to HR managers only.
+     */
     public void showEmployeeManagement() {
-        // אופציה 1 - רק למנהל כח אדם
+        // Option 1 - HR manager only
         if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
             EmployeeManagementScreen screen = new EmployeeManagementScreen(employeeService);
             screen.display();
@@ -106,8 +54,12 @@ public class NavigationManager {
             displayUnauthorizedMessage();
         }
     }
+
+    /**
+     * Shows the employee availability screen.
+     * Available to all users (including regular employees).
+     */
     public void showEmployeeAvailability() {
-        // אופציה 2 - לכולם (כולל עובדים רגילים)
         if (loggedInEmployee != null) {
             EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(employeeService, loggedInEmployee);
             screen.display();
@@ -116,8 +68,12 @@ public class NavigationManager {
         }
     }
 
+    /**
+     * Shows the qualification management screen.
+     * Restricts access to managers only (both shift managers and HR managers).
+     */
     public void showQualificationManagement() {
-        // אופציה 3 - רק למנהל משמרת ומנהל כח אדם
+        // Option 3 - Managers only (shift managers and HR managers)
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
             QualificationManagementScreen screen = new QualificationManagementScreen(employeeService);
             screen.display();
@@ -126,8 +82,12 @@ public class NavigationManager {
         }
     }
 
+
+    /**
+     * Shows the shift scheduling screen.
+     * Restricts access to managers only (both shift managers and HR managers).
+     */
     public void showShiftScheduling() {
-        // אופציה 4 - רק למנהל משמרת ומנהל כח אדם
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
             ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeService, shiftService,loggedInEmployee);
             screen.display();
@@ -135,25 +95,39 @@ public class NavigationManager {
             displayUnauthorizedMessage();
         }
     }
+
+    /**
+     * Shows the shift history screen.
+     * Available to all users but with different views based on user role.
+     */
     public void showShiftHistory() {
         ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
-        screen.displayShiftHistory();   // ניצור מתודה ייעודית
+        screen.displayShiftHistory();
     }
 
+    /**
+     * Shows the future shifts screen.
+     * Available to all users but with different views based on user role.
+     */
     public void showFutureShifts() {
         ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
-        screen.displayFutureShifts();   // קיימת אצלך כבר
+        screen.displayFutureShifts();
     }
 
+
+
+    /**
+     * Displays an error message when a user attempts to access a screen
+     * without the required permissions.
+     */
     private void displayUnauthorizedMessage() {
         System.out.println("\n===== Access Denied =====");
         System.out.println("You do not have permission to access this functionality.");
         System.out.println("Please contact your manager if you need access.");
-        // השהיה קצרה כדי שהמשתמש יוכל לקרוא את ההודעה
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            // התעלם
+
         }
     }
 
@@ -170,10 +144,13 @@ public class NavigationManager {
     }
 
 
+    /**
+     * Logs out the current user and restarts the login process.
+     * Clears the current user session and returns to the login screen.
+     */
     public void logout() {
         loginScreen.logout();
         loggedInEmployee = null;
-        // מפעיל מחדש את לולאת ההתחברות
         start();
     }
 }

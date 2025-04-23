@@ -709,52 +709,52 @@ public class DomainTest {
         assertFalse(employeeManager.removeAssignmentFromShift(morningShift.getId(), "Cashier"));
     }
 
-@Test
-void testAreAllRequiredPositionsCovered() {
-    // Create a shift
-    LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
-    Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
+    @Test
+    void testAreAllRequiredPositionsCovered() {
+        // Create a shift
+        LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
+        Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
 
-    // Check that positions are not covered initially
-    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+        // Check that positions are not covered initially
+        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-    // Assign manager (but still need 2 cashiers)
-    employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
-    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+        // Assign manager (but still need 2 cashiers)
+        employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
+        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-    // Assign one cashier (still need one more)
-    employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
-    assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
+        // Assign one cashier (still need one more)
+        employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
+        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
 
-    // Create and assign another cashier to fulfill requirements
-    Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
-            LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "", 4, 10, "Harel");
-    employee3.addQualifiedPosition(cashierPosition);
-    employeeManager.addEmployee(employee3);
+        // Create and assign another cashier to fulfill requirements
+        Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
+                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "", 4, 10, "Harel");
+        employee3.addQualifiedPosition(cashierPosition);
+        employeeManager.addEmployee(employee3);
 
-    // Now assign the third employee
-    employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
+        // Now assign the third employee
+        employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
 
-    // הוספת הדפסות לניפוי שגיאות
-    System.out.println("========= DEBUG INFO =========");
-    System.out.println("Required Positions: " + employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING));
-    System.out.println("Assigned Employees: " + morningShift.getAllAssignedEmployees());
+        // הוספת הדפסות לניפוי שגיאות
+        System.out.println("========= DEBUG INFO =========");
+        System.out.println("Required Positions: " + employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING));
+        System.out.println("Assigned Employees: " + morningShift.getAllAssignedEmployees());
 
-    // הדפסת שמות התפקידים במפת התפקידים הנדרשים
-    System.out.println("Required Position Names:");
-    for (Position pos : employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING).keySet()) {
-        System.out.println("  - " + pos.getName());
+        // הדפסת שמות התפקידים במפת התפקידים הנדרשים
+        System.out.println("Required Position Names:");
+        for (Position pos : employeeManager.getRequiredPositions().getRequiredPositionsMap(ShiftType.MORNING).keySet()) {
+            System.out.println("  - " + pos.getName());
+        }
+
+        // הדפסת שמות התפקידים במפת התפקידים המוקצים
+        System.out.println("Assigned Position Names:");
+        for (Position pos : morningShift.getAllAssignedEmployees().keySet()) {
+            System.out.println("  - " + pos.getName());
+        }
+
+        // Check that all positions are now covered
+        assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
     }
-
-    // הדפסת שמות התפקידים במפת התפקידים המוקצים
-    System.out.println("Assigned Position Names:");
-    for (Position pos : morningShift.getAllAssignedEmployees().keySet()) {
-        System.out.println("  - " + pos.getName());
-    }
-
-    // Check that all positions are now covered
-    assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
-}
 
     // בדיקה חדשה למערכת ההרשאות
     @Test

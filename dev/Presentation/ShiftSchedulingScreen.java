@@ -1,5 +1,3 @@
-
-
 package Presentation;
 
 import Service.EmployeeDTO;
@@ -16,13 +14,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ShiftSchedulingScreen provides the user interface for managing and scheduling shifts.
+ * This screen allows managers to create shifts, assign employees, and manage shift requirements.
 
+ * Key functionalities include:
+ * - Creating shifts for an entire week
+ * - Viewing future shifts
+ * - Assigning employees to specific positions in shifts
+ * - Removing employee assignments
+ * - Viewing missing positions in scheduled shifts
+ * - Managing shift hours configuration
+ */
 public class ShiftSchedulingScreen extends BaseScreen {
     private final EmployeeService employeeService;
     private final ShiftService shiftService;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
+    /**
+     * Constructor for backward compatibility.
+     * @param employeeService The service for accessing employee data
+     * @param shiftService The service for managing shifts
+     */
     public ShiftSchedulingScreen(EmployeeService employeeService, ShiftService shiftService) {
         this.employeeService = employeeService;
         this.shiftService = shiftService;
@@ -30,6 +44,13 @@ public class ShiftSchedulingScreen extends BaseScreen {
         this.loggedInEmployee = null;
     }
 
+    /**
+     * Constructor that takes the logged-in employee for permission checking.
+     *
+     * @param employeeService The service for accessing employee data
+     * @param shiftService The service for managing shifts
+     * @param loggedInEmployee The currently logged-in employee
+     */
     public ShiftSchedulingScreen(EmployeeService employeeService, ShiftService shiftService, EmployeeDTO loggedInEmployee) {
         this.employeeService = employeeService;
         this.shiftService = shiftService;
@@ -37,9 +58,13 @@ public class ShiftSchedulingScreen extends BaseScreen {
         this.loggedInEmployee = loggedInEmployee;
     }
 
+    /**
+     * Displays the shift scheduling screen if the user has appropriate permissions.
+     * Only managers (shift managers and HR managers) can access this functionality.
+     */
     @Override
     public void display() {
-        // בדיקת הרשאות - רק מנהלים יכולים לגשת למסך זה
+        // Permission check - only managers can access this screen
         if (loggedInEmployee != null && !loggedInEmployee.isManager()) {
             displayError("Access denied. Only managers can access this functionality.");
             return;
@@ -82,6 +107,10 @@ public class ShiftSchedulingScreen extends BaseScreen {
         } while (choice != 0);
     }
 
+    /**
+     * Creates shifts for an entire week starting from a specified Sunday date.
+     * Verifies that the provided date is a Sunday before creating shifts.
+     */
     private void createShiftsForWeek() {
         displayTitle("Create Shifts for Week");
         LocalDate startDate = null;
@@ -103,12 +132,14 @@ public class ShiftSchedulingScreen extends BaseScreen {
         if (createdShifts.isEmpty()) {
             displayError("No shifts were created. Shifts may already exist for this week");
         } else {
-            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " +
-                    startDate.format(dateFormatter));
+            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " + startDate.format(dateFormatter));
         }
     }
 
-
+    /**
+     * Displays a list of future shifts sorted by date.
+     * Shows shift date, type, and whether a shift manager is assigned.
+     */
     private void viewFutureShifts() {
         displayTitle("Future Shifts");
         List<ShiftDTO> futureShifts = shiftService.getFutureShifts();
@@ -123,20 +154,27 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() + " (Has Manager: " + hasManager + ", ID: " + shift.getId() + ")");
         }
     }
+
+    /**
+     * Assigns an employee to a specific position in a shift.
+     * Validates that the employee is qualified and available for the position and shift.
+     * Checks for required position counts and prevents assigning employees to positions
+     * that are not required or already filled.
+     */
     private void assignEmployeeToShift() {
         displayTitle("Assign Employee to Shift");
 
-        // בחירת משמרת
+        // Select shift
         ShiftDTO shift = selectFutureShift();
         if (shift == null) return;
 
         displayShiftDetails(shift);
 
-        // בחירת תפקיד
+        // Select position
         PositionDTO position = selectPosition();
         if (position == null) return;
 
-        // מציאת עובדים מתאימים
+        // Find eligible employees (qualified and available)
         List<EmployeeDTO> qualifiedEmployees = employeeService.getQualifiedEmployeesForPosition(position.getName());
         List<EmployeeDTO> availableEmployees = employeeService.getAvailableEmployeesForShift(shift.getDate(), shift.getShiftType());
 
@@ -152,17 +190,17 @@ public class ShiftSchedulingScreen extends BaseScreen {
             return;
         }
 
-        // בחירת עובד
+        // Select employee
         EmployeeDTO employee = selectEmployeeFromList(eligibleEmployees);
         if (employee == null) return;
 
-        // בדיקה אם העובד כבר משובץ
+        // Check if employee is already assigned
         if (employeeService.isEmployeeAlreadyAssignedToShift(shift.getId(), employee.getId())) {
             displayError("This employee is already assigned to this shift.");
             return;
         }
 
-        // ניסיון לשבץ את העובד
+        // Try to assign employee
         boolean success = employeeService.assignEmployeeToShift(shift.getId(), employee.getId(), position.getName());
 
         if (success) {
@@ -171,7 +209,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
                 displayMessage("All required positions for this shift are now covered");
             }
         } else {
-            // כאן נוסיף את הבדיקה המדויקת לגבי חוסר דרישה
+            // Check the specific reason for failure
             int requiredCount = employeeService.getRequiredPositionsCount(shift.getShiftType(), position.getName());
             if (requiredCount == 0) {
                 displayError("Cannot assign employee: No required positions defined for '" + position.getName() + "' in this shift.");
@@ -181,6 +219,10 @@ public class ShiftSchedulingScreen extends BaseScreen {
         }
     }
 
+    /**
+     * Removes an employee assignment from a shift.
+     * Allows selecting from the current assignments.
+     */
     private void removeEmployeeFromShift() {
         displayTitle("Remove Employee from Shift");
         // Select shift
@@ -222,49 +264,9 @@ public class ShiftSchedulingScreen extends BaseScreen {
         }
     }
 
-//    private void viewAvailableEmployeesForShift() {
-//        displayTitle("Available Employees for Shift");
-//        // Select or create a shift
-//        ShiftDTO shift = selectOrCreateShift();
-//        if (shift == null) {
-//            return;
-//        }
-//        // Get available employees
-//        List<EmployeeDTO> availableEmployees = employeeService.getAvailableEmployeesForShift(
-//                shift.getDate(), shift.getShiftType());
-//        if (availableEmployees.isEmpty()) {
-//            displayMessage("No employees available for this shift");
-//            return;
-//        }
-//        displayTitle("Available Employees for " + shift.getDate().format(dateFormatter) +
-//                " - " + shift.getShiftType());
-//        for (EmployeeDTO employee : availableEmployees) {
-//            displayMessage("- " + employee.getFullName() + " (ID: " + employee.getId() + ")");
-//        }
-//        // Option to view qualified employees by position
-//        if (getBooleanInput("Do you want to view available employees by position?")) {
-//            PositionDTO position = selectPosition();
-//            if (position != null) {
-//                List<EmployeeDTO> qualifiedEmployees = employeeService.getQualifiedEmployeesForPosition(position.getName());
-//                // Filter to get employees that are both qualified and available
-//                List<EmployeeDTO> eligibleEmployees = new ArrayList<>();
-//                for (EmployeeDTO employee : qualifiedEmployees) {
-//                    if (availableEmployees.stream().anyMatch(e -> e.getId().equals(employee.getId()))) {
-//                        eligibleEmployees.add(employee);
-//                    }
-//                }
-//                displayTitle("Available Employees for Position: " + position.getName());
-//                if (eligibleEmployees.isEmpty()) {
-//                    displayMessage("No available employees qualified for this position");
-//                } else {
-//                    for (EmployeeDTO employee : eligibleEmployees) {
-//                        displayMessage("- " + employee.getFullName() + " (ID: " + employee.getId() + ")");
-//                    }
-//                }
-//            }
-//        }
-//    }
-
+    /**
+     * Displays a list of missing positions for future shifts.
+     */
     private void viewMissingPositions() {
         displayTitle("Missing Positions in Future Shifts");
         List<ShiftDTO> futureShifts = shiftService.getFutureShifts();
@@ -287,6 +289,13 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayMessage("No missing positions in future shifts");
         }
     }
+
+    /**
+     * Displays detailed information about a shift including its date, time,
+     * assigned employees, and missing positions.
+     *
+     * @param shift The shift to display details for
+     */
     private void displayShiftDetails(ShiftDTO shift) {
         displayTitle("Shift Details: " + shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
 
@@ -300,7 +309,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayMessage("Shift Manager: Not assigned");
         }
 
-        // הצגת עובדים משובצים:
+        // Display assigned employees:
         Map<String, String> assignments = shift.getAssignments();
 
         if (assignments.isEmpty()) {
@@ -308,20 +317,20 @@ public class ShiftSchedulingScreen extends BaseScreen {
         } else {
             displayMessage("\nAssigned Employees:");
 
-            // אם זו משמרת עתידית -> להציג תמיד את כל השיבוצים
+            // For future shifts, always show all assignments
             if (!shift.getDate().isBefore(LocalDate.now())) {
                 for (Map.Entry<String, String> entry : assignments.entrySet()) {
                     displayMessage("- " + entry.getKey() + ": " + entry.getValue());
                 }
             }
-            // משמרת היסטורית - מגבלות צפייה
+            // For historical shifts, display based on user role
             else {
                 if (loggedInEmployee.isManager()) {
                     for (Map.Entry<String, String> entry : assignments.entrySet()) {
                         displayMessage("- " + entry.getKey() + ": " + entry.getValue());
                     }
                 } else {
-                    // עובד רגיל רואה רק את עצמו
+                    // Regular employees see only themselves
                     boolean found = false;
                     for (Map.Entry<String, String> entry : assignments.entrySet()) {
                         if (entry.getValue().equals(loggedInEmployee.getFullName())) {
@@ -336,7 +345,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
             }
         }
 
-        // הצגת משרות חסרות (רק למנהלים)
+        // Display missing positions (for managers only)
         if (loggedInEmployee.isManager()) {
             List<PositionDTO> missingPositions = shiftService.getMissingPositionsForShift(shift.getId());
             if (!missingPositions.isEmpty()) {
@@ -348,7 +357,11 @@ public class ShiftSchedulingScreen extends BaseScreen {
         }
     }
 
-
+    /**
+     * Displays a menu for selecting a future shift from those available in the system.
+     *
+     * @return The selected shift DTO, or null if selection was canceled
+     */
     private ShiftDTO selectFutureShift() {
         List<ShiftDTO> futureShifts = shiftService.getFutureShifts();
         if (futureShifts.isEmpty()) {
@@ -370,7 +383,11 @@ public class ShiftSchedulingScreen extends BaseScreen {
         return futureShifts.get(choice - 1);
     }
 
-
+    /**
+     * Displays a menu for selecting a position from those available in the system.
+     *
+     * @return The selected position DTO, or null if selection was canceled
+     */
     private PositionDTO selectPosition() {
         List<PositionDTO> positions = employeeService.getAllPositions();
         if (positions.isEmpty()) {
@@ -391,7 +408,12 @@ public class ShiftSchedulingScreen extends BaseScreen {
         return positions.get(choice - 1);
     }
 
-
+    /**
+     * Displays a menu for selecting an employee from a provided list.
+     *
+     * @param employees The list of employees to select from
+     * @return The selected employee DTO, or null if selection was canceled
+     */
     private EmployeeDTO selectEmployeeFromList(List<EmployeeDTO> employees) {
         if (employees.isEmpty()) {
             displayError("No employees to select from");
@@ -411,58 +433,10 @@ public class ShiftSchedulingScreen extends BaseScreen {
     }
 
 
-    private ShiftDTO selectOrCreateShift() {
-        String[] options = {
-                "Select existing shift", "Create new shift for specific date"
-        };
-        int choice = displayMenu("Shift Selection", options);
-        switch (choice) {
-            case 1:
-                return selectFutureShift();
-            case 2:
-                return createShiftForDate();
-            default:
-                return null;
-        }
-    }
-
-
-    private ShiftDTO createShiftForDate() {
-        LocalDate date = null;
-        while (date == null) {
-            try {
-                String dateStr = getInput("Enter date (DD/MM/YYYY)");
-                date = LocalDate.parse(dateStr, dateFormatter);
-            } catch (DateTimeParseException e) {
-                displayError("Invalid date format. Please use DD/MM/YYYY");
-            }
-        }
-        String[] shiftOptions = {
-                "Morning Shift",
-                "Evening Shift"
-        };
-
-        int shiftChoice = displayMenu("Select Shift Type", shiftOptions);
-        if (shiftChoice == 0) {
-            return null;
-        }
-        String shiftType = (shiftChoice == 1) ? "MORNING" : "EVENING";
-        // Check if shift already exists
-        ShiftDTO existingShift = employeeService.getShift(date, shiftType);
-        if (existingShift != null) {
-            displayMessage("Shift already exists for this date and type");
-            return existingShift;
-        }
-        // Create new shift
-        ShiftDTO newShift = employeeService.createShift(date, shiftType);
-        if (newShift != null) {
-            displayMessage("Shift created successfully");
-            return newShift;
-        } else {
-            displayError("Error creating shift");
-            return null;
-        }
-    }
+    /**
+     * Manages the configuration of shift hours.
+     * Allows updating the start and end times for morning and evening shifts.
+     */
     private void manageShiftHours() {
         displayTitle("Manage Shift Hours");
 
@@ -484,5 +458,4 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayError("Failed to update shift hours. Please check the time format (HH:mm).");
         }
     }
-
 }
