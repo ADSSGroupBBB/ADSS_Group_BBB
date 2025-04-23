@@ -1,10 +1,13 @@
 package Domain;
 
-import java.util.Objects;
+/**
+ * The Position class represents a job position or role within the organization.
+ * Each position has a unique name and may require shift manager privileges to perform.
+ */
 
 public class Position {
     private String name;
-    private boolean requiresShiftManager; // האם תפקיד של מנהל משמרת
+    private boolean requiresShiftManager;
 
 
     public Position( String name, boolean requiresShiftManager) {

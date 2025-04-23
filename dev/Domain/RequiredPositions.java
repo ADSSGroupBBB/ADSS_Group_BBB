@@ -3,15 +3,24 @@ package Domain;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The RequiredPositions class manages the staffing requirements for different shift types.
+ * It stores information about how many employees with specific qualifications are needed
+ * for each type of shift (morning and evening).
 
+ */
 public class RequiredPositions {
-    // מיפוי בין סוג המשמרת לבין התפקידים הנדרשים ומספרם
-    private Map<ShiftType, Map<Position, Integer>> shiftTypeToRequiredPositions;
+    private Map<ShiftType, Map<Position, Integer>> shiftTypeToRequiredPositions;// Mapping between shift type and the required positions with their counts
 
+
+    /**
+     * Constructs a new RequiredPositions instance.
+     * Initializes empty requirement maps for both morning and evening shifts.
+     */
     public RequiredPositions() {
         this.shiftTypeToRequiredPositions = new HashMap<>();
-        shiftTypeToRequiredPositions.put(ShiftType.MORNING, new HashMap<>()); // משמרת בוקר
-        shiftTypeToRequiredPositions.put(ShiftType.EVENING, new HashMap<>());  // משמרת ערב
+        shiftTypeToRequiredPositions.put(ShiftType.MORNING, new HashMap<>());
+        shiftTypeToRequiredPositions.put(ShiftType.EVENING, new HashMap<>());
     }
 
 
@@ -25,14 +34,18 @@ public class RequiredPositions {
     public Map<Position, Integer> getRequiredPositionsMap(ShiftType shiftType) {
         return new HashMap<>(shiftTypeToRequiredPositions.get(shiftType));
     }
+
+    /**
+     * Checks if all required positions for a shift type are adequately covered by assigned employees.
+     * @param shiftType The type of shift (MORNING or EVENING)
+     * @param assignedPositions Map of positions to assigned employees in the shift
+     * @return true if all required positions have enough employees assigned, false otherwise
+     */
     public boolean areAllRequiredPositionsCovered(ShiftType shiftType, Map<Position, Employee> assignedPositions) {
         Map<Position, Integer> requiredPositions = shiftTypeToRequiredPositions.get(shiftType);
-
-        // בדיקה שכל התפקידים הנדרשים קיימים בשיבוץ
         for (Map.Entry<Position, Integer> entry : requiredPositions.entrySet()) {
             Position position = entry.getKey();
             int requiredCount = entry.getValue();
-            // מספר העובדים שמשובצים לתפקיד זה
             long assignedCount = assignedPositions.entrySet().stream().filter(e -> e.getKey().equals(position)).count();
             if (assignedCount < requiredCount) {
                 return false;
