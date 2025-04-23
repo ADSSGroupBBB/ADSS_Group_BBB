@@ -63,22 +63,22 @@ public class SupplierManager {
              LinkedList<Agreement> agreements;
 
             while (true) {
-                System.out.println("Enter provider number");
+                System.out.println("Enter supplier number");
                 if (scanner.hasNextInt()) {
                     numSupplier = scanner.nextInt();
                     scanner.nextLine();
                     break;
                 } else {
-                    System.out.println("This is not a number, please enter it again.");
+                    System.out.println("This is not a number, please enter it again");
                     scanner.nextLine();
                 }
             }
             while (true) {
-                System.out.println("Enter provider name");
+                System.out.println("Enter supplier name");
                 nameSupplier = scanner.nextLine().trim();
                 scanner.nextLine();
                 if (nameSupplier.isEmpty()) {
-                    System.out.println("The name cannot be empty, please enter again.");
+                    System.out.println("The name cannot be empty, please enter again");
                 } else {
                     break;
                 }
@@ -88,7 +88,7 @@ public class SupplierManager {
                 bankAccount = scanner.nextLine().trim();
                 scanner.nextLine();
                 if (bankAccount.isEmpty()) {
-                    System.out.println("The bankAccount cannot be empty, please enter again.");
+                    System.out.println("The bankAccount cannot be empty, please enter again");
                 } else {
                     break;
                 }
@@ -105,12 +105,12 @@ public class SupplierManager {
                         break;
                     }
                     else {
-                        System.out.println("The number is invalid, please select again.");
+                        System.out.println("The number is invalid, please select again");
                         scanner.nextLine();
                     }
                 }
                 else {
-                    System.out.println("The number is invalid, please select again.");
+                    System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
 
                 }
@@ -126,7 +126,7 @@ public class SupplierManager {
                 String nameCon = scanner.nextLine().trim();
                 scanner.nextLine();
                 if (nameCon.isEmpty()) {
-                    System.out.println("The contact name cannot be empty, please enter again.");
+                    System.out.println("The contact name cannot be empty, please enter again");
                 } else {
                     contactNames.add(nameCon);
                     while (true) {
@@ -140,12 +140,12 @@ public class SupplierManager {
                                 break;
                             }
                             else {
-                                System.out.println("The number is invalid, please select again.");
+                                System.out.println("The number is invalid, please select again");
                                 scanner.nextLine();
                             }
                         }
                         else {
-                            System.out.println("The number is invalid, please select again.");
+                            System.out.println("The number is invalid, please select again");
                             scanner.nextLine();
                         }
                     }
@@ -159,7 +159,7 @@ public class SupplierManager {
                 telephone = scanner.nextLine().trim();
                 scanner.nextLine();
                 if (telephone.isEmpty()) {
-                    System.out.println("The phone number cannot be empty, please enter again.");
+                    System.out.println("The phone number cannot be empty, please enter again");
                 } else {
                     break;
                 }
@@ -221,11 +221,11 @@ public class SupplierManager {
                                     break;
                                 }
                                 else {
-                                    System.out.println("The number is invalid, please select again.");
+                                    System.out.println("The number is invalid, please select again");
                                 }
                             }
                             else {
-                                System.out.println("The number is invalid, please select again.");
+                                System.out.println("The number is invalid, please select again");
                                 scanner.nextLine();
                             }
                         }
@@ -238,12 +238,12 @@ public class SupplierManager {
 
                     }
                     else {
-                        System.out.println("The number is invalid, please select again.");
+                        System.out.println("The number is invalid, please select again");
 
                     }
                 }
                 else {
-                    System.out.println("The number is invalid, please select again.");
+                    System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
                 }
 
@@ -260,12 +260,12 @@ public class SupplierManager {
                         break;
                     }
                     else {
-                        System.out.println("The number is invalid, please select again.");
+                        System.out.println("The number is invalid, please select again");
                         scanner.nextLine();
                     }
                 }
                 else {
-                    System.out.println("The number is invalid, please select again.");
+                    System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
 
                 }
