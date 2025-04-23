@@ -38,6 +38,16 @@ public class Supplier {
         this.telephone = telephone;
     }
 
+    public boolean existProduct(int numP){
+        for (Agreement agr: agreements){
+            for (QuantityAgreement p:agr.getProductsList()){
+                if (p.getNumberAgreement()==numP)
+                    return true;
+            }
+        }
+        return false;
+
+    }
     public void setAgreements(LinkedList<Agreement> agreements) {
         this.agreements = agreements;
     }
@@ -56,4 +66,5 @@ public class Supplier {
     public void printProducts(){
 
     }
+
 }

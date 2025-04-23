@@ -16,7 +16,7 @@ public class Agreement {
         this.date=date;
     }
     public void addProductAgreement(String productName,int productNumber, unit unitOfMeasure,String manufacturer, int supplierNumber,int price,int catalogNumber,int amountToDiscount,int discount){
-        this.productsList.add(new QuantityAgreement( productName, productNumber,  unitOfMeasure, manufacturer, price, catalogNumber, amountToDiscount, discount));
+        this.productsList.add(new QuantityAgreement(this.IDNumber, productName, productNumber,  unitOfMeasure, manufacturer, price, catalogNumber, amountToDiscount, discount));
     }
 
 
@@ -72,7 +72,12 @@ public class Agreement {
             }
         }
     }
-    public void setDiscount(int catalogNumber,int discount) {
+
+    public LinkedList<QuantityAgreement> getProductsList() {
+        return productsList;
+    }
+
+    public void setDiscount(int catalogNumber, int discount) {
         for (int i=0;i<productsList.size();i++){
             if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
                 productsList.get(i).setAmountToDiscountAgreement(discount);

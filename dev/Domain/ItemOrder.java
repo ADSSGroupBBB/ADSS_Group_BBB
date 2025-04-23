@@ -3,9 +3,16 @@ package Domain;
 public class ItemOrder {
     private QuantityAgreement item;
     private int amountOrder;
-    public ItemOrder(String productName,int productNumber, unit unitOfMeasure,String manufacturer, int supplierNumber,int price,int catalogNumber,int amountToDiscount,int discount,int amountOrder){
-        this.item=new QuantityAgreement( productName, productNumber,  unitOfMeasure, manufacturer, price, catalogNumber, amountToDiscount, discount);
+    private double finalPrice;
+    private double initialPrice;
+    public ItemOrder(QuantityAgreement item,int amountOrder){
+        this.item=item;
         this.amountOrder=amountOrder;
+        double initialPrice=amountOrder*(item.getPriceAgreement());
+        this.initialPrice=initialPrice;
+        if(amountOrder>=item.getAmountToDiscountAgreement()){
+            this.finalPrice=initialPrice*((100-item.getAmountToDiscountAgreement())/100.0);
+        }
     }
     public void setNameItem(String name){
         this.item.setNameAgreement(name);
@@ -27,13 +34,10 @@ public class ItemOrder {
 
 
 
-    public int getPriceItem() {
+    public double getPriceItem() {
         return this.item.getPriceAgreement();
     }
 
-    public void setPriceItem(int price) {
-        this.item.setPriceAgreement(price);
-    }
 
     public int getCatalogNumberItem() {
         return this.item.getCatalogNumberAgreement();

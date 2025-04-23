@@ -21,8 +21,13 @@ public class Order {
         this.items=new LinkedList<ItemOrder>();
         this.statusOrder=statusOrder;
     }
-    public void addProductOrder(String productName,int productNumber, unit unitOfMeasure,String manufacturer, int supplierNumber,int price,int catalogNumber,int amountToDiscount,int discount,int amountOrder){
-        this.items.add(new ItemOrder( productName, productNumber,  unitOfMeasure, manufacturer,  supplierNumber, price, catalogNumber, amountToDiscount, discount, amountOrder));
+    public boolean addProductOrder(QuantityAgreement item,int amountOrder){
+        ItemOrder it=new ItemOrder( item, amountOrder);
+        if(this.items.contains(it)){
+            return false;
+        }
+        this.items.add(it);
+        return true;
     }
 
 
@@ -70,14 +75,7 @@ public class Order {
             }
         }
     }
-    public void setPrice(int catalogNumber,int price) {
-        for (int i=0;i<items.size();i++){
-            if (items.get(i).getCatalogNumberItem()==catalogNumber){
-                items.get(i).setPriceItem(price);
-                break;
-            }
-        }
-    }
+
     public void setCatalog(int catalogNumber) {
         for (int i=0;i<items.size();i++){
             if (items.get(i).getCatalogNumberItem()==catalogNumber){

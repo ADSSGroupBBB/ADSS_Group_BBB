@@ -1,13 +1,15 @@
 package Domain;
 
 public class QuantityAgreement {
+    private int numAgreement;
     private Product prod;
-    private int price;
+    private double price;
     private int catalogNumber;
     private int amountToDiscount;
     private  int discount;
 
-    public QuantityAgreement( String productName,int productNumber, unit unitOfMeasure,String manufacturer,int price,int catalogNumber,int amountToDiscount,int discount){
+    public QuantityAgreement( int numAgreement,String productName,int productNumber, unit unitOfMeasure,String manufacturer,int price,int catalogNumber,int amountToDiscount,int discount){
+        this.numAgreement=numAgreement;
         if(AllProducts.checkExist(productName,productNumber,unitOfMeasure,manufacturer)) {
             this.prod =AllProducts.gerProduct(productNumber);
         }
@@ -45,11 +47,11 @@ public class QuantityAgreement {
 
 
 
-    public int getPriceAgreement() {
+    public double getPriceAgreement() {
         return price;
     }
 
-    public void setPriceAgreement(int price) {
+    public void setPriceAgreement(double price) {
         this.price = price;
     }
 
