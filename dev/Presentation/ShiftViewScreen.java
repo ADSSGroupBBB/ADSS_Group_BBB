@@ -473,25 +473,48 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    private EmployeeDTO selectEmployee() {
-        List<EmployeeDTO> employees = employeeService.getAllEmployees();
-        if (employees.isEmpty()) {
-            displayError("No employees in the system");
-            return null;
-        }
-        // Build array of names for display in menu
-        String[] employeeNames = new String[employees.size()];
-        for (int i = 0; i < employees.size(); i++) {
-            EmployeeDTO emp = employees.get(i);
-            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
-        }
-        int choice = displayMenu("Select Employee", employeeNames);
-        if (choice == 0) {
-            return null; // User chose to go back
-        }
-        return employees.get(choice - 1);
+//    private EmployeeDTO selectEmployee() {
+//        List<EmployeeDTO> employees = employeeService.getAllEmployees();
+//        if (employees.isEmpty()) {
+//            displayError("No employees in the system");
+//            return null;
+//        }
+//        // Build array of names for display in menu
+//        String[] employeeNames = new String[employees.size()];
+//        for (int i = 0; i < employees.size(); i++) {
+//            EmployeeDTO emp = employees.get(i);
+//            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+//        }
+//        int choice = displayMenu("Select Employee", employeeNames);
+//        if (choice == 0) {
+//            return null; // User chose to go back
+//        }
+//        return employees.get(choice - 1);
+//    }
+private EmployeeDTO selectEmployee() {
+    List<EmployeeDTO> employees = employeeService.getAllEmployees().stream()
+            .filter(emp -> !emp.getId().equals("admin"))
+            .collect(Collectors.toList());
+
+    if (employees.isEmpty()) {
+        displayError("No employees in the system");
+        return null;
     }
 
+    // Build array of names for display in menu
+    String[] employeeNames = new String[employees.size()];
+    for (int i = 0; i < employees.size(); i++) {
+        EmployeeDTO emp = employees.get(i);
+        employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+    }
+
+    int choice = displayMenu("Select Employee", employeeNames);
+    if (choice == 0) {
+        return null; // User chose to go back
+    }
+
+    return employees.get(choice - 1);
+}
 
     private ShiftDTO selectShift() {
         List<ShiftDTO> shifts = employeeService.getAllShiftsAsDTO();

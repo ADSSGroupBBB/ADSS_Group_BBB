@@ -250,6 +250,7 @@ import Service.EmployeeDTO;
 import Service.EmployeeService;
 import Service.PositionDTO;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class QualificationManagementScreen extends BaseScreen {
@@ -351,47 +352,99 @@ public class QualificationManagementScreen extends BaseScreen {
         }
     }
 
-    private void addEmployeeQualification() {
-        displayTitle("Add Qualification to Employee");
+//    private void addEmployeeQualification() {
+//        displayTitle("Add Qualification to Employee");
+//
+//        // Select employee
+//        EmployeeDTO employee = selectEmployee();
+//        if (employee == null) {
+//            return;
+//        }
+//
+//        // Display current qualifications
+//        displayMessage("Current qualifications for " + employee.getFullName() + ":");
+//        if (employee.getQualifiedPositions().isEmpty()) {
+//            displayMessage("None");
+//        } else {
+//            for (String position : employee.getQualifiedPositions()) {
+//                displayMessage("- " + position);
+//            }
+//        }
+//
+//        // Select position
+//        PositionDTO position = selectPosition();
+//        if (position == null) {
+//            return;
+//        }
+//
+//        // Check if already qualified
+//        if (employee.getQualifiedPositions().contains(position.getName())) {
+//            displayError("Employee is already qualified for this position");
+//            return;
+//        }
+//
+//        // Add qualification
+//        boolean success = employeeService.addQualificationToEmployee(employee.getId(), position.getName());
+//
+//        if (success) {
+//            displayMessage("Qualification added successfully");
+//        } else {
+//            displayError("Error adding qualification");
+//        }
+//    }
+private void addEmployeeQualification() {
+    displayTitle("Add Qualification to Employee");
 
-        // Select employee
-        EmployeeDTO employee = selectEmployee();
-        if (employee == null) {
-            return;
-        }
+    // Select employee
+    EmployeeDTO employee = selectEmployee();
+    if (employee == null) {
+        return;
+    }
 
-        // Display current qualifications
-        displayMessage("Current qualifications for " + employee.getFullName() + ":");
-        if (employee.getQualifiedPositions().isEmpty()) {
-            displayMessage("None");
-        } else {
-            for (String position : employee.getQualifiedPositions()) {
-                displayMessage("- " + position);
-            }
-        }
-
-        // Select position
-        PositionDTO position = selectPosition();
-        if (position == null) {
-            return;
-        }
-
-        // Check if already qualified
-        if (employee.getQualifiedPositions().contains(position.getName())) {
-            displayError("Employee is already qualified for this position");
-            return;
-        }
-
-        // Add qualification
-        boolean success = employeeService.addQualificationToEmployee(employee.getId(), position.getName());
-
-        if (success) {
-            displayMessage("Qualification added successfully");
-        } else {
-            displayError("Error adding qualification");
+    // Display current qualifications
+    displayMessage("Current qualifications for " + employee.getFullName() + ":");
+    if (employee.getQualifiedPositions().isEmpty()) {
+        displayMessage("None");
+    } else {
+        for (String position : employee.getQualifiedPositions()) {
+            displayMessage("- " + position);
         }
     }
 
+    // Select position
+    PositionDTO position = selectPosition();
+    if (position == null) {
+        return;
+    }
+
+    // Check if already qualified
+    if (employee.getQualifiedPositions().contains(position.getName())) {
+        displayError("Employee is already qualified for this position");
+        return;
+    }
+
+    // Add qualification
+    boolean success = employeeService.addQualificationToEmployee(employee.getId(), position.getName());
+
+    if (success) {
+        displayMessage("Qualification added successfully");
+
+        // אם התפקיד דורש מנהל משמרת וגם העובד אינו מנהל כבר
+        if (position.isRequiresShiftManager() && !employee.isManager()) {
+            // עדכן את תפקיד העובד באופן אוטומטי ל-SHIFT_MANAGER
+            if (employeeService.updateEmployeeRole(employee.getId(), "SHIFT_MANAGER")) {
+                // קבע את הסיסמה להיות מספר תעודת הזהות של העובד
+                employeeService.updateEmployeePassword(employee.getId(), employee.getId());
+                displayMessage("Employee role updated to Shift Manager automatically");
+                displayMessage("Password set to employee ID: " + employee.getId());
+            } else {
+                displayError("Failed to update employee role to Shift Manager");
+            }
+        }
+    } else {
+        displayError("Error adding qualification");
+    }
+}
     private void removeEmployeeQualification() {
         displayTitle("Remove Qualification from Employee");
 
@@ -500,8 +553,34 @@ public class QualificationManagementScreen extends BaseScreen {
         }
     }
 
+//    private EmployeeDTO selectEmployee() {
+//        List<EmployeeDTO> employees = employeeService.getAllEmployees();
+//        if (employees.isEmpty()) {
+//            displayError("No employees in the system");
+//            return null;
+//        }
+//
+//        // Build array of names for display in menu
+//        String[] employeeNames = new String[employees.size()];
+//        for (int i = 0; i < employees.size(); i++) {
+//            EmployeeDTO emp = employees.get(i);
+//            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+//        }
+//
+//        int choice = displayMenu("Select Employee", employeeNames);
+//        if (choice == 0) {
+//            return null; // User chose to go back
+//        }
+//
+//        return employees.get(choice - 1);
+//    }
+
     private EmployeeDTO selectEmployee() {
-        List<EmployeeDTO> employees = employeeService.getAllEmployees();
+        // קבל רשימת עובדים אבל סנן את האדמין
+        List<EmployeeDTO> employees = employeeService.getAllEmployees().stream()
+                .filter(emp -> !emp.getId().equals("admin"))
+                .collect(Collectors.toList());
+
         if (employees.isEmpty()) {
             displayError("No employees in the system");
             return null;

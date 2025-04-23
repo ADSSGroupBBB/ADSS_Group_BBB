@@ -66,7 +66,6 @@ public class Main {
 
                 if (success) {
                     System.out.println("Initial admin user created successfully");
-                    System.out.println("Login with ID: admin and password: admin123");
                 } else {
                     System.out.println("Failed to create initial admin user");
                 }
