@@ -72,6 +72,7 @@ public class EmployeeManager {
         return true;
     }
 
+
     /**
      * Retrieves the configured hours for a specific shift type.
      *

@@ -1,31 +1,7 @@
-//package Main;
-//
-//import Presentation.NavigationManager;
-//
-///**
-// * Main class for the Super-Li Employee Management System
-// * This is the entry point for the application
-// */
-//public class Main {
-//
-//    public static void main(String[] args) {
-//        System.out.println("===========================================");
-//        System.out.println("  Super-Li Employee Management System");
-//        System.out.println("===========================================");
-//
-//        // Create and start the navigation manager
-//        NavigationManager navigationManager = new NavigationManager();
-//        navigationManager.start();
-//
-//        System.out.println("System shutdown complete.");
-//    }
-//}
+
 
 package Main;
-
-import Domain.Employee.UserRole;
 import Presentation.NavigationManager;
-import Service.EmployeeDTO;
 import Service.EmployeeService;
 
 import java.time.LocalDate;
@@ -41,13 +17,12 @@ public class Main {
         System.out.println("  Super-Li Employee Management System");
         System.out.println("===========================================");
 
-        // יצירת עובד ראשוני אם אין עובדים במערכת
-        initializeFirstUser();
+
+        initializeFirstUser(); // create the first user if there is no employee in the system
 
         // Create and start the navigation manager
         NavigationManager navigationManager = new NavigationManager();
         navigationManager.start();
-
         System.out.println("System shutdown complete.");
     }
 
@@ -55,13 +30,11 @@ public class Main {
         try {
             EmployeeService employeeService = new EmployeeService();
 
-            // בדיקה אם יש עובדים במערכת
+           // check if there is employee in the system
             if (employeeService.getAllEmployees().isEmpty()) {
                 System.out.println("No employees found. Creating initial admin user...");
-
-                // יצירת מנהל כח אדם ראשוני
-                boolean success = employeeService.addNewEmployee(
-                        "admin", "Admin", "User", "123456",
+                // creating the first HR manager
+                boolean success = employeeService.addNewEmployee("admin", "Admin", "User", "123456",
                         LocalDate.now(), 100.0, "HR_MANAGER", "admin123",
                         50, 50, "Migdal");
 
