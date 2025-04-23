@@ -5,6 +5,18 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The Employee class represents an employee in the organization with all relevant attributes and functionality.
+ * This class manages personal information, employment details, availability, qualifications, and access permissions.
+ *
+ * Employees can have different roles (regular employee, shift manager, HR manager) which determine their permissions
+ * in the system. Each employee can be qualified for multiple positions and has a configurable availability schedule.
+ *
+ * The class also manages employment benefits such as sick days, vacation days, and pension fund information.
+
+ */
+
+
 public class Employee{
     private String id; // id
     private String firstName;
@@ -21,29 +33,29 @@ public class Employee{
     private String pensionFundName;
 
     public Employee(String id, String firstName, String lastName, String bankAccount,
-                    LocalDate startDate, double salary, UserRole role, String password,
-                    int sickDays, int vacationDays, String pensionFundName) {
+                    LocalDate startDate, double salary, UserRole role,
+                    String password, int sickDays, int vacationDays, String pensionFundName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.bankAccount = bankAccount;
         this.startDate = startDate;
         this.salary = salary;
-        this.role = role;
-        this.password = password;
+        this.role = role; // System role determining permissions
+        this.password = password; // Login password
 
-        this.qualifiedPositions = new HashSet<>();
-        this.availability = new EmployeeAvailability(id);
+        this.qualifiedPositions = new HashSet<>();  // Positions the employee is qualified to perform
+        this.availability = new EmployeeAvailability(id); // Employee's shift availability
 
-        this.sickDays = sickDays;
+        this.sickDays = sickDays;  // Available sick days balance
         this.vacationDays = vacationDays;
-        this.pensionFundName = pensionFundName;
+        this.pensionFundName = pensionFundName;  // Name of the employee's pension fund
     }
 
     public enum UserRole {
-        REGULAR_EMPLOYEE,  // עובד רגיל
-        SHIFT_MANAGER,     // מנהל משמרת
-        HR_MANAGER         // מנהל כח אדם
+        REGULAR_EMPLOYEE,
+        SHIFT_MANAGER,
+        HR_MANAGER
     }
     public String getId() {
         return id;
@@ -93,6 +105,13 @@ public class Employee{
         return availability;
     }
 
+    /**
+     * Adds a new position that the employee is qualified to perform.
+     * This is important for scheduling employees to appropriate shifts.
+     *
+     * @param position The position to add to qualified positions
+     * @return true if the position was not already in the qualified positions set
+     */
     public boolean addQualifiedPosition(Position position) {
         return qualifiedPositions.add(position);
     }
@@ -128,6 +147,16 @@ public class Employee{
         this.pensionFundName = pensionFundName;
     }
 
+
+    /**
+     * Checks if two Employee objects are equal based on their ID.
+     * Two employees are considered equal if they have the same ID.
+     *
+     * @param o The object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -137,6 +166,12 @@ public class Employee{
         return id.equals(employee.id);
     }
 
+
+    /**
+     * Generates a hash code for the Employee based on its ID.
+     *
+     * @return The hash code value
+     */
     @Override
     public int hashCode() {
         return id.hashCode();
@@ -157,8 +192,6 @@ public class Employee{
 
 
 
-
-    // גטרים וסטרים פשוטים
     public UserRole getRole() {
         return role;
     }
@@ -175,7 +208,7 @@ public class Employee{
         this.password = password;
     }
 
-    // שיטות עזר לבדיקת הרשאות
+
     public boolean isManager() {
         return role == UserRole.SHIFT_MANAGER || role == UserRole.HR_MANAGER;
     }
@@ -187,6 +220,14 @@ public class Employee{
     public boolean isShiftManager() {
         return role == UserRole.SHIFT_MANAGER;
     }
+
+
+    /**
+     * Removes a position from the employee's qualified positions.
+     *
+     * @param position The position to remove from qualified positions
+     * @return true if the position was successfully removed
+     */
 
     public boolean removeQualifiedPosition(Position position) {
         return qualifiedPositions.remove(position);
