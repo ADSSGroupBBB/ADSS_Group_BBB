@@ -5,12 +5,17 @@ import Domain.Employee.UserRole;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Data Transfer Object for Employee information
- * Used to pass employee data between service and presentation layers
- * without exposing domain objects
- */
 
+/**
+ * Data Transfer Object for Employee information.
+ * This class is used to transfer employee data between different layers
+ * (such as service and presentation) without exposing internal domain objects.
+ *
+ * It encapsulates employee details in a read-only structure.
+ * All fields are immutable (final).
+ *
+ * Fields include personal info, employment details, permissions, and benefits.
+ */
 
 public class EmployeeDTO {
     private final String id;
@@ -25,6 +30,21 @@ public class EmployeeDTO {
     private final int vacationDays;
     private final String pensionFundName;
 
+    /**
+     * Constructor to initialize all fields of the EmployeeDTO.
+     *
+     * @param id                Employee ID
+     * @param firstName         First name
+     * @param lastName          Last name
+     * @param bankAccount       Bank account number
+     * @param startDate         Employment start date
+     * @param salary            Salary amount
+     * @param qualifiedPositions List of qualified positions
+     * @param role              Employee role
+     * @param sickDays          Number of sick days
+     * @param vacationDays      Number of vacation days
+     * @param pensionFundName   Pension fund name
+     */
     public EmployeeDTO(String id, String firstName, String lastName, String bankAccount,
                        LocalDate startDate, double salary, List<String> qualifiedPositions, UserRole role,
                        int sickDays, int vacationDays, String pensionFundName) {

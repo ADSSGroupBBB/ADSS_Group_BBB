@@ -17,7 +17,7 @@ public class ShiftDTO {
     private final LocalTime endTime;
     private final String shiftManagerId;
     private final String shiftManagerName;
-    private final Map<String, String> assignments; // Position name -> Employee name
+    private final Map<String, String> assignments;
 
 
     public ShiftDTO(String id, LocalDate date, String shiftType, LocalTime startTime, LocalTime endTime,

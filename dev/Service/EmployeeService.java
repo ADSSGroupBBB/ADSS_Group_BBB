@@ -1,5 +1,4 @@
 
-
 package Service;
 
 import Domain.*;
@@ -10,18 +9,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 /**
- * Service for employee-related operations
- * Acts as a mediator between the presentation layer and domain layer
+ * Service layer for handling employee-related operations.
+ * Acts as a bridge between the presentation layer (UI) and the domain layer (business logic).
+ *
+ * This class delegates operations to EmployeeManager and converts domain objects
+ * to DTOs for safe data transfer.
  */
 public class EmployeeService {
     private final EmployeeManager employeeManager;
-
+    /**
+     * Constructor initializes the service with the singleton instance of EmployeeManager.
+     */
     public EmployeeService() {
         this.employeeManager = EmployeeManager.getInstance();
     }
-
+    /** Retrieves an employee by ID and returns it as a DTO. */
     public EmployeeDTO getEmployee(String employeeId) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -29,7 +32,7 @@ public class EmployeeService {
         }
         return convertEmployeeToDTO(employee);
     }
-
+    /** Adds a new regular employee (default role) without specifying role/password. */
     public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
                                   LocalDate startDate, double salary,
                                   int sickDays, int vacationDays, String pensionFundName) {
@@ -38,7 +41,7 @@ public class EmployeeService {
         return employeeManager.addEmployee(employee);
     }
 
-
+    /** Adds a new employee with a specified role and password (used for managers). */
     public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
                                   LocalDate startDate, double salary, String role, String password,
                                   int sickDays, int vacationDays, String pensionFundName) {
@@ -52,11 +55,12 @@ public class EmployeeService {
         }
     }
 
-
+    /** Removes an employee by ID. */
     public boolean removeEmployee(String employeeId) {
         return employeeManager.removeEmployee(employeeId) != null;
     }
 
+    /** Retrieves detailed employee information as a DTO. */
     public EmployeeDTO getEmployeeDetails(String employeeId) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -64,7 +68,7 @@ public class EmployeeService {
         }
         return convertEmployeeToDTO(employee);
     }
-
+    /** Returns a list of all employees as DTOs. */
     public List<EmployeeDTO> getAllEmployees() {
         List<EmployeeDTO> result = new ArrayList<>();
 
@@ -75,6 +79,7 @@ public class EmployeeService {
         return result;
     }
 
+    /** Converts an Employee domain object to EmployeeDTO. */
     public EmployeeDTO convertEmployeeToDTO(Employee employee) {
         List<String> qualifiedPositions = employee.getQualifiedPositions().stream()
                 .map(Position::getName)
@@ -89,13 +94,13 @@ public class EmployeeService {
                 employee.getSalary(),
                 qualifiedPositions,
                 employee.getRole(),
-                employee.getSickDays(),         // חדש
-                employee.getVacationDays(),     // חדש
-                employee.getPensionFundName()   // חדש
+                employee.getSickDays(),
+                employee.getVacationDays(),
+                employee.getPensionFundName()
         );
     }
 
-
+    /** Verifies if the given password matches the employee's password. */
     public boolean verifyPassword(String employeeId, String password) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -152,7 +157,6 @@ public class EmployeeService {
             employee.setRole(role);
             return true;
         } catch (IllegalArgumentException e) {
-            // שם תפקיד לא חוקי
             return false;
         }
     }
@@ -171,7 +175,6 @@ public class EmployeeService {
         if (employee == null) {
             return false;
         }
-        // כאן מניחים שה-EmployeeAvailability כבר מתייחס לשבוע הבא
         employee.getAvailability().updateAvailability(dayOfWeek, morningAvailable, eveningAvailable);
         return true;
     }
@@ -189,7 +192,7 @@ public class EmployeeService {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
         return today.getValue() <= DayOfWeek.THURSDAY.getValue();
     }
-
+    /** Updates availability for next week only if allowed (before Thursday). */
     public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
         if (!canUpdateNextWeekAvailability()) {
             return false;
@@ -197,7 +200,7 @@ public class EmployeeService {
         return employeeManager.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
     }
 
-
+    /** Checks if employee is available for a given day and shift type. */
     public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -250,7 +253,6 @@ public class EmployeeService {
         return result;
     }
 
-    // שיטה לקבלת כל העובדים שעובד מסוים יכול לראות (על פי הרשאות)
     public List<EmployeeDTO> getAccessibleEmployees(String employeeId) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -259,11 +261,9 @@ public class EmployeeService {
 
         List<EmployeeDTO> result = new ArrayList<>();
 
-        // אם העובד הוא מנהל, הוא יכול לראות את כל העובדים
         if (employee.isManager()) {
             return getAllEmployees();
         } else {
-            // עובד רגיל יכול לראות רק את עצמו
             result.add(convertEmployeeToDTO(employee));
         }
 
@@ -287,16 +287,6 @@ public class EmployeeService {
         return result;
     }
 
-    public ShiftDTO getShift(LocalDate date, String shiftType) {
-        ShiftType type = ShiftType.valueOf(shiftType);
-        Shift shift = employeeManager.getShift(date, type);
-        if (shift == null) {
-            return null;
-        }
-
-        return convertShiftToDTO(shift);
-    }
-
     public ShiftDTO createShift(LocalDate date, String shiftType) {
         ShiftType type = ShiftType.valueOf(shiftType);
         Shift shift = employeeManager.createShift(date, type);
@@ -312,7 +302,7 @@ public class EmployeeService {
         Position position = employeeManager.getPosition(positionName);
 
         if (shift == null || employee == null || position == null) {
-            return false;  // פשוט מחזיר false בלי הדפסה
+            return false;
         }
 
         RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
@@ -392,7 +382,7 @@ public class EmployeeService {
         } else if ("EVENING".equalsIgnoreCase(shiftTypeStr)) {
             shiftType = ShiftType.EVENING;
         } else {
-            return false;  // סוג משמרת לא חוקי
+            return false;
         }
 
         return EmployeeManager.getInstance().updateShiftHours(shiftType, newStart, newEnd);
@@ -451,8 +441,6 @@ public class EmployeeService {
         employee.setPensionFundName(pensionFundName);
         return true;
     }
-
-
 
 
 
