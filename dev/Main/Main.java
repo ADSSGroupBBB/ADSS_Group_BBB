@@ -62,7 +62,8 @@ public class Main {
                 // יצירת מנהל כח אדם ראשוני
                 boolean success = employeeService.addNewEmployee(
                         "admin", "Admin", "User", "123456",
-                        LocalDate.now(), 100.0, "HR_MANAGER", "admin123");
+                        LocalDate.now(), 100.0, "HR_MANAGER", "admin123",
+                        50, 50, "Migdal");
 
                 if (success) {
                     System.out.println("Initial admin user created successfully");

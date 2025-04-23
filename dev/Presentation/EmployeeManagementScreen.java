@@ -280,49 +280,6 @@ public class EmployeeManagementScreen extends BaseScreen {
         this.loggedInEmployee = loggedInEmployee;
     }
 
-    //    @Override
-//    public void display() {
-//        // אם נשלח אובייקט של משתמש מחובר (הקונסטרוקטור השני)
-//        // ואם המשתמש הוא לא מנהל כח אדם, אז אין גישה
-//        if (loggedInEmployee != null && !loggedInEmployee.isHRManager()) {
-//            displayError("Access denied. Only HR Managers can access this functionality.");
-//            return;
-//        }
-//
-//        String[] options = {
-//                "Add New Employee",
-//                "View All Employees",
-//                "Search Employee by ID",
-//                "Update Employee",
-//                "Remove Employee"
-//        };
-//
-//        int choice;
-//        do {
-//            choice = displayMenu("Employee Management", options);
-//
-//            switch (choice) {
-//                case 1:
-//                    addNewEmployee();
-//                    break;
-//                case 2:
-//                    displayAllEmployees();
-//                    break;
-//                case 3:
-//                    findEmployeeById();
-//                    break;
-//                case 4:
-//                    updateEmployee();
-//                    break;
-//                case 5:
-//                    removeEmployee();
-//                    break;
-//                case 0:
-//                    // Return to previous menu
-//                    break;
-//            }
-//        } while (choice != 0);
-//    }
     @Override
     public void display() {
         // בדיקת הרשאות אם צריך
@@ -339,7 +296,6 @@ public class EmployeeManagementScreen extends BaseScreen {
                 "Remove Employee"
 
         };
-
         int choice;
         do {
             choice = displayMenu("Employee Management", options);
@@ -367,96 +323,20 @@ public class EmployeeManagementScreen extends BaseScreen {
         } while (choice != 0);
     }
 
-//    private void addNewEmployee() { // Add a new employee to the system
-//        displayTitle("Add New Employee");
-//
-//        String id = getInput("Enter ID");
-//
-//        // Check if employee already exists
-//        if (employeeService.getEmployee(id) != null) {
-//            displayError("Employee with this ID already exists");
-//            return;
-//        }
-//
-//        String firstName = getInput("Enter First Name");
-//        String lastName = getInput("Enter Last Name");
-//        String bankAccount = getInput("Enter Bank Account Number");
-//
-//        LocalDate startDate = null;
-//        while (startDate == null) {
-//            try {
-//                String dateStr = getInput("Enter Start Date (DD/MM/YYYY)");
-//                startDate = LocalDate.parse(dateStr, dateFormatter);
-//            } catch (DateTimeParseException e) {
-//                displayError("Invalid date format. Please use DD/MM/YYYY");
-//            }
-//        }
-//
-//        double salary = 0;
-//        boolean validSalary = false;
-//        while (!validSalary) {
-//            try {
-//                String salaryStr = getInput("Enter Hourly Salary");
-//                salary = Double.parseDouble(salaryStr);
-//                validSalary = true;
-//            } catch (NumberFormatException e) {
-//                displayError("Invalid salary. Please enter a number");
-//            }
-//        }
-//
-//        // שאל אם העובד הוא מנהל
-//        String[] roleOptions = {
-//                "Regular Employee",
-//                "Shift Manager",
-//                "HR Manager"
-//        };
-//
-//        int roleChoice = displayMenu("Select Role", roleOptions);
-//        if (roleChoice == 0) {
-//            return; // ביטול
-//        }
-//
-//        String role = "REGULAR_EMPLOYEE";
-//        if (roleChoice == 2) {
-//            role = "SHIFT_MANAGER";
-//        } else if (roleChoice == 3) {
-//            role = "HR_MANAGER";
-//        }
-//
-//        // קבל סיסמה אם העובד הוא מנהל
-//        String password = "";
-//        if (roleChoice > 1) {
-//            password = getInput("Enter password for manager");
-//            if (password.isEmpty()) {
-//                displayError("Password cannot be empty for managers");
-//                return;
-//            }
-//        }
-//
-//        // Add employee through service
-//        boolean success = employeeService.addNewEmployee(id, firstName, lastName, bankAccount, startDate, salary, role, password);
-//
-//        if (success) {
-//            displayMessage("Employee added successfully!");
-//        } else {
-//            displayError("Error adding employee");
-//        }
-//    }
-
     private void addNewEmployee() {
         displayTitle("Add New Employee");
-
         String id = getInput("Enter ID");
-
         // Check if employee already exists
         if (employeeService.getEmployee(id) != null) {
             displayError("Employee with this ID already exists");
             return;
         }
-
         String firstName = getInput("Enter First Name");
         String lastName = getInput("Enter Last Name");
         String bankAccount = getInput("Enter Bank Account Number");
+        int sickDays = getIntInput("Enter number of sick days");
+        int vacationDays = getIntInput("Enter number of vacation days");
+        String pensionFundName = getInput("Enter pension fund name");
 
         LocalDate startDate = null;
         while (startDate == null) {
@@ -481,7 +361,10 @@ public class EmployeeManagementScreen extends BaseScreen {
         }
 
         // הוסף עובד רגיל בלבד (ללא פרמטר role ו-password)
-        boolean success = employeeService.addNewEmployee(id, firstName, lastName, bankAccount, startDate, salary);
+        boolean success = employeeService.addNewEmployee(
+                id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName
+        );
 
         if (success) {
             displayMessage("Employee added successfully!");
@@ -535,13 +418,11 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     private void displayEmployeeDetails(EmployeeDTO employee) {
         displayTitle("Employee Details: " + employee.getFullName());
-
         displayMessage("ID: " + employee.getId());
         displayMessage("Full Name: " + employee.getFullName());
         displayMessage("Bank Account: " + employee.getBankAccount());
         displayMessage("Start Date: " + employee.getStartDate().format(dateFormatter));
         displayMessage("Hourly Salary: " + employee.getSalary());
-
         // הצג תפקיד
         String roleStr = "Regular Employee";
         if (employee.isHRManager()) {
@@ -550,7 +431,9 @@ public class EmployeeManagementScreen extends BaseScreen {
             roleStr = "Shift Manager";
         }
         displayMessage("Role: " + roleStr);
-
+        displayMessage("Sick Days: " + employee.getSickDays());
+        displayMessage("Vacation Days: " + employee.getVacationDays());
+        displayMessage("Pension Fund: " + employee.getPensionFundName());
         // Display qualified positions
         if (employee.getQualifiedPositions().isEmpty()) {
             displayMessage("Qualified Positions: None");
@@ -566,24 +449,22 @@ public class EmployeeManagementScreen extends BaseScreen {
         displayTitle("Update Employee");
 
         String id = getInput("Enter ID of employee to update");
-
         EmployeeDTO employee = employeeService.getEmployeeDetails(id);
-
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
         }
-
         displayEmployeeDetails(employee);
-
         String[] options = {
                 "Update First Name",
                 "Update Last Name",
                 "Update Bank Account",
                 "Update Salary",
-                "Update Password"
+                "Update Password",
+                "Update Sick Days",
+                "Update Vacation Days",
+                "Update Pension Fund"
         };
-
         int choice = displayMenu("Select field to update", options);
 
         switch (choice) {
@@ -626,37 +507,44 @@ public class EmployeeManagementScreen extends BaseScreen {
             case 5:
                 updateEmployeePassword(id);
                 break;
+            case 6:
+                try {
+                    int sickDays = Integer.parseInt(getInput("Enter new number of sick days"));
+                    if (employeeService.updateEmployeeSickDays(id, sickDays)) {
+                        displayMessage("Sick days updated successfully");
+                    } else {
+                        displayError("Error updating sick days");
+                    }
+                } catch (NumberFormatException e) {
+                    displayError("Invalid number. Update canceled");
+                }
+                break;
+            case 7:
+                try {
+                    int vacationDays = Integer.parseInt(getInput("Enter new number of vacation days"));
+                    if (employeeService.updateEmployeeVacationDays(id, vacationDays)) {
+                        displayMessage("Vacation days updated successfully");
+                    } else {
+                        displayError("Error updating vacation days");
+                    }
+                } catch (NumberFormatException e) {
+                    displayError("Invalid number. Update canceled");
+                }
+                break;
+            case 8:
+                String fund = getInput("Enter new pension fund name");
+                if (employeeService.updateEmployeePensionFund(id, fund)) {
+                    displayMessage("Pension fund updated successfully");
+                } else {
+                    displayError("Error updating pension fund");
+                }
+                break;
             case 0:
                 // Return to menu
                 break;
         }
     }
 
-//    private void updateEmployeeRole(String employeeId) {
-//        String[] roleOptions = {
-//                "Regular Employee",
-//                "Shift Manager",
-//                "HR Manager"
-//        };
-//
-//        int roleChoice = displayMenu("Select New Role", roleOptions);
-//        if (roleChoice == 0) {
-//            return; // ביטול
-//        }
-//
-//        String role = "REGULAR_EMPLOYEE";
-//        if (roleChoice == 2) {
-//            role = "SHIFT_MANAGER";
-//        } else if (roleChoice == 3) {
-//            role = "HR_MANAGER";
-//        }
-//
-//        if (employeeService.updateEmployeeRole(employeeId, role)) {
-//            displayMessage("Role updated successfully");
-//        } else {
-//            displayError("Error updating role");
-//        }
-//    }
 
     private void updateEmployeePassword(String employeeId) {
         String password = getInput("Enter new password");
@@ -696,56 +584,4 @@ public class EmployeeManagementScreen extends BaseScreen {
             }
         }
     }
-// משו שהורדנו
-//    private void manageEmployeeRoles() {
-//        displayTitle("Manage Employee Roles");
-//
-//        // בחר עובד
-//        String id = getInput("Enter ID of employee to update role");
-//        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
-//
-//        if (employee == null) {
-//            displayError("No employee found with ID " + id);
-//            return;
-//        }
-//
-//        // הצג פרטי עובד
-//        displayEmployeeDetails(employee);
-//
-//        // הצג אפשרויות תפקיד
-//        String[] roleOptions = {
-//                "Regular Employee",
-//                "Shift Manager"
-//        };
-//
-//        int choice = displayMenu("Select New Role", roleOptions);
-//        if (choice == 0) {
-//            return; // ביטול
-//        }
-//
-//        String role = "REGULAR_EMPLOYEE";
-//        if (choice == 2) {
-//            role = "SHIFT_MANAGER";
-//
-//            // בקש סיסמה אם מעלים לתפקיד מנהל
-//            String password = getInput("Enter password for shift manager");
-//            if (password.isEmpty()) {
-//                displayError("Password cannot be empty for managers");
-//                return;
-//            }
-//
-//            // עדכן סיסמה
-//            if (!employeeService.updateEmployeePassword(id, password)) {
-//                displayError("Error updating password");
-//                return;
-//            }
-//        }
-//
-//        // עדכן תפקיד
-//        if (employeeService.updateEmployeeRole(id, role)) {
-//            displayMessage("Role updated successfully");
-//        } else {
-//            displayError("Error updating role");
-//        }
-//    }
 }

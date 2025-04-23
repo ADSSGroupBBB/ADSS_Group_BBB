@@ -245,13 +245,13 @@ public class EmployeeServiceTest {
 
         // הוספת עובדים
         employeeService.addNewEmployee("1001", "John", "Smith", "IL123456",
-                LocalDate.of(2023, 1, 1), 35.0, "HR_MANAGER", "hr123");
+                LocalDate.of(2023, 1, 1), 35.0, "HR_MANAGER", "hr123",5, 10, "Fund1");
 
         employeeService.addNewEmployee("1002", "Jane", "Doe", "IL654321",
-                LocalDate.of(2023, 2, 1), 30.0, "SHIFT_MANAGER", "sm123");
+                LocalDate.of(2023, 2, 1), 30.0, "SHIFT_MANAGER", "sm123", 6, 12, "Fund2");
 
         employeeService.addNewEmployee("1003", "Bob", "Brown", "IL111222",
-                LocalDate.of(2023, 3, 1), 25.0, "REGULAR_EMPLOYEE", "");
+                LocalDate.of(2023, 3, 1), 25.0, "REGULAR_EMPLOYEE", "",4, 8, "Fund3");
 
         // הוספת הסמכות
         employeeService.addQualificationToEmployee("1001", "Shift Manager");
@@ -329,7 +329,7 @@ public class EmployeeServiceTest {
     void testAddNewEmployeeWithRole() {
         // הוספת עובד עם תפקיד מנהל משמרת
         assertTrue(employeeService.addNewEmployee("1004", "Test", "Manager", "IL999888",
-                LocalDate.now(), 40.0, "SHIFT_MANAGER", "pass123"));
+                LocalDate.now(), 40.0, "SHIFT_MANAGER", "pass123", 0, 0, "TestFund"));
 
         // בדיקה שהעובד נוסף בהצלחה עם התפקיד הנכון
         EmployeeDTO newEmployee = employeeService.getEmployeeDetails("1004");
@@ -340,7 +340,7 @@ public class EmployeeServiceTest {
 
         // ניסיון להוסיף עובד עם תפקיד לא חוקי
         assertFalse(employeeService.addNewEmployee("1005", "Invalid", "Role", "IL777666",
-                LocalDate.now(), 35.0, "INVALID_ROLE", "pass456"));
+                LocalDate.now(), 35.0, "INVALID_ROLE", "pass456", 0, 0, "TestFund"));
     }
 
     @Test
@@ -375,7 +375,7 @@ public class EmployeeServiceTest {
 
         // בדיקה נוספת - הוספת עובד ובדיקה שהמרה ל-DTO מעבירה את כל המידע
         employeeService.addNewEmployee("1006", "Convert", "Test", "IL555444",
-                LocalDate.of(2023, 5, 5), 32.0, "SHIFT_MANAGER", "convert123");
+                LocalDate.of(2023, 5, 5), 32.0, "SHIFT_MANAGER", "convert123",5, 10, "PensionTestFund");
         employeeService.addQualificationToEmployee("1006", "Cashier");
 
         EmployeeDTO convertedEmployee = employeeService.getEmployeeDetails("1006");

@@ -120,5 +120,4 @@ public class MainScreen extends BaseScreen {
             }
         } while (choice != 0);
     }
-
 }

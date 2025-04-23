@@ -309,24 +309,28 @@ public class EmployeeService {
         return convertEmployeeToDTO(employee);
     }
 
-    public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary) {
-        // יוצר עובד רגיל ללא סיסמה
+    public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
+                                  LocalDate startDate, double salary,
+                                  int sickDays, int vacationDays, String pensionFundName) {
         Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
-                Employee.UserRole.REGULAR_EMPLOYEE, "");
+                Employee.UserRole.REGULAR_EMPLOYEE, "", sickDays, vacationDays, pensionFundName);
         return employeeManager.addEmployee(employee);
     }
 
+
     public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
-                                  LocalDate startDate, double salary, String role, String password) {
+                                  LocalDate startDate, double salary, String role, String password,
+                                  int sickDays, int vacationDays, String pensionFundName) {
         try {
             Employee.UserRole userRole = Employee.UserRole.valueOf(role);
-            Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary, userRole, password);
+            Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
+                    userRole, password, sickDays, vacationDays, pensionFundName);
             return employeeManager.addEmployee(employee);
         } catch (IllegalArgumentException e) {
-            // שם תפקיד לא חוקי
             return false;
         }
     }
+
 
     public boolean removeEmployee(String employeeId) {
         return employeeManager.removeEmployee(employeeId) != null;
@@ -363,9 +367,13 @@ public class EmployeeService {
                 employee.getStartDate(),
                 employee.getSalary(),
                 qualifiedPositions,
-                employee.getRole()
+                employee.getRole(),
+                employee.getSickDays(),         // חדש
+                employee.getVacationDays(),     // חדש
+                employee.getPensionFundName()   // חדש
         );
     }
+
 
     public boolean verifyPassword(String employeeId, String password) {
         Employee employee = employeeManager.getEmployee(employeeId);
@@ -696,6 +704,35 @@ public class EmployeeService {
 
         return employee.removeQualifiedPosition(position);
     }
+    public boolean updateEmployeeSickDays(String id, int sickDays) {
+        Employee employee = employeeManager.getEmployee(id);
+        if (employee == null) {
+            return false;
+        }
+        employee.setSickDays(sickDays);
+        return true;
+    }
+
+    public boolean updateEmployeeVacationDays(String id, int vacationDays) {
+        Employee employee = employeeManager.getEmployee(id);
+        if (employee == null) {
+            return false;
+        }
+        employee.setVacationDays(vacationDays);
+        return true;
+    }
+
+    public boolean updateEmployeePensionFund(String id, String pensionFundName) {
+        Employee employee = employeeManager.getEmployee(id);
+        if (employee == null) {
+            return false;
+        }
+        employee.setPensionFundName(pensionFundName);
+        return true;
+    }
+
+
+
 
 
 }

@@ -80,9 +80,13 @@ public class EmployeeDTO {
     private final double salary;
     private final List<String> qualifiedPositions;
     private final UserRole role;
+    private final int sickDays;
+    private final int vacationDays;
+    private final String pensionFundName;
 
     public EmployeeDTO(String id, String firstName, String lastName, String bankAccount,
-                       LocalDate startDate, double salary, List<String> qualifiedPositions, UserRole role) {
+                       LocalDate startDate, double salary, List<String> qualifiedPositions, UserRole role,
+                       int sickDays, int vacationDays, String pensionFundName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -91,6 +95,9 @@ public class EmployeeDTO {
         this.salary = salary;
         this.qualifiedPositions = qualifiedPositions;
         this.role = role;
+        this.sickDays = sickDays;
+        this.vacationDays = vacationDays;
+        this.pensionFundName = pensionFundName;
     }
 
     public String getId() {
@@ -140,4 +147,8 @@ public class EmployeeDTO {
     public boolean isShiftManager() {
         return role == UserRole.SHIFT_MANAGER;
     }
+    // Getters לתנאי העסקה
+    public int getSickDays() { return sickDays; }
+    public int getVacationDays() { return vacationDays; }
+    public String getPensionFundName() { return pensionFundName; }
 }

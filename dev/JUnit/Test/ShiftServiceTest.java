@@ -232,13 +232,13 @@ public class ShiftServiceTest {
 
         // הוספת עובדים עם תפקידים שונים
         employeeService.addNewEmployee("1001", "John", "Manager", "IL123456",
-                LocalDate.of(2023, 1, 1), 40.0, "SHIFT_MANAGER", "sm123");
+                LocalDate.of(2023, 1, 1), 40.0, "SHIFT_MANAGER", "sm123",5, 10, "PensionFundA");
 
         employeeService.addNewEmployee("1002", "Jane", "HR", "IL234567",
-                LocalDate.of(2023, 2, 1), 45.0, "HR_MANAGER", "hr123");
+                LocalDate.of(2023, 2, 1), 45.0, "HR_MANAGER", "hr123",5, 10, "PensionFundA");
 
         employeeService.addNewEmployee("1003", "Bob", "Regular", "IL345678",
-                LocalDate.of(2023, 3, 1), 30.0, "REGULAR_EMPLOYEE", "");
+                LocalDate.of(2023, 3, 1), 30.0, "REGULAR_EMPLOYEE", "",4, 8, "PensionFundC");
 
         // הוספת הסמכות
         employeeService.addQualificationToEmployee("1001", "Shift Manager");
@@ -443,8 +443,8 @@ public class ShiftServiceTest {
         assertNotNull(shift);
 
         // הוספת עובדים
-        employeeService.addNewEmployee("2001", "Alice", "Worker", "IL0001", LocalDate.now(), 30.0);
-        employeeService.addNewEmployee("2002", "Bob", "Worker", "IL0002", LocalDate.now(), 30.0);
+        employeeService.addNewEmployee("2001", "Alice", "Worker", "IL0001", LocalDate.now(), 30.0, 5, 10, "PensionFundA");
+        employeeService.addNewEmployee("2002", "Bob", "Worker", "IL0002", LocalDate.now(), 30.0, 6, 12, "PensionFundB");
 
         // הוספת תפקידים והסמכות
         employeeService.addPosition("Cashier", false);

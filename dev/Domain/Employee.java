@@ -16,9 +16,13 @@ public class Employee{
     private EmployeeAvailability availability; // זמינות העובד למשמרות
     private UserRole role;
     private String password;
+    private int sickDays;
+    private int vacationDays;
+    private String pensionFundName;
 
     public Employee(String id, String firstName, String lastName, String bankAccount,
-                    LocalDate startDate, double salary, UserRole role, String password) {
+                    LocalDate startDate, double salary, UserRole role, String password,
+                    int sickDays, int vacationDays, String pensionFundName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -30,6 +34,10 @@ public class Employee{
 
         this.qualifiedPositions = new HashSet<>();
         this.availability = new EmployeeAvailability(id);
+
+        this.sickDays = sickDays;
+        this.vacationDays = vacationDays;
+        this.pensionFundName = pensionFundName;
     }
 
     public enum UserRole {
@@ -85,16 +93,9 @@ public class Employee{
         return availability;
     }
 
-//    public void setAvailability(EmployeeAvailability availability) {
-//        this.availability = availability;
-//    }
-
     public boolean addQualifiedPosition(Position position) {
         return qualifiedPositions.add(position);
     }
-//    public boolean removeQualifiedPosition(Position position) {
-//        return qualifiedPositions.remove(position);
-//    }
 
     public boolean isQualifiedFor(Position position) {
         return qualifiedPositions.contains(position);
@@ -102,6 +103,29 @@ public class Employee{
 
     public Set<Position> getQualifiedPositions() {
         return new HashSet<>(qualifiedPositions);
+    }
+    public int getSickDays() {
+        return sickDays;
+    }
+
+    public void setSickDays(int sickDays) {
+        this.sickDays = sickDays;
+    }
+
+    public int getVacationDays() {
+        return vacationDays;
+    }
+
+    public void setVacationDays(int vacationDays) {
+        this.vacationDays = vacationDays;
+    }
+
+    public String getPensionFundName() {
+        return pensionFundName;
+    }
+
+    public void setPensionFundName(String pensionFundName) {
+        this.pensionFundName = pensionFundName;
     }
 
     @Override
@@ -125,8 +149,12 @@ public class Employee{
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", startDate=" + startDate +
+                ", sickDays=" + sickDays +
+                ", vacationDays=" + vacationDays +
+                ", pensionFund='" + pensionFundName + '\'' +
                 '}';
     }
+
 
 
 

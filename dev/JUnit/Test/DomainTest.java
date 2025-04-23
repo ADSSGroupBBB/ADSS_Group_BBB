@@ -519,10 +519,14 @@ public class DomainTest {
         employeeManager.addPosition(cashierPosition);
 
         // Create test employees - הוספת פרמטרים של תפקיד וסיסמה
-        employee1 = new Employee("123456789", "John", "Doe", "IL12-1234-1234-1234",
-                LocalDate.of(2023, 1, 1), 35.0, UserRole.SHIFT_MANAGER, "password1");
-        employee2 = new Employee("987654321", "Jane", "Smith", "IL12-5678-5678-5678",
-                LocalDate.of(2023, 2, 1), 30.0, UserRole.REGULAR_EMPLOYEE, "");
+        employee1 = new Employee("123456789", "Sapir", "aa", "IL12-1234-1234-1234",
+                LocalDate.of(2023, 1, 1), 35.0, UserRole.SHIFT_MANAGER, "password1",
+                5, 10, "Menorah");
+
+        employee2 = new Employee("987654321", "Batel", "bb", "IL12-5678-5678-5678",
+                LocalDate.of(2023, 2, 1), 30.0, UserRole.REGULAR_EMPLOYEE, "",
+                3, 12, "Migdal");
+
 
         // Add qualifications
         employee1.addQualifiedPosition(managerPosition);
@@ -542,11 +546,10 @@ public class DomainTest {
         employeeManager.addRequiredPosition(ShiftType.EVENING, "Shift Manager", 1);
         employeeManager.addRequiredPosition(ShiftType.EVENING, "Cashier", 1);
     }
-
     @Test
     void testAddEmployee() {
         Employee newEmployee = new Employee("111222333", "New", "Employee", "IL12-9999-9999-9999",
-                LocalDate.now(), 25.0, UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.now(), 25.0, UserRole.REGULAR_EMPLOYEE, "", 2, 8, "Migdal");
         assertTrue(employeeManager.addEmployee(newEmployee));
         assertEquals(newEmployee, employeeManager.getEmployee("111222333"));
 
@@ -558,7 +561,7 @@ public class DomainTest {
     void testRemoveEmployee() {
         // Create a new employee that is not assigned to any shift
         Employee tempEmployee = new Employee("555555555", "Temp", "Employee", "IL12-3333-3333-3333",
-                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "", 1, 5, "Harel");
         employeeManager.addEmployee(tempEmployee);
 
         // Test removing employee
@@ -569,23 +572,6 @@ public class DomainTest {
         // Test removing non-existent employee
         assertNull(employeeManager.removeEmployee("000000000"));
     }
-
-//    @Test
-//    void testCannotRemoveEmployeeAssignedToFutureShift() {
-//        // Create a shift in the future
-//        LocalDate futureDate = LocalDate.now().plusDays(7);
-//        Shift morningShift = employeeManager.createShift(futureDate, ShiftType.MORNING);
-//
-//        // Assign employee1 to the shift
-//        assertTrue(employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager"));
-//
-//        // Try to remove employee1 - should fail because they're assigned to a future shift
-//        assertNull(employeeManager.removeEmployee(employee1.getId()));
-//
-//        // Employee should still exist
-//        assertNotNull(employeeManager.getEmployee(employee1.getId()));
-//    }
-
 
     @Test
     void testGetQualifiedEmployeesForPosition() {
@@ -620,7 +606,7 @@ public class DomainTest {
         employeeManager.addPosition(cookPosition);
 
         Employee newEmployee = new Employee("444444444", "New", "Cook", "IL12-7777-7777-7777",
-                LocalDate.now(), 32.0, UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.now(), 32.0, UserRole.REGULAR_EMPLOYEE, "", 3, 6, "Menora");
         employeeManager.addEmployee(newEmployee);
 
         // Add qualification
@@ -723,35 +709,6 @@ public class DomainTest {
         assertFalse(employeeManager.removeAssignmentFromShift(morningShift.getId(), "Cashier"));
     }
 
-//    @Test
-//    void testAreAllRequiredPositionsCovered() {
-//        // Create a shift
-//        LocalDate nextThursday = LocalDate.now().plusDays(7).with(DayOfWeek.THURSDAY);
-//        Shift morningShift = employeeManager.createShift(nextThursday, ShiftType.MORNING);
-//
-//        // Check that positions are not covered initially
-//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
-//
-//        // Assign manager (but still need 2 cashiers)
-//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee1.getId(), "Shift Manager");
-//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
-//
-//        // Assign one cashier (still need one more)
-//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee2.getId(), "Cashier");
-//        assertFalse(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
-//
-//        // Create and assign another cashier to fulfill requirements
-//        Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
-//                LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
-//        employee3.addQualifiedPosition(cashierPosition);
-//        employeeManager.addEmployee(employee3);
-//
-//        // Now assign the third employee
-//        employeeManager.assignEmployeeToShift(morningShift.getId(), employee3.getId(), "Cashier");
-//
-//        // Check that all positions are now covered
-//        assertTrue(employeeManager.areAllRequiredPositionsCovered(morningShift.getId()));
-//    }
 @Test
 void testAreAllRequiredPositionsCovered() {
     // Create a shift
@@ -771,7 +728,7 @@ void testAreAllRequiredPositionsCovered() {
 
     // Create and assign another cashier to fulfill requirements
     Employee employee3 = new Employee("333333333", "Third", "Employee", "IL12-8888-8888-8888",
-            LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "");
+            LocalDate.now(), 28.0, UserRole.REGULAR_EMPLOYEE, "", 4, 10, "Harel");
     employee3.addQualifiedPosition(cashierPosition);
     employeeManager.addEmployee(employee3);
 
@@ -804,15 +761,15 @@ void testAreAllRequiredPositionsCovered() {
     void testEmployeeRoles() {
         // הגדרת עובד כמנהל משמרת
         Employee shiftManager = new Employee("111111", "Shift", "Manager", "IL12-1111-1111-1111",
-                LocalDate.now(), 45.0, UserRole.SHIFT_MANAGER, "sm123");
+                LocalDate.now(), 45.0, UserRole.SHIFT_MANAGER, "sm123", 5, 12, "Migdal");
 
         // הגדרת עובד כמנהל כח אדם
         Employee hrManager = new Employee("222222", "HR", "Manager", "IL12-2222-2222-2222",
-                LocalDate.now(), 50.0, UserRole.HR_MANAGER, "hr123");
+                LocalDate.now(), 50.0, UserRole.HR_MANAGER, "hr123", 7, 14, "Menora");
 
         // הגדרת עובד רגיל
         Employee regular = new Employee("333333", "Regular", "Employee", "IL12-3333-3333-3333",
-                LocalDate.now(), 30.0, UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.now(), 30.0, UserRole.REGULAR_EMPLOYEE, "", 3, 10, "Clal");
 
         // בדיקת תפקידים
         assertTrue(shiftManager.isShiftManager());
@@ -833,7 +790,7 @@ void testAreAllRequiredPositionsCovered() {
     void testPasswordAuthentication() {
         // הגדרת עובד עם סיסמה
         Employee manager = new Employee("444444", "Password", "Test", "IL12-4444-4444-4444",
-                LocalDate.now(), 40.0, UserRole.HR_MANAGER, "securePass123");
+                LocalDate.now(), 40.0, UserRole.HR_MANAGER, "securePass123", 6, 14, "Menora");
 
         // בדיקת סיסמה נכונה
         assertEquals("securePass123", manager.getPassword());
@@ -853,7 +810,7 @@ class EmployeeTest {
     void setUp() {
         // עדכון הקונסטרקטור להתאמה למחלקה המעודכנת
         employee = new Employee("123456789", "John", "Doe", "IL12-1234-1234-1234",
-                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.REGULAR_EMPLOYEE, "", 5, 12, "Harel");
 
         managerPosition = new Position("Shift Manager", true);
         cashierPosition = new Position("Cashier", false);
@@ -923,12 +880,12 @@ class EmployeeTest {
     void testEmployeeEquality() {
         // Same ID should be equal
         Employee sameIdEmployee = new Employee("123456789", "Different", "Name", "IL12-5555-5555-5555",
-                LocalDate.now(), 25.0, Employee.UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.now(), 25.0, Employee.UserRole.REGULAR_EMPLOYEE, "", 5, 10, "Harel");
         assertEquals(employee, sameIdEmployee);
 
         // Different ID should not be equal
         Employee differentIdEmployee = new Employee("987654321", "John", "Doe", "IL12-1234-1234-1234",
-                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.REGULAR_EMPLOYEE, "", 6, 12, "Migdal");
         assertNotEquals(employee, differentIdEmployee);
     }
 
@@ -1020,9 +977,9 @@ class ShiftTest {
 
         // עדכון הקונסטרקטורים
         employee1 = new Employee("123456789", "John", "Doe", "IL12-1234-1234-1234",
-                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.SHIFT_MANAGER, "pass1");
+                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.SHIFT_MANAGER, "pass1",5, 12, "Harel");
         employee2 = new Employee("987654321", "Jane", "Smith", "IL12-5678-5678-5678",
-                LocalDate.of(2023, 2, 1), 30.0, Employee.UserRole.REGULAR_EMPLOYEE, "");
+                LocalDate.of(2023, 2, 1), 30.0, Employee.UserRole.REGULAR_EMPLOYEE, "", 7, 10, "Migdal");
 
         // Set qualifications
         employee1.addQualifiedPosition(managerPosition);
