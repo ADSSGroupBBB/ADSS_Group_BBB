@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="adss2025_v01:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="03739c7e-7b63-4369-9f7a-366d500e434a" name="Changes" comment="Fix deleted commit.">
+      <change afterPath="$PROJECT_DIR$/dev/JUnit/Presentation/DeliverysMenuTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dev/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/Practical1.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/dev/HelloWorld.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/docs/ids.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/release/adss_v0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Delivery.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Document.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Document.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Driver.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Driver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Exception.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Exception.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Location.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Location.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Route.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Shipment_item.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Shipment_item.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Shipping_Zone.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Shipping_Zone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/StorageEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/StorageEx.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/TrafficEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/TrafficEx.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/Truck.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/Truck.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Domain/WeightEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Domain/WeightEx.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Presentation/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Presentation/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Presentation/UserIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Presentation/UserIO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/src/Service/UserApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/dev/src/Service/UserApplication.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JUnit5 Test Class" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <excluded-from-favorite>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="master" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </excluded-from-favorite>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/dev" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2v0BT1dRjnohKlbGK81uXcBVxz1" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Debug",
+    "Downloaded.Files.Path.Enabled": "false",
+    "JUnit.DeliverysMenuTest.executor": "Run",
+    "JUnit.UnitTests.executor": "Run",
+    "JUnit.UnitTests.testCompleteDeliveryProcess.executor": "Debug",
+    "JUnit.UnitTests.testDriverAvailabilityTracking.executor": "Run",
+    "JUnit.UnitTests.testDriverLicenseManagement.executor": "Run",
+    "JUnit.UnitTests.testMultipleDestinationDelivery.executor": "Run",
+    "JUnit.UnitTests.testStorageAlertFlow.executor": "Run",
+    "JUnit.UnitTests.testTruckDriverCompatibility.executor": "Run",
+    "JUnit.UnitTests.testTruckReplacementDuringDelivery.executor": "Run",
+    "JUnit.UnitTests.testWeightOverflowHandling.executor": "Run",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/chocl/IdeaProjects/Practical1DeliveriesModule",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="Domain" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="UnitTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="adss2025_v01" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="Domain.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="Domain" />
+      <option name="MAIN_CLASS_NAME" value="Domain.UnitTests" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UnitTests.testDriverAvailabilityTracking" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="adss2025_v01" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="Domain.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="Domain" />
+      <option name="MAIN_CLASS_NAME" value="Domain.UnitTests" />
+      <option name="METHOD_NAME" value="testDriverAvailabilityTracking" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UnitTests.testDriverLicenseManagement" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="adss2025_v01" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="Domain.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="Domain" />
+      <option name="MAIN_CLASS_NAME" value="Domain.UnitTests" />
+      <option name="METHOD_NAME" value="testDriverLicenseManagement" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UnitTests.testMultipleDestinationDelivery" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="adss2025_v01" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="Domain.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="Domain" />
+      <option name="MAIN_CLASS_NAME" value="Domain.UnitTests" />
+      <option name="METHOD_NAME" value="testMultipleDestinationDelivery" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UnitTests.testTruckReplacementDuringDelivery" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="adss2025_v01" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="Domain.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="Domain" />
+      <option name="MAIN_CLASS_NAME" value="Domain.UnitTests" />
+      <option name="METHOD_NAME" value="testTruckReplacementDuringDelivery" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="adss2025_v01" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="adss2025_v01" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.UnitTests.testMultipleDestinationDelivery" />
+        <item itemvalue="JUnit.UnitTests.testDriverLicenseManagement" />
+        <item itemvalue="JUnit.UnitTests.testTruckReplacementDuringDelivery" />
+        <item itemvalue="JUnit.UnitTests" />
+        <item itemvalue="JUnit.UnitTests.testDriverAvailabilityTracking" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="03739c7e-7b63-4369-9f7a-366d500e434a" name="Changes" comment="" />
+      <created>1743272116575</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1743272116575</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Basic structure before most of the implementation.">
+      <option name="closed" value="true" />
+      <created>1745067153650</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1745067153650</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Fix previous">
+      <option name="closed" value="true" />
+      <created>1745067615200</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1745067615200</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="322482837_322714320/322482837_322714320" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/322482837_322714320" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$" />
+    </ignored-roots>
+    <MESSAGE value="Fix previous" />
+    <MESSAGE value="Basic structure before most of the implementation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Basic structure before most of the implementation." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Domain/UserController.java</url>
+          <line>326</line>
+          <properties>
+            <option name="lambda-ordinal" value="-1" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
