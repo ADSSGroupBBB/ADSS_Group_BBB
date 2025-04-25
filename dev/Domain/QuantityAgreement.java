@@ -79,8 +79,11 @@ public class QuantityAgreement {
         this.discount = discount;
     }
     public String printQuantityAgreement(){
-        //String print_product= this.prod.printProduct();
-        //String print_QuantityAgreement=print_product+"\nprice:"+this.price+"\ncatalogNumber:"+this.catalogNumber+"\namount to discount:"+this.amountToDiscount+"\ndiscount:"+this.discount;
+        String print_product= this.prod.printProduct();
+        String print_QuantityAgreement=print_product+"\nprice:"+this.price+"\ncatalogNumber:"+this.catalogNumber+"\namount to discount:"+this.amountToDiscount+"\ndiscount:"+this.discount;
+        return print_QuantityAgreement;
+    }
+    public String printQuantityforOrder(){
         return this.prod.printProduct();
     }
 }

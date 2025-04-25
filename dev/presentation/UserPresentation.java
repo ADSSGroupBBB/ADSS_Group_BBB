@@ -1,5 +1,5 @@
 package presentation;
-import Service.*;
+
 
 import java.util.Scanner;
 
@@ -58,7 +58,7 @@ public class UserPresentation {
             case 5: {
                 System.out.println("Exiting the system");
                 flag=false;
-                break;
+                return;
             }
         }
 

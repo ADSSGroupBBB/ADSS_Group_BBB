@@ -50,13 +50,15 @@ public class SupplierManager {
                     break;
                 }
                 case 4: {
-                    UserPresentation up = new UserPresentation();
-                    up.UserPresentationInit();
+                    //UserPresentation up = new UserPresentation();
+                    //up.UserPresentationInit();
                     flag = false;
                     break;
                 }
 
-
+            }
+            if(!flag){
+                return;
             }
         }
     }

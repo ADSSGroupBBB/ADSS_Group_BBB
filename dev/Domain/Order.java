@@ -21,10 +21,12 @@ public class Order {
         this.items=new LinkedList<ItemOrder>();
         this.statusOrder=statusOrder;
     }
-    public boolean addProductOrder(QuantityAgreement item,int amountOrder){
-        ItemOrder it=new ItemOrder( item, amountOrder);
-        if(this.items.contains(it)){
-            return false;
+    public boolean addProductOrder(QuantityAgreement item,int amountOrder) {
+        ItemOrder it = new ItemOrder(item, amountOrder,this.orderNumber);
+        for (ItemOrder i : this.items) {
+            if (i.getNumberItem()==it.getNumberItem()) {
+                return false;
+            }
         }
         this.items.add(it);
         return true;

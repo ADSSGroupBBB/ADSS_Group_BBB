@@ -49,12 +49,15 @@ public class OrderManager {
                 break;
             }
             case 4: {
-                UserPresentation up = new UserPresentation();
-                up.UserPresentationInit();
+                //UserPresentation up = new UserPresentation();
+                //up.UserPresentationInit();
                 flag = false;
                 break;
             }
         }
+            if(!flag){
+                return;
+            }
         }
     }
     public void addOrder() {
@@ -179,8 +182,8 @@ public class OrderManager {
         }
         oa.addOrder(orderNumber,numSupplier,address,date,contactPhone,statusOrder);
         int numP = 0;
+        LinkedList<Integer> numProducts=new LinkedList<Integer>();
         while (true) {
-            LinkedList<Integer> numProducts=new LinkedList<Integer>();
             while (true) {
                 System.out.println("Select a product to order from the following products:");
                 System.out.println(oa.printByAgree(numAgreement));

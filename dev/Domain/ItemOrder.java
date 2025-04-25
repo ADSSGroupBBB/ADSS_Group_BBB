@@ -5,7 +5,8 @@ public class ItemOrder {
     private int amountOrder;
     private double finalPrice;
     private double initialPrice;
-    public ItemOrder(QuantityAgreement item,int amountOrder){
+    private int numOrder;
+    public ItemOrder(QuantityAgreement item,int amountOrder,int numOrder){
         this.item=item;
         this.amountOrder=amountOrder;
         double initialPrice=amountOrder*(item.getPriceAgreement());
@@ -13,6 +14,7 @@ public class ItemOrder {
         if(amountOrder>=item.getAmountToDiscountAgreement()){
             this.finalPrice=initialPrice*((100-item.getDiscountAgreement())/100.0);
         }
+        this.numOrder=numOrder;
     }
     public void setNameItem(String name){
         this.item.setNameAgreement(name);
@@ -71,7 +73,7 @@ public class ItemOrder {
         return amountOrder;
     }
     public String printItem(){
-        String print_product= this.item.printQuantityAgreement();
+        String print_product= this.item.printQuantityforOrder();
         int dis;
         if(this.amountOrder>=item.getAmountToDiscountAgreement()) {
             dis=this.item.getDiscountAgreement();
