@@ -8,14 +8,14 @@ public class QuantityAgreement {
     private int amountToDiscount;
     private  int discount;
 
-    public QuantityAgreement( int numAgreement,String productName,int productNumber, unit unitOfMeasure,String manufacturer,int price,int catalogNumber,int amountToDiscount,int discount){
+    public QuantityAgreement( int numAgreement,Product prod,double price,int catalogNumber,int amountToDiscount,int discount){
         this.numAgreement=numAgreement;
-        if(AllProducts.checkExist(productName,productNumber,unitOfMeasure,manufacturer)) {
-            this.prod =AllProducts.gerProduct(productNumber);
-        }
-        else {
-            this.prod=new Product( productName, productNumber,  unitOfMeasure, manufacturer);
-        }
+        //if(AllProducts.checkExist(productName,productNumber,unitOfMeasure,manufacturer)) {
+        //    this.prod =AllProducts.gerProduct(productNumber);
+        //}
+        //else {
+            this.prod=prod;
+        //}
         this.price=price;
         this.catalogNumber=catalogNumber;
         this.amountToDiscount=amountToDiscount;
@@ -28,7 +28,7 @@ public class QuantityAgreement {
     public String getNameAgreement(){
         return this.prod.getProductName();
     }
-    public int getNumberAgreement(){
+    public int getNumberProAgreement(){
         return this.prod.getProductNumber();
     }
     public void setUnitOfMeasureAgreement(unit unitOfMeasure){
@@ -79,9 +79,9 @@ public class QuantityAgreement {
         this.discount = discount;
     }
     public String printQuantityAgreement(){
-        String print_product= this.prod.printProduct();
-        String print_QuantityAgreement=print_product+"\nprice:"+this.price+"\ncatalogNumber:"+this.catalogNumber+"\namount to discount:"+this.amountToDiscount+"\ndiscount:"+this.discount;
-        return print_QuantityAgreement;
+        //String print_product= this.prod.printProduct();
+        //String print_QuantityAgreement=print_product+"\nprice:"+this.price+"\ncatalogNumber:"+this.catalogNumber+"\namount to discount:"+this.amountToDiscount+"\ndiscount:"+this.discount;
+        return this.prod.printProduct();
     }
 }
 

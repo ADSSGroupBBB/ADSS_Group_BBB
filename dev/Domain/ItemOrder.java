@@ -11,14 +11,14 @@ public class ItemOrder {
         double initialPrice=amountOrder*(item.getPriceAgreement());
         this.initialPrice=initialPrice;
         if(amountOrder>=item.getAmountToDiscountAgreement()){
-            this.finalPrice=initialPrice*((100-item.getAmountToDiscountAgreement())/100.0);
+            this.finalPrice=initialPrice*((100-item.getDiscountAgreement())/100.0);
         }
     }
     public void setNameItem(String name){
         this.item.setNameAgreement(name);
     }
     public String getNameItem(){return this.item.getNameAgreement();}
-    public int getNumberItem(){return this.item.getNumberAgreement();}
+    public int getNumberItem(){return this.item.getNumberProAgreement();}
     public void setUnitOfMeasureItem(unit unitOfMeasure){
         this.item.setUnitOfMeasureAgreement(unitOfMeasure);
     }
@@ -72,7 +72,14 @@ public class ItemOrder {
     }
     public String printItem(){
         String print_product= this.item.printQuantityAgreement();
-        String print_item=print_product+"\namount:"+this.amountOrder;
+        int dis;
+        if(this.amountOrder>=item.getAmountToDiscountAgreement()) {
+            dis=this.item.getDiscountAgreement();
+        }
+        else {
+            dis=0;
+        }
+            String print_item=print_product+"\namount:"+this.amountOrder+"\ninitial price:"+this.initialPrice+"discount:"+dis+"final price:"+this.finalPrice;
         return print_item;
     }
 }

@@ -9,28 +9,33 @@ public class Agreement {
     private LinkedList<QuantityAgreement> productsList;
     private String date;
 
-    public Agreement(int IDNumber,int supplierNumber, LinkedList<QuantityAgreement> productsList,String date){
+    public Agreement(int supplierNumber,String date){
         this.IDNumber=counterID++;
         this.supplierNumber=supplierNumber;
         this.productsList=new LinkedList<QuantityAgreement>();
         this.date=date;
     }
-    public void addProductAgreement(String productName,int productNumber, unit unitOfMeasure,String manufacturer, int supplierNumber,int price,int catalogNumber,int amountToDiscount,int discount){
-        this.productsList.add(new QuantityAgreement(this.IDNumber, productName, productNumber,  unitOfMeasure, manufacturer, price, catalogNumber, amountToDiscount, discount));
+    public void addProductAgreement(Product p, double price,int catalogNumber,int amountToDiscount,int discount){
+        this.productsList.add(new QuantityAgreement(this.IDNumber,  p, price, catalogNumber, amountToDiscount, discount));
     }
-
-
-    public void setSupplierNumber(int supplierNumber) {
-        this.supplierNumber = supplierNumber;
-    }
-
-    public void setProductName(int catalogNumber,String productName) {
-        for (int i=0;i<productsList.size();i++){
-            if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
-                productsList.get(i).setNameAgreement(productName);
+    public void removeProductAgreement(int proN){
+        for(QuantityAgreement pro: this.productsList){
+            if(pro.getNumberProAgreement()==proN){
+                this.productsList.remove(pro);
                 break;
             }
         }
+    }
+
+
+
+    public boolean searchProduct(int proN) {
+        for (int i=0;i<productsList.size();i++){
+            if (productsList.get(i).getNumberProAgreement()==proN){
+                return true;
+            }
+        }
+        return false;
     }
     public void setUnitOfMeasure(int catalogNumber,unit unitOfMeasure) {
         for (int i=0;i<productsList.size();i++){
@@ -48,25 +53,25 @@ public class Agreement {
             }
         }
     }
-    public void setPrice(int catalogNumber,int price) {
+    public void setPrice(int proN,double price) {
         for (int i=0;i<productsList.size();i++){
-            if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
+            if (productsList.get(i).getNumberProAgreement()==proN){
                 productsList.get(i).setPriceAgreement(price);
                 break;
             }
         }
     }
-    public void setCatalog(int catalogNumber) {
+    public void setCatalog(int proN,int catalogNumber) {
         for (int i=0;i<productsList.size();i++){
-            if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
+            if (productsList.get(i).getNumberProAgreement()==proN){
                 productsList.get(i).setCatalogNumberAgreement(catalogNumber);
                 break;
             }
         }
     }
-    public void setAmountToDiscount(int catalogNumber,int amountToDiscount) {
+    public void setAmountToDiscount(int proN,int amountToDiscount) {
         for (int i=0;i<productsList.size();i++){
-            if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
+            if (productsList.get(i).getNumberProAgreement()==proN){
                 productsList.get(i).setAmountToDiscountAgreement(amountToDiscount);
                 break;
             }
@@ -77,9 +82,9 @@ public class Agreement {
         return productsList;
     }
 
-    public void setDiscount(int catalogNumber, int discount) {
+    public void setDiscount(int proN, int discount) {
         for (int i=0;i<productsList.size();i++){
-            if (productsList.get(i).getCatalogNumberAgreement()==catalogNumber){
+            if (productsList.get(i).getNumberProAgreement()==proN){
                 productsList.get(i).setAmountToDiscountAgreement(discount);
                 break;
             }
@@ -89,14 +94,23 @@ public class Agreement {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public int getIDNumber() {
+        return IDNumber;
+    }
+
+    public int getSupplierNumber() {
+        return supplierNumber;
+    }
+
     public String printListProducts(){
-        String printList="";
+        String printList=""+this.IDNumber+":\n";
         for (int i=0;i<productsList.size();i++){
             if (i==0) {
-                printList = productsList.get(i).printQuantityAgreement();
+                printList =(i+1)+"." +productsList.get(i).printQuantityAgreement();
             }
             else {
-                printList=printList+"\n"+productsList.get(i).printQuantityAgreement();
+                printList=printList+"\n"+(i+1)+"."+productsList.get(i).printQuantityAgreement();
             }
         }
         return printList;
