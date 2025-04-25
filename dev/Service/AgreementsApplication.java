@@ -38,4 +38,7 @@ public class AgreementsApplication {
     public void setDiscount(int productNumber,int numAgree,int discount){
         ac.setDiscountAgree(productNumber,numAgree,discount);
     }
+    public boolean existP(int numS,int numP ){
+        return ac.existProBySup(numS,numP);
+    }
 }

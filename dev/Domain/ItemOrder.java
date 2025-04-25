@@ -79,7 +79,7 @@ public class ItemOrder {
         else {
             dis=0;
         }
-            String print_item=print_product+"\namount:"+this.amountOrder+"\ninitial price:"+this.initialPrice+"discount:"+dis+"final price:"+this.finalPrice;
+            String print_item=print_product+"\namount:"+this.amountOrder+"\ninitial price:"+this.initialPrice+"\ndiscount:"+dis+"\nfinal price:"+this.finalPrice;
         return print_item;
     }
 }

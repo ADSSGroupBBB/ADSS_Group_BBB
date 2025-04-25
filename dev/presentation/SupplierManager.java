@@ -413,7 +413,7 @@ public class SupplierManager {
                         break;
                     } else {
                         AgreementsManager am = new AgreementsManager();
-                        am.addAgreement();
+                        am.addAgreementBySup(numSupplier);
                     }
                 } else {
                     System.out.println("The number is invalid, please select again");
@@ -544,15 +544,15 @@ public class SupplierManager {
                                     if ((c >= 1 && c <= 3)) {
                                         switch (c) {
                                             case 1: {
-                                                am.addAgreement();
+                                                am.addAgreementBySup(numSupplier);
                                                 return;
                                             }
                                             case 2: {
-                                                am.editAgreement();
+                                                am.editAgreementBySup(numSupplier);
                                                 return;
                                             }
                                             case 3: {
-                                                am.cancelAgreement();
+                                                am.cancelAgreementBySup(numSupplier);
                                                 return;
                                             }
                                         }

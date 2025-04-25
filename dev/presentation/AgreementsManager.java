@@ -151,7 +151,7 @@ public class AgreementsManager {
                                 if (scanner.hasNextInt()) {
                                     productNumber = scanner.nextInt();
                                     scanner.nextLine();
-                                    if (productExistAgre(productNumber,numSup,numAgree)) {
+                                    if (productExistAgre(productNumber,numAgree)) {
                                         break;
                                     } else {
                                         System.out.println("The product not exists in this agreement");
@@ -168,7 +168,7 @@ public class AgreementsManager {
                         case 2: {
                             ProductManager pm = new ProductManager();
                             int numPro = pm.addProduct();
-                            if (numPro != -1) {
+                            if (aa.existP(numSup,numPro)) {
                                 double price = enterPrice();
                                 int catalogNumber = enterCatalogNumber();
                                 int amountToDiscount = enterAmountToDiscount();
@@ -189,7 +189,7 @@ public class AgreementsManager {
                                 if (scanner.hasNextInt()) {
                                     productNumber = scanner.nextInt();
                                     scanner.nextLine();
-                                    if (productExistAgre(productNumber, numSup, numAgree)) {
+                                    if (productExistAgre(productNumber, numAgree)) {
                                         break;
                                     } else {
                                         System.out.println("The product not exists in this agreement\"");
@@ -262,12 +262,7 @@ public class AgreementsManager {
         AgreementsApplication aa = new AgreementsApplication();
         Scanner scanner = new Scanner(System.in);
         int supplierNumber;
-        String date;
-        double price;
-        int catalogNumber;
-        int amountToDiscount;
-        int discount;
-        int choice = 0;
+
         while (true) {
             System.out.println("Enter the supplier number you want to add an agreement to");
             if (scanner.hasNextInt()) {
@@ -285,6 +280,17 @@ public class AgreementsManager {
                 scanner.nextLine();
             }
         }
+        addAgreementBySup(supplierNumber);
+    }
+    public void addAgreementBySup(int supplierNumber){
+        Scanner scanner = new Scanner(System.in);
+        AgreementsApplication aa = new AgreementsApplication();
+        String date;
+        double price;
+        int catalogNumber;
+        int amountToDiscount;
+        int discount;
+        int choice = 0;
         date=enterDate();
         int id= aa.addAgreement(supplierNumber,date);
 
@@ -293,7 +299,11 @@ public class AgreementsManager {
         ProductManager pm=new ProductManager();
         while (true) {
             int numPro= pm.addProduct();
-            if (numPro != -1) {
+            if (aa.existP(supplierNumber,numPro)) {
+                System.out.println("The product already exists in the agreement");
+                continue;
+            }
+            else {
                 price=enterPrice();
                 catalogNumber=enterCatalogNumber();
                 amountToDiscount=enterAmountToDiscount();
@@ -327,12 +337,10 @@ public class AgreementsManager {
         }
 
     }
-    public void editAgreement(){
+    public void editAgreement() {
         AgreementsApplication aa = new AgreementsApplication();
         Scanner scanner = new Scanner(System.in);
         int supplierNumber;
-        int numAgreement;
-        String date;
         while (true) {
             System.out.println("Enter the supplier number of the agreement you would like to edit");
             if (scanner.hasNextInt()) {
@@ -350,6 +358,13 @@ public class AgreementsManager {
                 scanner.nextLine();
             }
         }
+        editAgreementBySup(supplierNumber);
+    }
+    public void editAgreementBySup(int supplierNumber){
+        AgreementsApplication aa = new AgreementsApplication();
+        Scanner scanner = new Scanner(System.in);
+        int numAgreement;
+        String date;
         while (true) {
             System.out.println("Enter the agreement number you would like to edit");
             if (scanner.hasNextInt()) {
@@ -399,12 +414,10 @@ public class AgreementsManager {
         }
     }
 
-    public void cancelAgreement(){
+    public void cancelAgreement() {
         AgreementsApplication aa = new AgreementsApplication();
         Scanner scanner = new Scanner(System.in);
         int supplierNumber;
-        int numAgreement;
-        String date;
         while (true) {
             System.out.println("Enter the supplier number of the agreement you would like to edit");
             if (scanner.hasNextInt()) {
@@ -422,6 +435,11 @@ public class AgreementsManager {
                 scanner.nextLine();
             }
         }
+    }
+    public void cancelAgreementBySup(int supplierNumber){
+        AgreementsApplication aa = new AgreementsApplication();
+        Scanner scanner = new Scanner(System.in);
+        int numAgreement;
         while (true) {
             System.out.println("Enter the agreement number you would like to cancel");
             if (scanner.hasNextInt()) {
@@ -441,7 +459,7 @@ public class AgreementsManager {
         aa.deleteAgreement(supplierNumber,numAgreement);
     }
 
-    public boolean productExistAgre(int numP,int numS,int numA){
+    public boolean productExistAgre(int numP,int numA){
     AgreementsApplication aa = new AgreementsApplication();
     if (aa.existProductAgre(numP,numA)) {
         return true;

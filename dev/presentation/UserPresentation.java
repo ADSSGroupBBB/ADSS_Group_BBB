@@ -58,7 +58,7 @@ public class UserPresentation {
             case 5: {
                 System.out.println("Exiting the system");
                 flag=false;
-                return;
+                break;
             }
         }
 

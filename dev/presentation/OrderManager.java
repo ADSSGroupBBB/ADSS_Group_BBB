@@ -161,7 +161,7 @@ public class OrderManager {
             statusOrder= "arrived";
         }
         while (true) {
-            System.out.println("Enter the agreement number from which you would like to place an order.");
+            System.out.println("Enter the agreement number from which you would like to place an order");
             if (scanner.hasNextInt()) {
                 numAgreement = scanner.nextInt();
                 scanner.nextLine();
@@ -188,6 +188,7 @@ public class OrderManager {
                     numP = scanner.nextInt();
                     scanner.nextLine();
                     if(numProducts.contains(numP)){
+                        System.out.println("The product is already available on order.");
                         continue;
                     }
                     if (oa.numProAgreement(numAgreement) >= numP) {

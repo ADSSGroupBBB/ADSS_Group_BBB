@@ -48,11 +48,13 @@ public class AgreementsController {
         }
         return false;
     }
-    public QuantityAgreement productFromAgree(int numAgree,int numP){
+    public QuantityAgreement productFromAgreeByIndex(int numAgree,int numP){
+        int i=1;
         for(QuantityAgreement qa:allAgreements.get(numAgree).getProductsList()){
-            if(qa.getNumberProAgreement()==numP){
+            if(i==numP){
                 return qa;
             }
+            i++;
         }
         return null;
     }
@@ -76,5 +78,13 @@ public class AgreementsController {
     public void setDiscountAgree(int productNumber,int numAgree,int discount){
         allAgreements.get(numAgree).setDiscount(productNumber,discount);
     }
-
-}
+    public boolean existProBySup(int numS,int numP ) {
+        for (Agreement agree: allAgreements.values()){
+            if(agree.getSupplierNumber()==numS){
+                if(agree.searchProduct(numP))
+                    return true;
+            }
+        }
+        return false;
+    }
+    }

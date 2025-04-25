@@ -44,7 +44,7 @@ public class OrderController {
     }
     public boolean addItemOrder(int orderNumber, int numAgreement, int numP,int amount){
         AgreementsController ag=new AgreementsController();
-        QuantityAgreement qa=ag.productFromAgree(numAgreement,numP);
+        QuantityAgreement qa=ag.productFromAgreeByIndex(numAgreement,numP);
         return allOrder.get(orderNumber).addProductOrder(qa,amount);
     }
     public void statusDelete(int orderNumber){
