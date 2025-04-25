@@ -345,7 +345,7 @@ public class UserController {
             }
         }
         for (Truck t : trucksMap.values()) {
-            if (!t.getOnDrive() || driver.getLicenses_list().contains(t.getType())) {
+            if (!t.getOnDrive() && driver.getLicenses_list().contains(t.getType())) {
                 int availableCapacity = t.getMax_weight() - t.getTruck_weight();
                 if (total_weight <= availableCapacity) {
                     try {
