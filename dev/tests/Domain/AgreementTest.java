@@ -21,4 +21,17 @@ class AgreementTest {
         assertEquals(1, agreement.getProductsList().size());
     }
 
+    @Test
+    void testSearchProduct_NotFound() {
+        assertFalse(agreement.searchProduct(999));
+    }
+    @Test
+    void testSetUnitOfMeasure() {
+        agreement.addProductAgreement(product, 10.0, 101, 5, 10);
+        agreement.setUnitOfMeasure(101, unit.pack); // assuming you have a unit enum
+        assertEquals(unit.pack, agreement.getProductsList().getFirst().getUnitOfMeasureAgreement());
+    }
+
+
+
 }

@@ -33,5 +33,25 @@ class OrderTest {
         assertTrue(output.contains("supplierName:SupplierName"));
         assertTrue(output.contains("Product"));
     }
+    @Test
+    void testSettersAndGetters() {
+        order.setSupplierName("NewSupplier");
+        assertEquals("NewSupplier", order.getSupplierName());
+
+        order.setSupplierNumber(321);
+        assertEquals(321, order.getSupplierNumber());
+
+        order.setAddress("456 New St");
+        assertEquals("456 New St", order.getAddress());
+
+        order.setDate("2025-12-31");
+        assertEquals("2025-12-31", order.getDate());
+
+        order.setContactPhone("987-6543210");
+        assertEquals("987-6543210", order.getContactPhone());
+
+        order.setStatusOrder(Status.arrived);
+        assertEquals(Status.arrived, order.getStatusOrder());
+    }
 
 }

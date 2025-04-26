@@ -52,5 +52,10 @@ class SupplierTest {
         supplier.removeAgreements(agreement2);
         assertFalse(supplier.numAgree().contains("2"));
     }
+    @Test
+    void testNumAgree() {
+        String agreements = supplier.numAgree();
+        assertTrue(agreements.contains("1"));
+    }
 
 }
