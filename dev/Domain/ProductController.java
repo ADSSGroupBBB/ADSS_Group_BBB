@@ -2,19 +2,23 @@ package Domain;
 
 import java.util.HashMap;
 import java.util.Map;
-
+//a class for the manager (the controller) of Product
 public class ProductController {
-    private static Map<Integer,Product> allProducts;
-    private static int num=0;
+    private static Map<Integer,Product> allProducts;    //a Map of all Products
+    private static int num=0;   // tells if there is at least 1 Product
     public ProductController(){
         if (num==0){
             allProducts=new HashMap<>();
             num++;
         }
     }
+    //checks if a certain product exists
+    //parameters:int productNumber
+    //returns boolean value
     public boolean checkPro(int productNumber){
         return allProducts.containsKey(productNumber);
     }
+
     public Product getPro(int num){
         return allProducts.get(num);
     }
