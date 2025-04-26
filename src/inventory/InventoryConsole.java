@@ -16,33 +16,80 @@ public class InventoryConsole {
     }
 
     public void start() {
+        System.out.println("Welcome to the Inventory Management System");
+
+        String userRole = chooseRole();
+
         boolean running = true;
         while (running) {
-            printMenu();
+            printMenu(userRole);
             int choice = scanner.nextInt();
             scanner.nextLine(); // consume newline
-            switch (choice) {
-                case 1 -> showAllItems();
-                case 2 -> showLowStockItems();
-                case 3 -> reportItemIssue();
-                case 4 -> showItemReports();
-                case 0 -> {
-                    System.out.println("Exiting system. Goodbye!");
-                    running = false;
-                }
-                default -> System.out.println("Invalid choice, try again.");
-            }
+            running = handleChoice(choice, userRole);
         }
     }
 
-    private void printMenu() {
-        System.out.println("\n=== Inventory Management ===");
+    private String chooseRole() {
+        System.out.println("Please select your role:");
+        System.out.println("1. Worker");
+        System.out.println("2. Transport Manager");
+        System.out.println("3. Manager");
+
+        int roleChoice = scanner.nextInt();
+        scanner.nextLine(); // consume newline
+
+        return switch (roleChoice) {
+            case 1 -> "Worker";
+            case 2 -> "TransportManager";
+            case 3 -> "Manager";
+            default -> "Worker"; // Default role
+        };
+    }
+
+    private void printMenu(String userRole) {
+        System.out.println("\n=== Inventory Management Menu ===");
         System.out.println("1. Show all items");
         System.out.println("2. Show low stock items");
-        System.out.println("3. Report item issue (expired/damaged)");
-        System.out.println("4. Show all item reports");
+        System.out.println("3. Report item issue");
+
+        if (userRole.equals("Manager") || userRole.equals("TransportManager")) {
+            System.out.println("4. Show all item reports");
+        }
+
+        if (userRole.equals("Manager")) {
+            System.out.println("5. Generate advanced reports (coming soon)");
+        }
+
         System.out.println("0. Exit");
         System.out.print("Choose an option: ");
+    }
+
+    private boolean handleChoice(int choice, String userRole) {
+        switch (choice) {
+            case 1 -> showAllItems();
+            case 2 -> showLowStockItems();
+            case 3 -> reportItemIssue();
+            case 4 -> {
+                if (userRole.equals("Manager") || userRole.equals("TransportManager")) {
+                    showItemReports();
+                } else {
+                    System.out.println("You do not have permission to view reports.");
+                }
+            }
+            case 5 -> {
+                if (userRole.equals("Manager")) {
+                    System.out.println("Advanced reporting features will be added soon.");
+                } else {
+                    System.out.println("You do not have permission to generate advanced reports.");
+                }
+            }
+            case 0 -> {
+                System.out.println("Exiting the system. Goodbye!");
+                return false;
+            }
+            default -> System.out.println("Invalid choice, please try again.");
+        }
+        return true;
     }
 
     private void showAllItems() {
@@ -66,7 +113,7 @@ public class InventoryConsole {
     }
 
     private void reportItemIssue() {
-        System.out.print("Enter item ID to report: ");
+        System.out.print("Enter the item ID to report: ");
         int id = scanner.nextInt();
         scanner.nextLine();
         Item item = inventory.findItemById(id);
@@ -75,10 +122,10 @@ public class InventoryConsole {
             return;
         }
 
-        System.out.print("Enter issue type (Expired/Damaged): ");
+        System.out.print("Enter the issue type (Expired/Damaged): ");
         String type = scanner.nextLine();
 
-        System.out.print("Enter comment: ");
+        System.out.print("Enter additional comments: ");
         String comment = scanner.nextLine();
 
         ItemReport report = new ItemReport(item, new Date(), type, comment);
