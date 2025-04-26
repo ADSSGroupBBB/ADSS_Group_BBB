@@ -105,7 +105,6 @@ public class SupplierManager {
                     break;
                 } else {
                     System.out.println("The number is invalid, please select again");
-                    scanner.nextLine();
                 }
             } else {
                 System.out.println("The number is invalid, please select again");
