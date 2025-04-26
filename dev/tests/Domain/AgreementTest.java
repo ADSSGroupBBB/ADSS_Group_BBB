@@ -28,8 +28,8 @@ class AgreementTest {
     @Test
     void testSetUnitOfMeasure() {
         agreement.addProductAgreement(product, 10.0, 101, 5, 10);
-        agreement.setUnitOfMeasure(101, unit.ml); // assuming you have a unit enum
-        assertEquals(unit.ml, agreement.getProductsList().getFirst().getUnitOfMeasureAgreement());
+        agreement.setUnitOfMeasure(101, unit.kg); // assuming you have a unit enum
+        assertEquals(unit.kg, agreement.getProductsList().getFirst().getUnitOfMeasureAgreement());
     }
 
 

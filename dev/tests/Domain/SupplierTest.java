@@ -26,10 +26,12 @@ class SupplierTest {
         quantityAgreement = new QuantityAgreement( 1, product, 100.0, 1, 10, 5);
         agreement1 = new Agreement(1,"01-01-2025");
         agreement2=new Agreement(1,"02-02-2025");
+        agreement1.addProductAgreement(product,43,3,22,10);
         agreements.add(agreement1);
         agreements.add(agreement2);
         supplier = new Supplier(1,"sup","bank",paymentTerms.Cash,contactNames,"0505050505"
         ,deliveryDays,Delivery.invitation,agreements);
+
     }
 
     @Test
@@ -44,18 +46,18 @@ class SupplierTest {
 
     @Test
     void testAddAndRemoveAgreement() {
-        agreement2 = new Agreement(2,"02-03-2025");
-        supplier.addAgreements(agreement2);
+        Agreement agreement3 = new Agreement(3,"02-03-2025");
+        supplier.addAgreements(agreement3);
 
-        assertTrue(supplier.numAgree().contains("2"));
+        assertTrue(supplier.numAgree().contains(Integer.toString(agreement3.getIDNumber())));
 
-        supplier.removeAgreements(agreement2);
-        assertFalse(supplier.numAgree().contains("2"));
+        supplier.removeAgreements(agreement3);
+        assertFalse(supplier.numAgree().contains(Integer.toString(agreement3.getIDNumber())));
     }
     @Test
     void testNumAgree() {
         String agreements = supplier.numAgree();
-        assertTrue(agreements.contains("1"));
+        assertTrue(agreements.contains(Integer.toString(agreement1.getIDNumber())));
     }
 
 }
