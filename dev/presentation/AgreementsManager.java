@@ -48,8 +48,7 @@ public class AgreementsManager {
                     break;
                 }
                 case 4: {
-                    //UserPresentation up=new UserPresentation();
-                    //up.UserPresentationInit();
+
                     flag=false;
                     break;
                 }
@@ -231,7 +230,7 @@ public class AgreementsManager {
                                             }
                                             case 4: {
                                                 discount = enterDiscount();
-                                                aa.setDiscount(productNumber, numAgree, discount);//לשנות להוספה. מחיקה
+                                                aa.setDiscount(productNumber, numAgree, discount);
                                                 return;
                                             }
                                         }
@@ -275,7 +274,6 @@ public class AgreementsManager {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -296,7 +294,6 @@ public class AgreementsManager {
         date=enterDate();
         int id= aa.addAgreement(supplierNumber,date);
 
-        //לבדוק שהוא קיים
 
         ProductManager pm=new ProductManager();
         while (true) {
@@ -353,7 +350,6 @@ public class AgreementsManager {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -376,7 +372,6 @@ public class AgreementsManager {
                     break;
                 } else {
                     System.out.println("The Agreement not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -430,7 +425,6 @@ public class AgreementsManager {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -451,7 +445,6 @@ public class AgreementsManager {
                     break;
                 } else {
                     System.out.println("The Agreement not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");

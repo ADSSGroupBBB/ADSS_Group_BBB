@@ -49,8 +49,7 @@ public class OrderManager {
                 break;
             }
             case 4: {
-                //UserPresentation up = new UserPresentation();
-                //up.UserPresentationInit();
+
                 flag = false;
                 break;
             }
@@ -82,7 +81,6 @@ public class OrderManager {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
-                    //לחזור להתחלה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -118,7 +116,6 @@ public class OrderManager {
                     break;
                 } else {
                     System.out.println("The order already exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -173,7 +170,6 @@ public class OrderManager {
                     break;
                 } else {
                     System.out.println("The Agreement not exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -199,7 +195,6 @@ public class OrderManager {
                         break;
                     } else {
                         System.out.println("This is not a valid number.");
-                        //לצאת חזרה
                     }
                 } else {
                     System.out.println("This is not a number, please enter it again");
@@ -257,7 +252,6 @@ public class OrderManager {
                     break;
                 } else {
                     System.out.println("The order already exists in the system");
-                    //לצאת חזרה
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -278,8 +272,7 @@ public class OrderManager {
                 if (oa.orderExist(orderNumber)) {
                     break;
                 } else {
-                    System.out.println("The order already exists in the system");
-                    //לצאת חזרה
+                    System.out.println("The order not exists in the system");
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
