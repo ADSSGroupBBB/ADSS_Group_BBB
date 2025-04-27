@@ -1,7 +1,10 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="adss2025_v01.jar">
-    <output-path>$PROJECT_DIR$/out/release/artifacts</output-path>
+    <output-path>$PROJECT_DIR$/out/release/artifacts/adss2025_v01_jar</output-path>
     <root id="archive" name="ADSS_Group_BBB.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/out/release/artifacts/META-INF/MANIFEST.MF" />
+      </element>
       <element id="module-output" name="ADSS_Group_BBB" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/junit/jupiter/junit-jupiter/5.8.1/junit-jupiter-5.8.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar" path-in-jar="/" />
