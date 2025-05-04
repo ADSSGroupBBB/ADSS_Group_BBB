@@ -370,15 +370,70 @@ public class ShiftViewScreen extends BaseScreen {
      * Displays future shifts for the current user.
      * Managers see all future shifts, while regular employees see only their own assignments.
      */
+//    public void displayFutureShifts() {
+//        displayTitle("Future Shifts");
+//
+//        List<ShiftDTO> futureShifts;
+//
+//        if (loggedInEmployee.isManager()) {
+//            futureShifts = shiftService.getFutureShifts();
+//        } else {
+//            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());    // Regular employees see only their own
+//        }
+//
+//        if (futureShifts.isEmpty()) {
+//            displayMessage("No future shifts found.");
+//            return;
+//        }
+//
+//        futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
+//
+//        for (ShiftDTO shift : futureShifts) {
+//            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
+//            displayMessage("Start Time: " + shift.getStartTime() + ", End Time: " + shift.getEndTime());
+//
+//            if (shift.hasShiftManager()) {
+//                displayMessage("Shift Manager: " + shift.getShiftManagerName());
+//            } else {
+//                displayMessage("Shift Manager: Not assigned");
+//            }
+//
+//            Map<String, String> assignments = shift.getAssignments();
+//            if (assignments.isEmpty()) {
+//                displayMessage("Assigned Employees: None");
+//            } else {
+//                displayMessage("Assigned Employees:");
+//                for (Map.Entry<String, String> entry : assignments.entrySet()) {
+//                    displayMessage("- " + entry.getKey() + ": " + entry.getValue());
+//                }
+//            }
+//
+//            displayMessage("------------------------------------");
+//        }
+
     public void displayFutureShifts() {
         displayTitle("Future Shifts");
+
+        // בדיקה אם יש מנהל משמרת זמין במערכת (רק SHIFT_MANAGER)
+        boolean hasShiftManager = false;
+        for (EmployeeDTO employee : employeeService.getAllEmployees()) {
+            if (employee.isShiftManager()) { // בודק רק אם העובד הוא מנהל משמרת
+                hasShiftManager = true;
+                break;
+            }
+        }
+
+        if (!hasShiftManager) {
+            displayError("אין אפשרות לראות משמרות עתידיות: אין מנהל משמרת זמין במערכת.");
+            return;
+        }
 
         List<ShiftDTO> futureShifts;
 
         if (loggedInEmployee.isManager()) {
             futureShifts = shiftService.getFutureShifts();
         } else {
-            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());    // Regular employees see only their own
+            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());
         }
 
         if (futureShifts.isEmpty()) {

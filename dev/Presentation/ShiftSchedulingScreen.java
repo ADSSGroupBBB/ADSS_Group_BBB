@@ -1,5 +1,5 @@
 package Presentation;
-
+import java.util.stream.Collectors;
 import Service.EmployeeDTO;
 import Service.EmployeeService;
 import Service.PositionDTO;
@@ -111,14 +111,67 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Creates shifts for an entire week starting from a specified Sunday date.
      * Verifies that the provided date is a Sunday before creating shifts.
      */
+//    private void createShiftsForWeek() {
+//        displayTitle("Create Shifts for Week");
+//        LocalDate startDate = null;
+//        while (startDate == null) {
+//            try {
+//                String dateStr = getInput("Enter start date (Sunday) in format DD/MM/YYYY");
+//                startDate = LocalDate.parse(dateStr, dateFormatter);
+//                // Verify that the date is a Sunday
+//                if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+//                    displayError("The date must be a Sunday");
+//                    startDate = null;
+//                }
+//            } catch (DateTimeParseException e) {
+//                displayError("Invalid date format. Please use DD/MM/YYYY");
+//            }
+//        }
+//        // Create shifts for the week
+//        List<ShiftDTO> createdShifts = shiftService.createShiftsForWeek(startDate);
+//        if (createdShifts.isEmpty()) {
+//            displayError("No shifts were created. Shifts may already exist for this week");
+//        } else {
+//            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " + startDate.format(dateFormatter));
+//        }
+//    }
+
+
     private void createShiftsForWeek() {
         displayTitle("Create Shifts for Week");
         LocalDate startDate = null;
+
+        // בדוק אם יש תפקידי מנהל משמרת מוגדרים במערכת
+        List<PositionDTO> managerPositions = employeeService.getAllPositions().stream()
+                .filter(PositionDTO::isRequiresShiftManager)
+                .collect(Collectors.toList());
+
+        if (managerPositions.isEmpty()) {
+            displayError("Cannot create shifts: No shift manager positions defined in the system.");
+            displayError("Please create a shift manager position first.");
+            return;
+        }
+
+        // בדוק אם יש עובדים מוסמכים לתפקידי מנהל משמרת
+        boolean hasQualifiedManagers = false;
+        for (PositionDTO position : managerPositions) {
+            List<EmployeeDTO> qualifiedEmployees = employeeService.getQualifiedEmployeesForPosition(position.getName());
+            if (!qualifiedEmployees.isEmpty()) {
+                hasQualifiedManagers = true;
+                break;
+            }
+        }
+
+        if (!hasQualifiedManagers) {
+            displayError("Cannot create shifts: No employees are qualified for shift manager positions.");
+            displayError("Please assign shift manager qualification to at least one employee first.");
+            return;
+        }
+
         while (startDate == null) {
             try {
                 String dateStr = getInput("Enter start date (Sunday) in format DD/MM/YYYY");
                 startDate = LocalDate.parse(dateStr, dateFormatter);
-                // Verify that the date is a Sunday
                 if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
                     displayError("The date must be a Sunday");
                     startDate = null;
@@ -127,15 +180,19 @@ public class ShiftSchedulingScreen extends BaseScreen {
                 displayError("Invalid date format. Please use DD/MM/YYYY");
             }
         }
+
         // Create shifts for the week
         List<ShiftDTO> createdShifts = shiftService.createShiftsForWeek(startDate);
+
         if (createdShifts.isEmpty()) {
-            displayError("No shifts were created. Shifts may already exist for this week");
+            displayError("No shifts were created. This may be because:");
+            displayError("1. Shifts already exist for this week");
+            displayError("2. No shift managers are available for the required shifts");
         } else {
             displayMessage(createdShifts.size() + " shifts were created successfully for week starting " + startDate.format(dateFormatter));
+            displayMessage("Shift managers have been automatically assigned to each shift.");
         }
     }
-
     /**
      * Displays a list of future shifts sorted by date.
      * Shows shift date, type, and whether a shift manager is assigned.
@@ -223,20 +280,64 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Removes an employee assignment from a shift.
      * Allows selecting from the current assignments.
      */
+//    private void removeEmployeeFromShift() {
+//        displayTitle("Remove Employee from Shift");
+//        // Select shift
+//        ShiftDTO shift = selectFutureShift();
+//        if (shift == null) {
+//            return;
+//        }
+//        // Display shift details
+//        displayShiftDetails(shift);
+//        Map<String, String> assignments = shift.getAssignments();
+//        if (assignments.isEmpty()) {
+//            displayError("No employees assigned to this shift");
+//            return;
+//        }
+//        // Build list of assigned positions
+//        List<String> assignedPositions = new ArrayList<>(assignments.keySet());
+//        String[] positionNames = new String[assignedPositions.size()];
+//        for (int i = 0; i < assignedPositions.size(); i++) {
+//            String position = assignedPositions.get(i);
+//            String employee = assignments.get(position);
+//            positionNames[i] = position + ": " + employee;
+//        }
+//        int positionIndex = displayMenu("Select assignment to remove", positionNames);
+//        if (positionIndex == 0) {
+//            return;
+//        }
+//        String selectedPosition = assignedPositions.get(positionIndex - 1);
+//        // Confirm removal
+//        String employee = assignments.get(selectedPosition);
+//
+//        if (getBooleanInput("Are you sure you want to remove " +
+//                employee + " from position " + selectedPosition + "?")) {
+//            boolean success = employeeService.removeAssignmentFromShift(shift.getId(), selectedPosition);
+//            if (success) {
+//                displayMessage("Assignment successfully removed");
+//            } else {
+//                displayError("Error removing assignment");
+//            }
+//        }
+//    }
     private void removeEmployeeFromShift() {
         displayTitle("Remove Employee from Shift");
+
         // Select shift
         ShiftDTO shift = selectFutureShift();
         if (shift == null) {
             return;
         }
+
         // Display shift details
         displayShiftDetails(shift);
+
         Map<String, String> assignments = shift.getAssignments();
         if (assignments.isEmpty()) {
             displayError("No employees assigned to this shift");
             return;
         }
+
         // Build list of assigned positions
         List<String> assignedPositions = new ArrayList<>(assignments.keySet());
         String[] positionNames = new String[assignedPositions.size()];
@@ -245,17 +346,29 @@ public class ShiftSchedulingScreen extends BaseScreen {
             String employee = assignments.get(position);
             positionNames[i] = position + ": " + employee;
         }
+
         int positionIndex = displayMenu("Select assignment to remove", positionNames);
         if (positionIndex == 0) {
             return;
         }
+
         String selectedPosition = assignedPositions.get(positionIndex - 1);
+
+        // בדוק אם מנסים להסיר מנהל משמרת
+        PositionDTO positionDTO = employeeService.getPositionDetails(selectedPosition);
+        if (positionDTO != null && positionDTO.isRequiresShiftManager()) {
+            displayError("Cannot remove a shift manager from the shift.");
+            displayError("Every shift must have a shift manager assigned.");
+            return;
+        }
+
         // Confirm removal
         String employee = assignments.get(selectedPosition);
 
         if (getBooleanInput("Are you sure you want to remove " +
                 employee + " from position " + selectedPosition + "?")) {
             boolean success = employeeService.removeAssignmentFromShift(shift.getId(), selectedPosition);
+
             if (success) {
                 displayMessage("Assignment successfully removed");
             } else {
@@ -263,7 +376,6 @@ public class ShiftSchedulingScreen extends BaseScreen {
             }
         }
     }
-
     /**
      * Displays a list of missing positions for future shifts.
      */

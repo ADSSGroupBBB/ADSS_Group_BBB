@@ -442,6 +442,19 @@ public class EmployeeService {
         return true;
     }
 
+    public boolean hasShiftManagers() {
+        for (Employee employee : employeeManager.getAllEmployees()) {
+            if (employee.isShiftManager() || employee.isHRManager()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteShift(String shiftId) {
+        return employeeManager.deleteShift(shiftId);
+    }
+
 
 
 }

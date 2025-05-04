@@ -246,14 +246,27 @@ public class EmployeeManager {
      * @param position The position to add
      * @return true if the position was successfully added, false if the position is null or already exists
      */
+//    public boolean addPosition(Position position) {
+//        if (position == null || positions.containsKey(position.getName())) {
+//            return false;
+//        }
+//        positions.put(position.getName(), position);
+//        return true;
+//    }
     public boolean addPosition(Position position) {
         if (position == null || positions.containsKey(position.getName())) {
             return false;
         }
         positions.put(position.getName(), position);
+
+        // אם זה תפקיד מנהל משמרת, הוסף אוטומטית דרישה למשמרות
+        if (position.isRequiresShiftManager()) {
+            requiredPositions.setRequiredPosition(ShiftType.MORNING, position, 1);
+            requiredPositions.setRequiredPosition(ShiftType.EVENING, position, 1);
+        }
+
         return true;
     }
-
 
     public Position getPosition(String positionName) {
         return positions.get(positionName);
@@ -383,6 +396,10 @@ public class EmployeeManager {
         }
 
         return requiredPositions.areAllRequiredPositionsCovered(shift.getShiftType(), shift.getAllAssignedEmployees());
+    }
+
+    public boolean deleteShift(String shiftId) {
+        return shifts.remove(shiftId) != null;
     }
 
 

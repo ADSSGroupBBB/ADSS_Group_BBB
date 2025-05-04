@@ -10,9 +10,21 @@ public class Position {
     private boolean requiresShiftManager;
 
 
-    public Position( String name, boolean requiresShiftManager) {
+//    public Position( String name, boolean requiresShiftManager) {
+//        this.name = name;
+//        this.requiresShiftManager = requiresShiftManager;
+//    }
+
+    public Position(String name, boolean requiresShiftManager) {
         this.name = name;
         this.requiresShiftManager = requiresShiftManager;
+
+        // אם זה תפקיד מנהל משמרת, הוסף אוטומטית דרישה למשמרות
+        if (requiresShiftManager) {
+            RequiredPositions requiredPositions = EmployeeManager.getInstance().getRequiredPositions();
+            requiredPositions.setRequiredPosition(ShiftType.MORNING, this, 1);
+            requiredPositions.setRequiredPosition(ShiftType.EVENING, this, 1);
+        }
     }
 
     // Getters & Setters

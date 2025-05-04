@@ -111,6 +111,33 @@ public class Shift {
      * @param employee The employee to assign
      * @return true if the assignment was successful, false if any validation check failed
      */
+//    public boolean assignEmployee(Position position, Employee employee) {
+//        // Check if the employee is already assigned to this shift
+//        if (assignedEmployees.containsValue(employee)) {
+//            return false;
+//        }
+//
+//        // Check if the employee is qualified for the position
+//        if (!employee.isQualifiedFor(position)) {
+//            return false;
+//        }
+//
+//        // Check if the employee is available for this shift
+//        DayOfWeek dayOfWeek = date.getDayOfWeek();
+//        if (!employee.getAvailability().isAvailable(dayOfWeek, shiftType)) {
+//            return false;
+//        }
+//
+//        // If position requires shift manager, set this employee as shift manager
+//        if (position.isRequiresShiftManager()) {
+//            shiftManager = employee;
+//        }
+//
+//        // Assign the employee to the position
+//        assignedEmployees.put(position, employee);
+//        return true;
+//    }
+
     public boolean assignEmployee(Position position, Employee employee) {
         // Check if the employee is already assigned to this shift
         if (assignedEmployees.containsValue(employee)) {
@@ -130,6 +157,9 @@ public class Shift {
 
         // If position requires shift manager, set this employee as shift manager
         if (position.isRequiresShiftManager()) {
+            if (!employee.isShiftManager()) {
+                return false; // העובד חייב להיות מנהל משמרת כדי למלא תפקיד זה
+            }
             shiftManager = employee;
         }
 

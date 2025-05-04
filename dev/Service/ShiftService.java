@@ -1,6 +1,8 @@
 package Service;
 
 import Domain.*;
+
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,34 +23,202 @@ public class ShiftService {
         this.employeeService = new EmployeeService();
     }
 
+//    public List<ShiftDTO> createShiftsForWeek(LocalDate startDate) {
+//        List<ShiftDTO> createdShifts = new ArrayList<>();
+//        LocalDate currentDate = startDate;
+//
+//        // Create shifts for 7 days (a week)
+//        for (int i = 0; i < 7; i++) {
+//            // Create morning shift
+//            ShiftDTO morningShift = employeeService.createShift(currentDate, "MORNING");
+//            if (morningShift != null) {
+//                createdShifts.add(morningShift);
+//            }
+//
+//            // Create evening shift
+//            ShiftDTO eveningShift = employeeService.createShift(currentDate, "EVENING");
+//            if (eveningShift != null) {
+//                createdShifts.add(eveningShift);
+//            }
+//
+//            // Move to the next day
+//            currentDate = currentDate.plusDays(1);
+//        }
+//
+//        return createdShifts;
+//    }
+
+//    public List<ShiftDTO> createShiftsForWeek(LocalDate startDate) {
+//        List<ShiftDTO> createdShifts = new ArrayList<>();
+//        LocalDate currentDate = startDate;
+//
+//        // מצא את כל התפקידים שדורשים מנהל משמרת
+//        List<PositionDTO> managerPositions = employeeService.getAllPositions().stream()
+//                .filter(PositionDTO::isRequiresShiftManager)
+//                .collect(Collectors.toList());
+//
+//        if (managerPositions.isEmpty()) {
+//            System.out.println("No shift manager positions defined in the system.");
+//            return createdShifts;
+//        }
+//
+//        // Create shifts for 7 days (a week)
+//        for (int i = 0; i < 7; i++) {
+//            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+//
+//            // Create morning shift
+//            ShiftDTO morningShift = employeeService.createShift(currentDate, "MORNING");
+//            if (morningShift != null) {
+//                boolean managerAssigned = false;
+//
+//                // עבור כל תפקיד מנהל משמרת
+//                for (PositionDTO managerPosition : managerPositions) {
+//                    // מצא עובדים מוסמכים לתפקיד זה
+//                    List<EmployeeDTO> qualifiedManagers = employeeService.getQualifiedEmployeesForPosition(managerPosition.getName());
+//
+//                    // בדוק מי מהם זמין למשמרת
+//                    for (EmployeeDTO manager : qualifiedManagers) {
+//                        if (employeeService.isEmployeeAvailable(manager.getId(), dayOfWeek, "MORNING")) {
+//                            // נסה לשבץ את העובד לתפקיד מנהל משמרת
+//                            if (employeeService.assignEmployeeToShift(morningShift.getId(), manager.getId(), managerPosition.getName())) {
+//                                managerAssigned = true;
+//                                createdShifts.add(morningShift);
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    if (managerAssigned) break;
+//                }
+//
+//                if (!managerAssigned) {
+//                    // אם אין מנהל זמין, בטל את המשמרת
+//                    System.out.println("No available shift manager for morning shift on " + currentDate + ". Shift not created.");
+//                    // כאן צריך למחוק את המשמרת אם היא נוצרה
+//                }
+//            }
+//
+//            // Create evening shift
+//            ShiftDTO eveningShift = employeeService.createShift(currentDate, "EVENING");
+//            if (eveningShift != null) {
+//                boolean managerAssigned = false;
+//
+//                // עבור כל תפקיד מנהל משמרת
+//                for (PositionDTO managerPosition : managerPositions) {
+//                    // מצא עובדים מוסמכים לתפקיד זה
+//                    List<EmployeeDTO> qualifiedManagers = employeeService.getQualifiedEmployeesForPosition(managerPosition.getName());
+//
+//                    // בדוק מי מהם זמין למשמרת
+//                    for (EmployeeDTO manager : qualifiedManagers) {
+//                        if (employeeService.isEmployeeAvailable(manager.getId(), dayOfWeek, "EVENING")) {
+//                            // נסה לשבץ את העובד לתפקיד מנהל משמרת
+//                            if (employeeService.assignEmployeeToShift(eveningShift.getId(), manager.getId(), managerPosition.getName())) {
+//                                managerAssigned = true;
+//                                createdShifts.add(eveningShift);
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    if (managerAssigned) break;
+//                }
+//
+//                if (!managerAssigned) {
+//                    // אם אין מנהל זמין, בטל את המשמרת
+//                    System.out.println("No available shift manager for evening shift on " + currentDate + ". Shift not created.");
+//                }
+//            }
+//
+//            currentDate = currentDate.plusDays(1);
+//        }
+//
+//        return createdShifts;
+//    }
+
+
     public List<ShiftDTO> createShiftsForWeek(LocalDate startDate) {
         List<ShiftDTO> createdShifts = new ArrayList<>();
         LocalDate currentDate = startDate;
 
+        // מצא את כל התפקידים שדורשים מנהל משמרת
+        List<PositionDTO> managerPositions = employeeService.getAllPositions().stream()
+                .filter(PositionDTO::isRequiresShiftManager)
+                .collect(Collectors.toList());
+
+        if (managerPositions.isEmpty()) {
+            System.out.println("No shift manager positions defined in the system.");
+            return createdShifts;
+        }
+
         // Create shifts for 7 days (a week)
         for (int i = 0; i < 7; i++) {
+            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+
             // Create morning shift
             ShiftDTO morningShift = employeeService.createShift(currentDate, "MORNING");
             if (morningShift != null) {
-                createdShifts.add(morningShift);
+                boolean managerAssigned = false;
+
+                // חפש עובד זמין שמוסמך לאחד מתפקידי מנהל המשמרת
+                for (EmployeeDTO employee : employeeService.getAllEmployees()) {
+                    if (employeeService.isEmployeeAvailable(employee.getId(), dayOfWeek, "MORNING")) {
+                        // בדוק אם העובד מוסמך לאחד מתפקידי מנהל המשמרת
+                        for (PositionDTO managerPosition : managerPositions) {
+                            if (employee.getQualifiedPositions().contains(managerPosition.getName())) {
+                                // נסה לשבץ את העובד לתפקיד מנהל המשמרת
+                                if (employeeService.assignEmployeeToShift(morningShift.getId(),
+                                        employee.getId(), managerPosition.getName())) {
+                                    managerAssigned = true;
+                                    createdShifts.add(morningShift);
+                                    break;
+                                }
+                            }
+                        }
+                        if (managerAssigned) break;
+                    }
+                }
+
+                if (!managerAssigned) {
+                    // אם אין מנהל זמין, מחק את המשמרת
+                    employeeService.deleteShift(morningShift.getId());
+                    System.out.println("No available shift manager for morning shift on " + currentDate + ". Shift deleted.");
+                }
             }
 
             // Create evening shift
             ShiftDTO eveningShift = employeeService.createShift(currentDate, "EVENING");
             if (eveningShift != null) {
-                createdShifts.add(eveningShift);
+                boolean managerAssigned = false;
+
+                // חפש עובד זמין שמוסמך לאחד מתפקידי מנהל המשמרת
+                for (EmployeeDTO employee : employeeService.getAllEmployees()) {
+                    if (employeeService.isEmployeeAvailable(employee.getId(), dayOfWeek, "EVENING")) {
+                        // בדוק אם העובד מוסמך לאחד מתפקידי מנהל המשמרת
+                        for (PositionDTO managerPosition : managerPositions) {
+                            if (employee.getQualifiedPositions().contains(managerPosition.getName())) {
+                                // נסה לשבץ את העובד לתפקיד מנהל המשמרת
+                                if (employeeService.assignEmployeeToShift(eveningShift.getId(),
+                                        employee.getId(), managerPosition.getName())) {
+                                    managerAssigned = true;
+                                    createdShifts.add(eveningShift);
+                                    break;
+                                }
+                            }
+                        }
+                        if (managerAssigned) break;
+                    }
+                }
+
+                if (!managerAssigned) {
+                    // אם אין מנהל זמין, מחק את המשמרת
+                    employeeService.deleteShift(eveningShift.getId());
+                    System.out.println("No available shift manager for evening shift on " + currentDate + ". Shift deleted.");
+                }
             }
 
-            // Move to the next day
             currentDate = currentDate.plusDays(1);
         }
 
         return createdShifts;
     }
-
-
-
-
     public List<ShiftDTO> getFutureShifts() {
         LocalDate today = LocalDate.now();
         return employeeService.getAllShiftsAsDTO().stream().filter(shift -> !shift.getDate().isBefore(today)).collect(Collectors.toList());
