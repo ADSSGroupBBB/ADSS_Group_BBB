@@ -1,6 +1,6 @@
 package Presentation;
 
-import Service.EmployeeService;
+import Controller.EmployeeController;
 import Service.EmployeeDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,39 +10,21 @@ import java.util.List;
 /**
  * EmployeeManagementScreen provides the user interface for managing employees in the system.
  * This screen allows HR managers to add, view, search, update, and remove employees.
-
- * The screen provides comprehensive employee management capabilities including:
- * - Adding new employees with all necessary details
- * - Viewing lists of all employees
- * - Searching for specific employees by ID
- * - Updating employee details including personal information and benefits
- * - Safely removing employees from the system
  */
 public class EmployeeManagementScreen extends BaseScreen {
-    private final EmployeeService employeeService;
+    private final EmployeeController employeeController;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
+    private final NavigationManager navigationManager;
 
     /**
-     * Constructor used for backward compatibility with the original class.
-     * @param employeeService The service for accessing employee data
+     * Constructor that takes controllers and the navigation manager.
      */
-    public EmployeeManagementScreen(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public EmployeeManagementScreen(EmployeeController employeeController, NavigationManager navigationManager) {
+        this.employeeController = employeeController;
+        this.navigationManager = navigationManager;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        this.loggedInEmployee = null; // No permissions checks in the original class
-    }
-
-    /**
-     * Constructor that takes a logged-in user for permission checking.
-     *
-     * @param employeeService The service for accessing employee data
-     * @param loggedInEmployee The currently logged-in employee
-     */
-    public EmployeeManagementScreen(EmployeeService employeeService, EmployeeDTO loggedInEmployee) {
-        this.employeeService = employeeService;
-        this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        this.loggedInEmployee = loggedInEmployee;
+        this.loggedInEmployee = navigationManager.getLoggedInEmployee();
     }
 
     /**
@@ -51,8 +33,8 @@ public class EmployeeManagementScreen extends BaseScreen {
      */
     @Override
     public void display() {
-        // Check permissions if needed
-        if (loggedInEmployee != null && !loggedInEmployee.isHRManager()) {
+        // Check permissions
+        if (!loggedInEmployee.isHRManager()) {
             displayError("Access denied. Only HR Managers can access this functionality.");
             return;
         }
@@ -94,14 +76,12 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     /**
      * Displays a form for adding a new employee to the system.
-     * Collects all required information such as personal details, salary,
-     * benefits, and employment dates.
      */
     private void addNewEmployee() {
         displayTitle("Add New Employee");
         String id = getInput("Enter ID");
         // Check if employee already exists
-        if (employeeService.getEmployee(id) != null) {
+        if (employeeController.getEmployee(id) != null) {
             displayError("Employee with this ID already exists");
             return;
         }
@@ -134,8 +114,8 @@ public class EmployeeManagementScreen extends BaseScreen {
             }
         }
 
-        // Add a regular employee only (without role and password parameters)
-        boolean success = employeeService.addNewEmployee(
+        // Add a regular employee
+        boolean success = employeeController.addEmployee(
                 id, firstName, lastName, bankAccount,
                 startDate, salary, sickDays, vacationDays, pensionFundName
         );
@@ -149,12 +129,11 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     /**
      * Displays a list of all employees in the system.
-     * For each employee, shows ID, name, role, and start date.
      */
     private void displayAllEmployees() {
         displayTitle("All Employees");
 
-        List<EmployeeDTO> employees = employeeService.getAllEmployees();
+        List<EmployeeDTO> employees = employeeController.getAllEmployees();
 
         if (employees.isEmpty()) {
             displayMessage("No employees in the system");
@@ -186,7 +165,7 @@ public class EmployeeManagementScreen extends BaseScreen {
 
         String id = getInput("Enter ID to search");
 
-        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
+        EmployeeDTO employee = employeeController.getEmployee(id);
 
         if (employee == null) {
             displayError("No employee found with ID " + id);
@@ -197,10 +176,7 @@ public class EmployeeManagementScreen extends BaseScreen {
     }
 
     /**
-     * Displays detailed information about a specific employee including personal
-     * details, role, benefits, and qualifications.
-     *
-     * @param employee The employee whose details will be displayed
+     * Displays detailed information about a specific employee.
      */
     private void displayEmployeeDetails(EmployeeDTO employee) {
         displayTitle("Employee Details: " + employee.getFullName());
@@ -233,13 +209,12 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     /**
      * Displays a form for updating various details of an existing employee.
-     * Allows updating personal information, salary, benefits, and password.
      */
     private void updateEmployee() {
         displayTitle("Update Employee");
 
         String id = getInput("Enter ID of employee to update");
-        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
+        EmployeeDTO employee = employeeController.getEmployee(id);
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
@@ -260,7 +235,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         switch (choice) {
             case 1:
                 String firstName = getInput("Enter new first name");
-                if (employeeService.updateEmployeeFirstName(id, firstName)) {
+                if (employeeController.updateEmployeeFirstName(id, firstName)) {
                     displayMessage("First name updated successfully");
                 } else {
                     displayError("Error updating first name");
@@ -268,7 +243,7 @@ public class EmployeeManagementScreen extends BaseScreen {
                 break;
             case 2:
                 String lastName = getInput("Enter new last name");
-                if (employeeService.updateEmployeeLastName(id, lastName)) {
+                if (employeeController.updateEmployeeLastName(id, lastName)) {
                     displayMessage("Last name updated successfully");
                 } else {
                     displayError("Error updating last name");
@@ -276,7 +251,7 @@ public class EmployeeManagementScreen extends BaseScreen {
                 break;
             case 3:
                 String bankAccount = getInput("Enter new bank account");
-                if (employeeService.updateEmployeeBankAccount(id, bankAccount)) {
+                if (employeeController.updateEmployeeBankAccount(id, bankAccount)) {
                     displayMessage("Bank account updated successfully");
                 } else {
                     displayError("Error updating bank account");
@@ -285,7 +260,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             case 4:
                 try {
                     double salary = Double.parseDouble(getInput("Enter new hourly salary"));
-                    if (employeeService.updateEmployeeSalary(id, salary)) {
+                    if (employeeController.updateEmployeeSalary(id, salary)) {
                         displayMessage("Salary updated successfully");
                     } else {
                         displayError("Error updating salary");
@@ -300,7 +275,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             case 6:
                 try {
                     int sickDays = Integer.parseInt(getInput("Enter new number of sick days"));
-                    if (employeeService.updateEmployeeSickDays(id, sickDays)) {
+                    if (employeeController.updateEmployeeSickDays(id, sickDays)) {
                         displayMessage("Sick days updated successfully");
                     } else {
                         displayError("Error updating sick days");
@@ -312,7 +287,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             case 7:
                 try {
                     int vacationDays = Integer.parseInt(getInput("Enter new number of vacation days"));
-                    if (employeeService.updateEmployeeVacationDays(id, vacationDays)) {
+                    if (employeeController.updateEmployeeVacationDays(id, vacationDays)) {
                         displayMessage("Vacation days updated successfully");
                     } else {
                         displayError("Error updating vacation days");
@@ -323,7 +298,7 @@ public class EmployeeManagementScreen extends BaseScreen {
                 break;
             case 8:
                 String fund = getInput("Enter new pension fund name");
-                if (employeeService.updateEmployeePensionFund(id, fund)) {
+                if (employeeController.updateEmployeePensionFund(id, fund)) {
                     displayMessage("Pension fund updated successfully");
                 } else {
                     displayError("Error updating pension fund");
@@ -337,7 +312,6 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     /**
      * Updates the password for a specific employee.
-     * @param employeeId The ID of the employee whose password will be updated
      */
     private void updateEmployeePassword(String employeeId) {
         String password = getInput("Enter new password");
@@ -346,7 +320,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             return;
         }
 
-        if (employeeService.updateEmployeePassword(employeeId, password)) {
+        if (employeeController.updateEmployeePassword(employeeId, password)) {
             displayMessage("Password updated successfully");
         } else {
             displayError("Error updating password");
@@ -355,15 +329,13 @@ public class EmployeeManagementScreen extends BaseScreen {
 
     /**
      * Removes an employee from the system after confirmation.
-     * Checks for future shift assignments to prevent removal of employees
-     * who are scheduled for future work.
      */
     private void removeEmployee() {
         displayTitle("Remove Employee");
 
         String id = getInput("Enter ID of employee to remove");
 
-        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
+        EmployeeDTO employee = employeeController.getEmployee(id);
 
         if (employee == null) {
             displayError("No employee found with ID " + id);
@@ -373,7 +345,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         displayEmployeeDetails(employee);
 
         if (getBooleanInput("Are you sure you want to remove this employee?")) {
-            boolean success = employeeService.removeEmployee(id);
+            boolean success = employeeController.removeEmployee(id);
 
             if (success) {
                 displayMessage("Employee successfully removed from the system");

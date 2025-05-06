@@ -1,7 +1,7 @@
 package Presentation;
 
+import Controller.PositionController;
 import Service.EmployeeDTO;
-import Service.EmployeeService;
 import Service.PositionDTO;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,37 +9,16 @@ import java.util.stream.Collectors;
 /**
  * QualificationManagementScreen provides the user interface for managing positions and
  * employee qualifications in the system.
- *
- * This screen allows managers to:
- * - Create and view positions
- * - Assign qualifications to employees
- * - Remove qualifications from employees
- * - View employees qualified for specific positions
- * - Configure position requirements for different shift types
  */
 public class QualificationManagementScreen extends BaseScreen {
-    private final EmployeeService employeeService;
+    private final PositionController positionController;
     private final EmployeeDTO loggedInEmployee;
 
     /**
-     * Constructor for backward compatibility.
-     * Does not perform permission checking.
-     *
-     * @param employeeService The service for accessing employee and position data
+     * Constructor that takes a position controller and the logged-in employee for permission checking.
      */
-    public QualificationManagementScreen(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-        this.loggedInEmployee = null;
-    }
-
-    /**
-     * Constructor that takes the logged-in employee for permission checking.
-     *
-     * @param employeeService The service for accessing employee and position data
-     * @param loggedInEmployee The currently logged-in employee
-     */
-    public QualificationManagementScreen(EmployeeService employeeService, EmployeeDTO loggedInEmployee) {
-        this.employeeService = employeeService;
+    public QualificationManagementScreen(PositionController positionController, EmployeeDTO loggedInEmployee) {
+        this.positionController = positionController;
         this.loggedInEmployee = loggedInEmployee;
     }
 
@@ -50,7 +29,7 @@ public class QualificationManagementScreen extends BaseScreen {
     @Override
     public void display() {
         // Permission check - only managers can access this screen
-        if (loggedInEmployee != null && !loggedInEmployee.isManager()) {
+        if (!loggedInEmployee.isManager()) {
             displayError("Access denied. Only managers can access this functionality.");
             return;
         }
@@ -96,14 +75,13 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Displays a form for adding a new position to the system.
-     * Collects position name and whether it requires shift manager privileges.
      */
     private void addNewPosition() {
         displayTitle("Add New Position");
         String name = getInput("Enter Position Name");
 
         // Check if position already exists
-        if (employeeService.getPositionDetails(name) != null) {
+        if (positionController.getPosition(name) != null) {
             displayError("Position with this name already exists");
             return;
         }
@@ -111,7 +89,7 @@ public class QualificationManagementScreen extends BaseScreen {
         boolean isShiftManagerRole = getBooleanInput("Is this a shift manager position?");
 
         // Add position to the system
-        if (employeeService.addPosition(name, isShiftManagerRole)) {
+        if (positionController.addPosition(name, isShiftManagerRole)) {
             displayMessage("Position added successfully!");
         } else {
             displayError("Error adding position");
@@ -120,12 +98,11 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Displays a list of all positions defined in the system.
-     * Indicates which positions require shift manager privileges.
      */
     private void displayAllPositions() {
         displayTitle("All Positions");
 
-        List<PositionDTO> positions = employeeService.getAllPositions();
+        List<PositionDTO> positions = positionController.getAllPositions();
 
         if (positions.isEmpty()) {
             displayMessage("No positions defined in the system");
@@ -173,22 +150,15 @@ public class QualificationManagementScreen extends BaseScreen {
         }
 
         // Add qualification
-        boolean success = employeeService.addQualificationToEmployee(employee.getId(), position.getName());
+        boolean success = positionController.addQualificationToEmployee(employee.getId(), position.getName());
 
         if (success) {
             displayMessage("Qualification added successfully");
 
             // If position requires shift manager privileges and employee is not already a manager
             if (position.isRequiresShiftManager() && !employee.isManager()) {
-                // Automatically update the employee's role to SHIFT_MANAGER
-                if (employeeService.updateEmployeeRole(employee.getId(), "SHIFT_MANAGER")) {
-                    // Set password to the employee's ID
-                    employeeService.updateEmployeePassword(employee.getId(), employee.getId());
-                    displayMessage("Employee role updated to Shift Manager automatically");
-                    displayMessage("Password set to employee ID: " + employee.getId());
-                } else {
-                    displayError("Failed to update employee role to Shift Manager");
-                }
+                displayMessage("Employee role automatically updated to Shift Manager");
+                displayMessage("Default password set to employee ID: " + employee.getId());
             }
         } else {
             displayError("Error adding qualification");
@@ -229,8 +199,8 @@ public class QualificationManagementScreen extends BaseScreen {
 
         String positionToRemove = positionNames[choice - 1];
 
-        // Remove qualification through service
-        boolean success = employeeService.removeQualificationFromEmployee(employee.getId(), positionToRemove);
+        // Remove qualification through controller
+        boolean success = positionController.removeQualificationFromEmployee(employee.getId(), positionToRemove);
 
         if (success) {
             displayMessage("Qualification successfully removed");
@@ -252,7 +222,7 @@ public class QualificationManagementScreen extends BaseScreen {
         }
 
         // Get qualified employees
-        List<EmployeeDTO> qualifiedEmployees = employeeService.getQualifiedEmployeesForPosition(position.getName());
+        List<EmployeeDTO> qualifiedEmployees = positionController.getQualifiedEmployeesForPosition(position.getName());
 
         if (qualifiedEmployees.isEmpty()) {
             displayMessage("No employees are qualified for position: " + position.getName());
@@ -267,7 +237,6 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Updates the required number of employees for a specific position in shifts.
-     * Allows selecting a position and defining requirements for morning and evening shifts.
      */
     private void updateRequiredPositions() {
         displayTitle("Update Required Positions for Shifts");
@@ -283,9 +252,6 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Helper method that updates shift requirements for a specific position.
-     * Sets how many employees with this qualification are needed for morning and evening shifts.
-     *
-     * @param position The position to update requirements for
      */
     private void updateRequiredPositionsForPosition(PositionDTO position) {
         displayTitle("Update Shift Requirements for Position: " + position.getName());
@@ -294,7 +260,7 @@ public class QualificationManagementScreen extends BaseScreen {
         int morningCount = getIntInput("Number of employees required for morning shift");
 
         if (morningCount >= 0) {
-            boolean success = employeeService.addRequiredPosition("MORNING", position.getName(), morningCount);
+            boolean success = positionController.setRequiredPosition("MORNING", position.getName(), morningCount);
 
             if (success) {
                 displayMessage("Morning shift requirements updated successfully");
@@ -307,7 +273,7 @@ public class QualificationManagementScreen extends BaseScreen {
         int eveningCount = getIntInput("Number of employees required for evening shift");
 
         if (eveningCount >= 0) {
-            boolean success = employeeService.addRequiredPosition("EVENING", position.getName(), eveningCount);
+            boolean success = positionController.setRequiredPosition("EVENING", position.getName(), eveningCount);
 
             if (success) {
                 displayMessage("Evening shift requirements updated successfully");
@@ -319,11 +285,10 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Displays a menu for selecting an employee from the system.
-     * @return The selected employee DTO, or null if selection was canceled
      */
     private EmployeeDTO selectEmployee() {
         // Get list of employees but filter out the admin user
-        List<EmployeeDTO> employees = employeeService.getAllEmployees().stream()
+        List<EmployeeDTO> employees = positionController.getAllEmployees().stream()
                 .filter(emp -> !emp.getId().equals("admin"))
                 .collect(Collectors.toList());
 
@@ -349,11 +314,9 @@ public class QualificationManagementScreen extends BaseScreen {
 
     /**
      * Displays a menu for selecting a position from the system.
-     *
-     * @return The selected position DTO, or null if selection was canceled
      */
     private PositionDTO selectPosition() {
-        List<PositionDTO> positions = employeeService.getAllPositions();
+        List<PositionDTO> positions = positionController.getAllPositions();
 
         if (positions.isEmpty()) {
             displayError("No positions defined in the system");

@@ -9,19 +9,13 @@ public class Position {
     private String name;
     private boolean requiresShiftManager;
 
-
-//    public Position( String name, boolean requiresShiftManager) {
-//        this.name = name;
-//        this.requiresShiftManager = requiresShiftManager;
-//    }
-
     public Position(String name, boolean requiresShiftManager) {
         this.name = name;
         this.requiresShiftManager = requiresShiftManager;
 
-        // אם זה תפקיד מנהל משמרת, הוסף אוטומטית דרישה למשמרות
         if (requiresShiftManager) {
-            RequiredPositions requiredPositions = EmployeeManager.getInstance().getRequiredPositions();
+            IEmployeeManager employeeManager = EmployeeManagerFactory.getEmployeeManager();
+            RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
             requiredPositions.setRequiredPosition(ShiftType.MORNING, this, 1);
             requiredPositions.setRequiredPosition(ShiftType.EVENING, this, 1);
         }
@@ -41,6 +35,4 @@ public class Position {
     public String toString() {
         return name;
     }
-
-
 }

@@ -1,10 +1,9 @@
-
 package Presentation;
 
+import Controller.EmployeeController;
+import Controller.ShiftController;
 import Service.EmployeeDTO;
-import Service.EmployeeService;
 import Service.ShiftDTO;
-import Service.ShiftService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -15,23 +14,16 @@ import java.util.stream.Collectors;
 
 /**
  * ShiftViewScreen provides the user interface for viewing both historical and future shifts.
- * It adapts its display based on the user's role, providing appropriate access levels.
- *
- * This screen allows:
- * - Managers to view complete shift history and details for all employees
- * - Regular employees to view only their own shift history and assignments
- * - All users to view future shifts with appropriate details based on role
-
  */
 public class ShiftViewScreen extends BaseScreen {
-    private final EmployeeService employeeService;
-    private final ShiftService shiftService;
+    private final EmployeeController employeeController;
+    private final ShiftController shiftController;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
-    public ShiftViewScreen(EmployeeService employeeService, ShiftService shiftService, EmployeeDTO loggedInEmployee) {
-        this.employeeService = employeeService;
-        this.shiftService = shiftService;
+    public ShiftViewScreen(EmployeeController employeeController, ShiftController shiftController, EmployeeDTO loggedInEmployee) {
+        this.employeeController = employeeController;
+        this.shiftController = shiftController;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         this.loggedInEmployee = loggedInEmployee;
     }
@@ -46,11 +38,6 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-
-    /**
-     * Displays the menu options available to managers.
-     * Managers can view all shifts and employee histories.
-     */
     private void displayManagerOptions() {
         String[] options = {
                 "View All Historic Shifts",
@@ -83,10 +70,6 @@ public class ShiftViewScreen extends BaseScreen {
         } while (choice != 0);
     }
 
-    /**
-     * Displays the menu options available to regular employees.
-     * Regular employees can only view their own shift history.
-     */
     private void displayEmployeeOptions() {
         String[] options = {
                 "View My Shift History",
@@ -107,13 +90,9 @@ public class ShiftViewScreen extends BaseScreen {
         } while (choice != 0);
     }
 
-    /**
-     * Displays a list of all historical shifts sorted by date (newest first).
-     * This option is only available to managers.
-     */
     private void displayHistoricShifts() {
         displayTitle("Historic Shifts");
-        List<ShiftDTO> historicShifts = shiftService.getHistoricalShifts();
+        List<ShiftDTO> historicShifts = shiftController.getHistoricalShifts();
         if (historicShifts.isEmpty()) {
             displayMessage("No historic shifts in the system");
             return;
@@ -127,10 +106,6 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    /**
-     * Displays shift history for a specific employee selected by the user.
-     * This option is only available to managers.
-     */
     private void displayEmployeeShiftHistory() {
         displayTitle("Employee Shift History");
         // Select employee
@@ -145,16 +120,10 @@ public class ShiftViewScreen extends BaseScreen {
     private void displayMyShiftHistory() {
         displayEmployeeShiftHistoryInfo(loggedInEmployee);
     }
-    /**
-     * Helper method that displays shift history information for a specific employee.
-     * Shows all shifts the employee has been assigned to, including position.
-     *
-     * @param employee The employee whose shift history will be displayed
-     */
 
     private void displayEmployeeShiftHistoryInfo(EmployeeDTO employee) {
         // Get shift history for employee
-        List<ShiftDTO> employeeShifts = shiftService.getEmployeeShiftHistory(employee.getId());
+        List<ShiftDTO> employeeShifts = shiftController.getEmployeeShiftHistory(employee.getId());
 
         if (employeeShifts.isEmpty()) {
             displayMessage("No shift history found for employee: " + employee.getFullName());
@@ -162,10 +131,8 @@ public class ShiftViewScreen extends BaseScreen {
         }
         // Sort shifts by date
         employeeShifts.sort((s1, s2) -> s2.getDate().compareTo(s1.getDate())); // Newest first
-        displayTitle("Shift History for " + employee.getFullName());
-        // Display shifts
-        for (ShiftDTO shift : employeeShifts) {
-            // Find position for this employee in this shift
+        displayTitle("Shift History for " + employee.getFullName());   // Display shifts
+        for (ShiftDTO shift : employeeShifts) {    // Find position for this employee in this shift
             String position = "Unknown";
             for (Map.Entry<String, String> entry : shift.getAssignments().entrySet()) {
                 if (entry.getValue().equals(employee.getFullName())) {
@@ -177,13 +144,8 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    /**
-     * Displays detailed information about a specific shift selected by the user.
-     * This option is only available to managers.
-     */
     private void displayShiftDetails() {
-        displayTitle("Shift Details");
-        // Select shift
+        displayTitle("Shift Details");// Select shift
         ShiftDTO shift = selectShift();
         if (shift == null) {
             return;
@@ -191,11 +153,6 @@ public class ShiftViewScreen extends BaseScreen {
         displayShiftDetailsFull(shift);
     }
 
-
-    /**
-     * Generates a report of shift history for a specific date range.
-     * This option is only available to managers.
-     */
     private void generateShiftHistoryReport() {
         displayTitle("Generate Shift History Report");
         // Define report period
@@ -208,13 +165,11 @@ public class ShiftViewScreen extends BaseScreen {
             displayError("End date must be after start date");
             return;
         }
+
         // Get all shifts
-        List<ShiftDTO> allShifts = employeeService.getAllShiftsAsDTO();
+        List<ShiftDTO> allShifts = employeeController.getAllShiftsAsDTO();
         // Filter shifts for the period
-        List<ShiftDTO> periodShifts = allShifts.stream()
-                .filter(shift -> !shift.getDate().isBefore(startDate) && !shift.getDate().isAfter(endDate))
-                .sorted(Comparator.comparing(ShiftDTO::getDate))
-                .collect(Collectors.toList());
+        List<ShiftDTO> periodShifts = allShifts.stream().filter(shift -> !shift.getDate().isBefore(startDate) && !shift.getDate().isAfter(endDate)).sorted(Comparator.comparing(ShiftDTO::getDate)).collect(Collectors.toList());
 
         if (periodShifts.isEmpty()) {
             displayMessage("No shifts found for the selected period");
@@ -241,13 +196,6 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-
-    /**
-     * Helper method that displays comprehensive details about a shift.
-     * Shows shift date, time, assigned employees, and manager information.
-     *
-     * @param shift The shift to display details for
-     */
     private void displayShiftDetailsFull(ShiftDTO shift) {
         displayTitle("Shift Details: " + shift.getDate().format(dateFormatter) + " - " +
                 shift.getShiftType());
@@ -279,14 +227,8 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    /**
-     * Displays a menu for selecting an employee from the system.
-     * Filters out the admin user from the selection.
-     *
-     * @return The selected employee DTO, or null if selection was canceled
-     */
     private EmployeeDTO selectEmployee() {
-        List<EmployeeDTO> employees = employeeService.getAllEmployees().stream()
+        List<EmployeeDTO> employees = employeeController.getAllEmployees().stream()
                 .filter(emp -> !emp.getId().equals("admin"))
                 .collect(Collectors.toList());
 
@@ -310,13 +252,8 @@ public class ShiftViewScreen extends BaseScreen {
         return employees.get(choice - 1);
     }
 
-    /**
-     * Displays a menu for selecting a shift from those available in the system.
-     *
-     * @return The selected shift DTO, or null if selection was canceled
-     */
     private ShiftDTO selectShift() {
-        List<ShiftDTO> shifts = employeeService.getAllShiftsAsDTO();
+        List<ShiftDTO> shifts = employeeController.getAllShiftsAsDTO();
 
         if (shifts.isEmpty()) {
             displayError("No shifts defined in the system");
@@ -338,12 +275,6 @@ public class ShiftViewScreen extends BaseScreen {
         return shifts.get(choice - 1);
     }
 
-
-    /**
-     * Helper method to get a date input from the user.
-     * @param prompt The prompt to display to the user
-     * @return The parsed LocalDate, or null if input was invalid
-     */
     private LocalDate getDateInput(String prompt) {
         try {
             String dateStr = getInput(prompt);
@@ -354,10 +285,6 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    /**
-     * Entry point for displaying shift history.
-     * Shows different options based on user role.
-     */
     public void displayShiftHistory() {
         if (loggedInEmployee.isManager()) {
             displayManagerOptions();
@@ -366,74 +293,21 @@ public class ShiftViewScreen extends BaseScreen {
         }
     }
 
-    /**
-     * Displays future shifts for the current user.
-     * Managers see all future shifts, while regular employees see only their own assignments.
-     */
-//    public void displayFutureShifts() {
-//        displayTitle("Future Shifts");
-//
-//        List<ShiftDTO> futureShifts;
-//
-//        if (loggedInEmployee.isManager()) {
-//            futureShifts = shiftService.getFutureShifts();
-//        } else {
-//            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());    // Regular employees see only their own
-//        }
-//
-//        if (futureShifts.isEmpty()) {
-//            displayMessage("No future shifts found.");
-//            return;
-//        }
-//
-//        futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
-//
-//        for (ShiftDTO shift : futureShifts) {
-//            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
-//            displayMessage("Start Time: " + shift.getStartTime() + ", End Time: " + shift.getEndTime());
-//
-//            if (shift.hasShiftManager()) {
-//                displayMessage("Shift Manager: " + shift.getShiftManagerName());
-//            } else {
-//                displayMessage("Shift Manager: Not assigned");
-//            }
-//
-//            Map<String, String> assignments = shift.getAssignments();
-//            if (assignments.isEmpty()) {
-//                displayMessage("Assigned Employees: None");
-//            } else {
-//                displayMessage("Assigned Employees:");
-//                for (Map.Entry<String, String> entry : assignments.entrySet()) {
-//                    displayMessage("- " + entry.getKey() + ": " + entry.getValue());
-//                }
-//            }
-//
-//            displayMessage("------------------------------------");
-//        }
-
     public void displayFutureShifts() {
         displayTitle("Future Shifts");
-
-        // בדיקה אם יש מנהל משמרת זמין במערכת (רק SHIFT_MANAGER)
-        boolean hasShiftManager = false;
-        for (EmployeeDTO employee : employeeService.getAllEmployees()) {
-            if (employee.isShiftManager()) { // בודק רק אם העובד הוא מנהל משמרת
-                hasShiftManager = true;
-                break;
-            }
-        }
+        boolean hasShiftManager = employeeController.hasShiftManagers();
 
         if (!hasShiftManager) {
-            displayError("אין אפשרות לראות משמרות עתידיות: אין מנהל משמרת זמין במערכת.");
+            displayError("Can't see future shifts: No shift manager available on the system.");
             return;
         }
 
         List<ShiftDTO> futureShifts;
 
         if (loggedInEmployee.isManager()) {
-            futureShifts = shiftService.getFutureShifts();
+            futureShifts = shiftController.getFutureShifts();
         } else {
-            futureShifts = shiftService.getEmployeeFutureShifts(loggedInEmployee.getId());
+            futureShifts = shiftController.getEmployeeFutureShifts(loggedInEmployee.getId());
         }
 
         if (futureShifts.isEmpty()) {
@@ -466,5 +340,4 @@ public class ShiftViewScreen extends BaseScreen {
             displayMessage("------------------------------------");
         }
     }
-
 }

@@ -32,9 +32,7 @@ public class Employee{
     private int vacationDays;
     private String pensionFundName;
 
-    public Employee(String id, String firstName, String lastName, String bankAccount,
-                    LocalDate startDate, double salary, UserRole role,
-                    String password, int sickDays, int vacationDays, String pensionFundName) {
+    public Employee(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary, UserRole role, String password, int sickDays, int vacationDays, String pensionFundName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -190,7 +188,6 @@ public class Employee{
                 '}';
     }
 
-    /////
 
     public UserRole getRole() {
         return role;

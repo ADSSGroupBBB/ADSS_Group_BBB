@@ -1,8 +1,7 @@
-
-
 package Main;
+
+import Controller.EmployeeController;
 import Presentation.NavigationManager;
-import Service.EmployeeService;
 
 import java.time.LocalDate;
 
@@ -17,7 +16,6 @@ public class Main {
         System.out.println("  Super-Li Employee Management System");
         System.out.println("===========================================");
 
-
         initializeFirstUser(); // create the first user if there is no employee in the system
 
         // Create and start the navigation manager
@@ -28,13 +26,13 @@ public class Main {
 
     private static void initializeFirstUser() {
         try {
-            EmployeeService employeeService = new EmployeeService();
+            EmployeeController employeeController = new EmployeeController();
 
-           // check if there is employee in the system
-            if (employeeService.getAllEmployees().isEmpty()) {
+            // check if there is employee in the system
+            if (employeeController.getAllEmployees().isEmpty()) {
                 System.out.println("No employees found. Creating initial admin user...");
                 // creating the first HR manager
-                boolean success = employeeService.addNewEmployee("admin", "Admin", "User", "123456",
+                boolean success = employeeController.addManagerEmployee("admin", "Admin", "User", "123456",
                         LocalDate.now(), 100.0, "HR_MANAGER", "admin123",
                         50, 50, "Migdal");
 

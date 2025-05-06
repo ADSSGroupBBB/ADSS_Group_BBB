@@ -1,4 +1,3 @@
-
 package JUnit.Test;
 /**
  * Comprehensive test suite for core domain classes in the employee and shift management system.
@@ -37,7 +36,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DomainTest {
-    private EmployeeManager employeeManager;
+    private IEmployeeManager employeeManager;
     private Employee employee1;
     private Employee employee2;
     private Position managerPosition;
@@ -45,7 +44,9 @@ public class DomainTest {
 
     @BeforeEach
     void setUp() {
-        employeeManager = EmployeeManager.getInstance();
+        // השתמש ב-EmployeeManagerFactory במקום להשתמש ב-getInstance
+        employeeManager = EmployeeManagerFactory.getEmployeeManager();
+
         // Clear any existing data
         for (Employee emp : employeeManager.getAllEmployees()) {
             employeeManager.removeEmployee(emp.getId());
@@ -86,6 +87,7 @@ public class DomainTest {
         employeeManager.addRequiredPosition(ShiftType.EVENING, "Shift Manager", 1);
         employeeManager.addRequiredPosition(ShiftType.EVENING, "Cashier", 1);
     }
+
     @Test
     void testAddEmployee() {
         Employee newEmployee = new Employee("111222333", "New", "Employee", "IL12-9999-9999-9999",
@@ -387,9 +389,13 @@ class ShiftTest {
     private Position managerPosition;
     private Position cashierPosition;
     private LocalDate testDate;
+    private IEmployeeManager employeeManager;
 
     @BeforeEach
     void setUp() {
+        // השתמש ב-EmployeeManagerFactory במקום להשתמש ב-getInstance
+        employeeManager = EmployeeManagerFactory.getEmployeeManager();
+
         testDate = LocalDate.of(2025, 4, 15); // A fixed test date
 
         morningShift = new Shift("2025-04-15_morning", testDate, ShiftType.MORNING);
@@ -400,7 +406,7 @@ class ShiftTest {
 
         // עדכון הקונסטרקטורים
         employee1 = new Employee("123456789", "John", "Doe", "IL12-1234-1234-1234",
-                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.SHIFT_MANAGER, "pass1",5, 12, "Harel");
+                LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.SHIFT_MANAGER, "pass1", 5, 12, "Harel");
         employee2 = new Employee("987654321", "Jane", "Smith", "IL12-5678-5678-5678",
                 LocalDate.of(2023, 2, 1), 30.0, Employee.UserRole.REGULAR_EMPLOYEE, "", 7, 10, "Migdal");
 
@@ -418,9 +424,9 @@ class ShiftTest {
 
     @Test
     void testShiftCreation() {
-        // קבלת שעות משמרת דינמיות מהמנהל
-        String[] morningHours = EmployeeManager.getInstance().getShiftHours(ShiftType.MORNING);
-        String[] eveningHours = EmployeeManager.getInstance().getShiftHours(ShiftType.EVENING);
+        // קבלת שעות משמרת דינמיות מהמנהל - שים לב לשימוש ב-employeeManager במקום ב-getInstance
+        String[] morningHours = employeeManager.getShiftHours(ShiftType.MORNING);
+        String[] eveningHours = employeeManager.getShiftHours(ShiftType.EVENING);
 
         // בדיקות עבור משמרת בוקר
         assertEquals("2025-04-15_morning", morningShift.getId());
@@ -435,7 +441,6 @@ class ShiftTest {
         assertEquals(java.time.LocalTime.parse(eveningHours[0]), eveningShift.getStartTime());
         assertEquals(java.time.LocalTime.parse(eveningHours[1]), eveningShift.getEndTime());
     }
-
 
     @Test
     void testAssignEmployee() {

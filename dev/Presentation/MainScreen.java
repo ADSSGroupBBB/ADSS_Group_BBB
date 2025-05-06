@@ -1,24 +1,17 @@
 package Presentation;
 
+import Controller.DataInitializationController;
 import Service.EmployeeDTO;
 
-
-//Main screen for the application.
 /**
  * MainScreen serves as the primary navigation hub of the application.
  * It displays the main menu and routes the user to various functional screens
  * based on their selection.
- *
- * The screen adapts its display and available options based on the logged-in user's
- * role (HR Manager, Shift Manager, or Regular Employee).
- *
- * MainScreen works closely with the NavigationManager to handle transitions between
- * different functional areas of the application.
  */
 public class MainScreen extends BaseScreen {
     private final NavigationManager navigationManager;
     private final EmployeeDTO loggedInEmployee;
-
+    private final DataInitializationController dataInitializationController;
 
     /**
      * Constructs a MainScreen with the specified navigation manager.
@@ -29,8 +22,8 @@ public class MainScreen extends BaseScreen {
     public MainScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
         this.loggedInEmployee = navigationManager.getLoggedInEmployee();
+        this.dataInitializationController = new DataInitializationController();
     }
-
 
     /**
      * Displays the main menu of the application.
@@ -145,16 +138,13 @@ public class MainScreen extends BaseScreen {
 
     /**
      * Initializes the system with sample data.
-     * This method is only accessible to managers.
-     * Adds employees, positions, qualifications, and shift requirements
-     * to allow testing the system without manual data entry.
+     * This option is only available to managers.
      */
     private void initializeSampleData() {
         displayTitle("Initialize Sample Data");
 
         if (getBooleanInput("Are you sure you want to add sample data to the system?")) {
-            Service.DataInitializationService dataService = new Service.DataInitializationService();
-            boolean success = dataService.initializeWithSampleData();
+            boolean success = dataInitializationController.initializeWithSampleData();
 
             if (success) {
                 displayMessage("Sample data successfully loaded into the system.");

@@ -1,20 +1,20 @@
-
-
 package Presentation;
 
+import Controller.EmployeeController;
 import Service.EmployeeDTO;
-import Service.EmployeeService;
 
 /**
  * Screen for system login
  * Implements high cohesion by focusing only on login functionality
  */
 public class LoginScreen extends BaseScreen {
-    private final EmployeeService employeeService;
+    private final EmployeeController employeeController;
+    private final NavigationManager navigationManager;
     private EmployeeDTO loggedInEmployee;
 
-    public LoginScreen(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public LoginScreen(NavigationManager navigationManager) {
+        this.navigationManager = navigationManager;
+        this.employeeController = navigationManager.getEmployeeController();
         this.loggedInEmployee = null;
     }
 
@@ -53,7 +53,7 @@ public class LoginScreen extends BaseScreen {
         String id = getInput("Enter your ID");
 
         // Check if employee exists
-        EmployeeDTO employee = employeeService.getEmployeeDetails(id);
+        EmployeeDTO employee = employeeController.getEmployee(id);
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
@@ -63,7 +63,7 @@ public class LoginScreen extends BaseScreen {
         if (employee.isManager()) {
             String password = getInput("Enter your password");
             // Verify password
-            if (!employeeService.verifyPassword(id, password)) {
+            if (!employeeController.verifyEmployeeCredentials(id, password)) {
                 displayError("Invalid password");
                 return;
             }

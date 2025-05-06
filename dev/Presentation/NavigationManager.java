@@ -1,30 +1,36 @@
 package Presentation;
 
+import Controller.EmployeeController;
+import Controller.ShiftController;
+import Controller.PositionController;
+import Controller.AssignmentController;
 import Service.EmployeeDTO;
-import Service.EmployeeService;
-import Service.ShiftService;
 
 /**
  * Navigation manager for the application.
  * Responsible for initializing and navigating between screens.
  */
 public class NavigationManager {
-    private final EmployeeService employeeService;
-    private final ShiftService shiftService;
+    private final EmployeeController employeeController;
+    private final ShiftController shiftController;
+    private final PositionController positionController;
+    private final AssignmentController assignmentController;
     private LoginScreen loginScreen;
     private EmployeeDTO loggedInEmployee;
 
-
     /**
      * Constructs a NavigationManager instance.
-     * Initializes the core services and the login screen.
+     * Initializes the core controllers and the login screen.
      */
     public NavigationManager() {
-        this.employeeService = new EmployeeService();
-        this.shiftService = new ShiftService();
-        this.loginScreen = new LoginScreen(employeeService);
+        this.employeeController = new EmployeeController();
+        this.shiftController = new ShiftController();
+        this.positionController = new PositionController();
+        this.assignmentController = new AssignmentController();
+        this.loginScreen = new LoginScreen(this);
         this.loggedInEmployee = null;
     }
+
     /**
      * Starts the application by displaying the login screen.
      * If login is successful, proceeds to the main screen.
@@ -48,7 +54,7 @@ public class NavigationManager {
     public void showEmployeeManagement() {
         // Option 1 - HR manager only
         if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
-            EmployeeManagementScreen screen = new EmployeeManagementScreen(employeeService);
+            EmployeeManagementScreen screen = new EmployeeManagementScreen(employeeController, this);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -61,7 +67,7 @@ public class NavigationManager {
      */
     public void showEmployeeAvailability() {
         if (loggedInEmployee != null) {
-            EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(employeeService, loggedInEmployee);
+            EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(employeeController, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -75,13 +81,12 @@ public class NavigationManager {
     public void showQualificationManagement() {
         // Option 3 - Managers only (shift managers and HR managers)
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
-            QualificationManagementScreen screen = new QualificationManagementScreen(employeeService);
+            QualificationManagementScreen screen = new QualificationManagementScreen(positionController, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
         }
     }
-
 
     /**
      * Shows the shift scheduling screen.
@@ -89,7 +94,8 @@ public class NavigationManager {
      */
     public void showShiftScheduling() {
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
-            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeService, shiftService,loggedInEmployee);
+            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeController, shiftController,
+                    assignmentController, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -101,7 +107,7 @@ public class NavigationManager {
      * Available to all users but with different views based on user role.
      */
     public void showShiftHistory() {
-        ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
+        ShiftViewScreen screen = new ShiftViewScreen(employeeController, shiftController, loggedInEmployee);
         screen.displayShiftHistory();
     }
 
@@ -110,11 +116,9 @@ public class NavigationManager {
      * Available to all users but with different views based on user role.
      */
     public void showFutureShifts() {
-        ShiftViewScreen screen = new ShiftViewScreen(employeeService, shiftService, loggedInEmployee);
+        ShiftViewScreen screen = new ShiftViewScreen(employeeController, shiftController, loggedInEmployee);
         screen.displayFutureShifts();
     }
-
-
 
     /**
      * Displays an error message when a user attempts to access a screen
@@ -127,22 +131,29 @@ public class NavigationManager {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-
+            // Ignore interruption
         }
     }
 
-    public EmployeeService getEmployeeService() {
-        return employeeService;
+    public EmployeeController getEmployeeController() {
+        return employeeController;
     }
 
-    public ShiftService getShiftService() {
-        return shiftService;
+    public ShiftController getShiftController() {
+        return shiftController;
+    }
+
+    public PositionController getPositionController() {
+        return positionController;
+    }
+
+    public AssignmentController getAssignmentController() {
+        return assignmentController;
     }
 
     public EmployeeDTO getLoggedInEmployee() {
         return loggedInEmployee;
     }
-
 
     /**
      * Logs out the current user and restarts the login process.

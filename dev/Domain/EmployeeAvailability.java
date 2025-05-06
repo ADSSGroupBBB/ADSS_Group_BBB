@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * The EmployeeAvailability class tracks an employee's availability for scheduling shifts.
-   By default, employees are considered available for all shifts.
+ By default, employees are considered available for all shifts.
  */
 public class EmployeeAvailability {
     private String employeeId; // ID of the employee this availability belongs to

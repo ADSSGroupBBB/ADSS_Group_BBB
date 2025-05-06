@@ -1,4 +1,3 @@
-
 package Service;
 
 import Domain.*;
@@ -9,22 +8,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 /**
  * Service layer for handling employee-related operations.
- * Acts as a bridge between the presentation layer (UI) and the domain layer (business logic).
- *
- * This class delegates operations to EmployeeManager and converts domain objects
- * to DTOs for safe data transfer.
+ * Acts as a bridge between the controller layer and the domain layer.
  */
 public class EmployeeService {
-    private final EmployeeManager employeeManager;
+    private final IEmployeeManager employeeManager;
+
     /**
-     * Constructor initializes the service with the singleton instance of EmployeeManager.
+     * Constructor initializes the service with employeeManager from factory.
      */
     public EmployeeService() {
-        this.employeeManager = EmployeeManager.getInstance();
+        this.employeeManager = EmployeeManagerFactory.getEmployeeManager();
     }
-    /** Retrieves an employee by ID and returns it as a DTO. */
+
+    // EmployeeDTO operations
     public EmployeeDTO getEmployee(String employeeId) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -32,16 +31,14 @@ public class EmployeeService {
         }
         return convertEmployeeToDTO(employee);
     }
-    /** Adds a new regular employee (default role) without specifying role/password. */
+
     public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
                                   LocalDate startDate, double salary,
-                                  int sickDays, int vacationDays, String pensionFundName) {
-        Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
-                Employee.UserRole.REGULAR_EMPLOYEE, "", sickDays, vacationDays, pensionFundName);
+                                  int sickDays, int vacationDays, String pensionFundName) {Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
+            Employee.UserRole.REGULAR_EMPLOYEE, "", sickDays, vacationDays, pensionFundName);
         return employeeManager.addEmployee(employee);
     }
 
-    /** Adds a new employee with a specified role and password (used for managers). */
     public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
                                   LocalDate startDate, double salary, String role, String password,
                                   int sickDays, int vacationDays, String pensionFundName) {
@@ -55,12 +52,10 @@ public class EmployeeService {
         }
     }
 
-    /** Removes an employee by ID. */
     public boolean removeEmployee(String employeeId) {
         return employeeManager.removeEmployee(employeeId) != null;
     }
 
-    /** Retrieves detailed employee information as a DTO. */
     public EmployeeDTO getEmployeeDetails(String employeeId) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -68,7 +63,7 @@ public class EmployeeService {
         }
         return convertEmployeeToDTO(employee);
     }
-    /** Returns a list of all employees as DTOs. */
+
     public List<EmployeeDTO> getAllEmployees() {
         List<EmployeeDTO> result = new ArrayList<>();
 
@@ -79,7 +74,6 @@ public class EmployeeService {
         return result;
     }
 
-    /** Converts an Employee domain object to EmployeeDTO. */
     public EmployeeDTO convertEmployeeToDTO(Employee employee) {
         List<String> qualifiedPositions = employee.getQualifiedPositions().stream()
                 .map(Position::getName)
@@ -100,7 +94,6 @@ public class EmployeeService {
         );
     }
 
-    /** Verifies if the given password matches the employee's password. */
     public boolean verifyPassword(String employeeId, String password) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -170,6 +163,7 @@ public class EmployeeService {
         employee.setPassword(password);
         return true;
     }
+
     public boolean updateEmployeeAvailabilityForNextWeek(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -192,15 +186,11 @@ public class EmployeeService {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
         return today.getValue() <= DayOfWeek.THURSDAY.getValue();
     }
-    /** Updates availability for next week only if allowed (before Thursday). */
+
     public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
-        if (!canUpdateNextWeekAvailability()) {
-            return false;
-        }
         return employeeManager.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
     }
 
-    /** Checks if employee is available for a given day and shift type. */
     public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
         Employee employee = employeeManager.getEmployee(employeeId);
         if (employee == null) {
@@ -296,6 +286,7 @@ public class EmployeeService {
 
         return convertShiftToDTO(shift);
     }
+
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
         Shift shift = employeeManager.getShift(shiftId);
         Employee employee = employeeManager.getEmployee(employeeId);
@@ -332,7 +323,6 @@ public class EmployeeService {
         return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
     }
 
-
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
         return employeeManager.removeAssignmentFromShift(shiftId, positionName);
     }
@@ -341,7 +331,7 @@ public class EmployeeService {
         return employeeManager.areAllRequiredPositionsCovered(shiftId);
     }
 
-    private ShiftDTO convertShiftToDTO(Shift shift) { // Helper method to convert Shift domain object to ShiftDTO
+    private ShiftDTO convertShiftToDTO(Shift shift) {
         // Get shift manager info
         String managerId = null;
         String managerName = null;
@@ -375,6 +365,7 @@ public class EmployeeService {
         }
         return result;
     }
+
     public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
         ShiftType shiftType;
         if ("MORNING".equalsIgnoreCase(shiftTypeStr)) {
@@ -385,8 +376,9 @@ public class EmployeeService {
             return false;
         }
 
-        return EmployeeManager.getInstance().updateShiftHours(shiftType, newStart, newEnd);
+        return employeeManager.updateShiftHours(shiftType, newStart, newEnd);
     }
+
     public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
         Shift shift = employeeManager.getShift(shiftId);
         Employee employee = employeeManager.getEmployee(employeeId);
@@ -397,6 +389,7 @@ public class EmployeeService {
 
         return shift.getAllAssignedEmployees().containsValue(employee);
     }
+
     public int getRequiredPositionsCount(String shiftTypeStr, String positionName) {
         ShiftType shiftType = ShiftType.valueOf(shiftTypeStr.toUpperCase());
         Position position = employeeManager.getPosition(positionName);
@@ -405,6 +398,7 @@ public class EmployeeService {
         }
         return employeeManager.getRequiredPositions().getRequiredCount(shiftType, position);
     }
+
     public boolean removeQualificationFromEmployee(String employeeId, String positionName) {
         Employee employee = employeeManager.getEmployee(employeeId);
         Position position = employeeManager.getPosition(positionName);
@@ -415,6 +409,7 @@ public class EmployeeService {
 
         return employee.removeQualifiedPosition(position);
     }
+
     public boolean updateEmployeeSickDays(String id, int sickDays) {
         Employee employee = employeeManager.getEmployee(id);
         if (employee == null) {
@@ -454,7 +449,4 @@ public class EmployeeService {
     public boolean deleteShift(String shiftId) {
         return employeeManager.deleteShift(shiftId);
     }
-
-
-
 }
