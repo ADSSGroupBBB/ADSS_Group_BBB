@@ -50,8 +50,7 @@ public class SupplierManager {
                     break;
                 }
                 case 4: {
-                    //UserPresentation up = new UserPresentation();
-                    //up.UserPresentationInit();
+
                     flag = false;
                     break;
                 }
@@ -362,7 +361,6 @@ public class SupplierManager {
                 }
             }
         }
-        //לשנות להוספה. מחיקה
 
     public void addSupplier() {
         SupplierApplication sa = new SupplierApplication();

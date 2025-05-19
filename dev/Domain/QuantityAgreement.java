@@ -10,12 +10,7 @@ public class QuantityAgreement {
 
     public QuantityAgreement( int numAgreement,Product prod,double price,int catalogNumber,int amountToDiscount,int discount){
         this.numAgreement=numAgreement;
-        //if(AllProducts.checkExist(productName,productNumber,unitOfMeasure,manufacturer)) {
-        //    this.prod =AllProducts.gerProduct(productNumber);
-        //}
-        //else {
-            this.prod=prod;
-        //}
+        this.prod=prod;
         this.price=price;
         this.catalogNumber=catalogNumber;
         this.amountToDiscount=amountToDiscount;
