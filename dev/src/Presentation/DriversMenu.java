@@ -1,17 +1,17 @@
 package Presentation;
 
-import Service.UserApplication;
+import Service.DriversApplication;
+import Service.LocationApplication;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class DriversMenu {
-
+    private static DriversApplication da = new DriversApplication();
     // Method to add a new driver
     public void addDriver() {
         Scanner scanner = new Scanner(System.in);
-        UserApplication ua = new UserApplication();
 
         // Prompt for Driver ID, ensuring it is not empty
         String driverId = "";
@@ -60,14 +60,13 @@ public class DriversMenu {
         }
 
         // Call the service method to insert the new driver
-        System.out.println(ua.insertDriver(driverId, name, licenseList));
+        System.out.println(da.insertDriver(driverId, name, licenseList));
     }
 
     // Method to update or delete an existing driver
     public void updateDrivers() {
         System.out.println("Update/Delete Driver selected.");
         Scanner scanner = new Scanner(System.in);
-        UserApplication ua = new UserApplication();
 
         // Prompt for Driver ID, ensuring it is not empty
         String driverId = "";
@@ -91,7 +90,7 @@ public class DriversMenu {
         int choice = scanner.nextInt();
         if (choice == 1) {
             // Call the service method to delete the driver
-            System.out.println(ua.deleteDriver(driverId));
+            System.out.println(da.deleteDriver(driverId));
         } else if (choice == 2) {
             // If changing license list, present sub-options to add or remove licenses
             System.out.println("Choose an option ");
@@ -109,12 +108,12 @@ public class DriversMenu {
                 System.out.print("Enter license to remove: ");
                 scanner.nextInt();
                 int license = scanner.nextInt();
-                System.out.println(ua.deleteLicense(driverId, license));
+                System.out.println(da.deleteLicense(driverId, license));
             } else if (choice == 2) {
                 // Prompt for license to add and call the service method
                 System.out.print("Enter license to add: ");
                 int license = scanner.nextInt();
-                System.out.println(ua.addLicense(driverId, license));
+                System.out.println(da.addLicense(driverId, license));
             }
         }
     }

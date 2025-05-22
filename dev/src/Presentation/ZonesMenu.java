@@ -1,15 +1,17 @@
 package Presentation;
 
-import Service.UserApplication;
+import Service.LocationApplication;
+import Service.ZonesApplication;
 
 import java.util.Scanner;
 
 public class ZonesMenu {
+    private static ZonesApplication za = new ZonesApplication();
+
     // Method to add a new shipping zone
     public void addShippingZone() {
         System.out.println("Add Shipment Zone selected.");
         Scanner scanner = new Scanner(System.in);
-        UserApplication ua = new UserApplication();
         String name = "";
 
         // Loop to ensure the name is not empty
@@ -28,14 +30,13 @@ public class ZonesMenu {
             scanner.next(); // Consumes invalid input
         }
         int id = scanner.nextInt(); // Reading the rank as an integer
-        System.out.println(ua.addShippingZone(id, name)); // Call to the service layer to add the zone
+        System.out.println(za.addShippingZone(id, name)); // Call to the service layer to add the zone
     }
 
     // Method to update or delete an existing shipping zone
     public void updateOrDeleteShipmentZone() {
         System.out.println("Update/Delete Shipment Zone selected.");
         Scanner scanner = new Scanner(System.in);
-        UserApplication ua = new UserApplication();
         String zoneName = "";
 
         // Loop to ensure the zone name is not empty
@@ -60,7 +61,7 @@ public class ZonesMenu {
 
         if (choice == 1) {
             // If user chose to delete the zone
-            System.out.println(ua.deleteZone(zoneName)); // Call to service layer to delete the zone
+            System.out.println(za.deleteZone(zoneName)); // Call to service layer to delete the zone
         }
         else if(choice == 2) {
             // If user chose to change the rank of the zone
@@ -72,7 +73,7 @@ public class ZonesMenu {
                 scanner.nextInt(); // Consumes invalid input
             }
             int rank = scanner.nextInt(); // Read the new rank
-            System.out.println(ua.updateRank(zoneName, rank)); // Call to service layer to update the rank
+            System.out.println(za.updateRank(zoneName, rank)); // Call to service layer to update the rank
         }
     }
 }

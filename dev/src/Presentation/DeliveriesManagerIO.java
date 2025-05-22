@@ -1,10 +1,12 @@
 package Presentation;
 
 import java.util.Scanner;
+
+import Domain.DeliveriesController;
 import Service.*;
 
 
-public class UserIO {
+public class DeliveriesManagerIO {
 
     // Method to present the main menu to the user
     public static void presentingMenu() {
@@ -52,10 +54,10 @@ public class UserIO {
         // Creating instances of various menu classes
         DriversMenu driversMenu = new DriversMenu();
         ZonesMenu zonesMenu = new ZonesMenu();
-        DeliverysMenu deliverysMenu = new DeliverysMenu();
+        DeliveriesMenu deliverysMenu = new DeliveriesMenu();
         TrucksMenu trucksMenu = new TrucksMenu();
         LocationsMenu locationsMenu = new LocationsMenu();
-        UserApplication ua = new UserApplication();
+        LocationApplication ua = new LocationApplication();
         // Menu loop
         do {
             // Displaying the menu options
@@ -123,7 +125,7 @@ public class UserIO {
                     deliverysMenu.endDelivery();
                     break;
                 case 13:
-                    ua.initBaseData(); // Uploads base info
+                    DeliveriesController.initBaseData(); // Uploads base info
                     System.out.println("Data uploaded.");
                     break;
                 case 0:

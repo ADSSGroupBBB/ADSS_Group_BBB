@@ -1,7 +1,6 @@
 package Presentation;
 
-import static Domain.UserController.initBaseData;
-import static Presentation.UserIO.presentingMenu;
+import static Presentation.DeliveriesManagerIO.presentingMenu;
 
 public class Main {
     // The entry point of the program

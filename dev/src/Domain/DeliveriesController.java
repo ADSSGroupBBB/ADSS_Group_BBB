@@ -2,14 +2,14 @@ package Domain;
 
 import java.util.*;
 
-public class UserController {
+public class DeliveriesController {
 
-    private static Map<String, Driver> driversMap = new HashMap<>();
-    private static Map<String, Truck> trucksMap = new HashMap<>();
-    private static Map<String, Integer> totalItemsMap = new HashMap<>();
-    private static Map<String, Shipping_Zone> zoneMap = new HashMap<>();
-    private static Map<String, Location> locationsMap = new HashMap<>();
-    private static Map<String, Document> documentsMap = new HashMap<>();
+    protected static Map<String, Driver> driversMap = new HashMap<>();
+    protected static Map<String, Truck> trucksMap = new HashMap<>();
+    protected static Map<String, Integer> totalItemsMap = new HashMap<>();
+    protected static Map<String, Shipping_Zone> zoneMap = new HashMap<>();
+    protected static Map<String, Location> locationsMap = new HashMap<>();
+    protected static Map<String, Document> documentsMap = new HashMap<>();
 
     // Initialize base data for drivers, trucks, zones, locations, etc.
     public static void initBaseData() {
@@ -79,11 +79,11 @@ public class UserController {
         List<Shipment_item> items4 = new ArrayList<>(Arrays.asList(item1, item5));
         List<Shipment_item> items5 = new ArrayList<>(Arrays.asList(item2, item4));
 
-        Location location1 = new Location("Omer", "555-1234", "Haim Hazaz 123", zone1);
-        Location location2 = new Location("Ben", "555-5678", "Rager 12", zone2);
-        Location location3 = new Location("Lior", "555-9012", "Derech Metzada 17", zone3);
-        Location location4 = new Location("Meir", "555-3456", "Bialik 19", zone4);
-        Location location5 = new Location("Ariel", "555-7890", "BenGurion 1", zone5);
+        Location location1 = new Location("Omer", "555-1234", "Rager", zone1);
+        Location location2 = new Location("Ben", "555-5678", "Hazaz", zone2);
+        Location location3 = new Location("Lior", "555-9012", "Metzada", zone3);
+        Location location4 = new Location("Meir", "555-3456", "Bialik", zone4);
+        Location location5 = new Location("Ariel", "555-7890", "Bengurion", zone5);
         Location location6 = new Location("Noam", "123-456", "Headquarters", zone1);
 
         location1.setItems_required(items1);
@@ -101,159 +101,6 @@ public class UserController {
         locationsMap.put(location6.getAddress(), location6);
 
         documentsMap = new HashMap<>();
-    }
-
-    // Method to insert a new driver
-    public String insertDriver(String id, String name, List<Integer> licenseList) {
-        Driver new_d = new Driver(id, name, licenseList);
-
-        // Check if the driver already exists
-        if (!driversMap.containsKey(id)) {
-            driversMap.put(id, new_d);
-            return "New driver added: " + new_d.toString();
-        } else {
-            return "Driver with the same ID already exist.";
-        }
-    }
-
-    // Method to delete a driver
-    public String deleteDriver(String id) {
-        if (driversMap.containsKey(id)) {
-            Driver removed = driversMap.remove(id);
-            return "Driver removed: " + removed;
-        } else {
-            return "Driver with ID " + id + " doesn't exist.";
-        }
-    }
-
-    // Method to delete a license from a driver
-    public String deleteLicense(String id, int license) {
-        Driver driver = driversMap.get(id);
-        if (driver == null) {
-            return "No driver found with ID: " + id;
-        }
-        List<Integer> licenses = driver.getLicenses_list();
-
-        if (licenses.contains(license)) {
-            Integer licenseObj = license;
-            licenses.remove(licenseObj); // Removes the license from the list
-            return "License removed successfully.";
-        } else {
-            return "License not found.";
-        }
-    }
-
-    // Method to add a license to a driver
-    public String addLicense(String id, int license) {
-        Driver driver = driversMap.get(id);
-        if (driver == null) {
-            return "No driver found with ID: " + id;
-        }
-        List<Integer> licenses = driver.getLicenses_list();
-        if (licenses.contains(license)) {
-            return "License already exist.";
-        } else {
-            licenses.add(license);
-            return "License added successfully.";
-        }
-    }
-
-    // Method to add a shipping zone
-    public String addShippingZone(int id, String name) {
-        Shipping_Zone existingZone = findZoneByName(name);
-
-        if (existingZone != null) {
-            return "Zone with name " + name + " already exists.\nCurrent zone rank: " + existingZone.getNum();
-        } else {
-            Shipping_Zone newZone = new Shipping_Zone(id, name);
-            zoneMap.put(name, newZone);
-            return "New shipping zone created: " + newZone;
-        }
-    }
-
-    // Helper method to find a zone by name
-    private static Shipping_Zone findZoneByName(String name) {
-        for (String key : zoneMap.keySet()) {
-            if (Objects.equals(key, name)) {
-                return zoneMap.get(key);
-            }
-        }
-        return null;
-    }
-
-    // Method to delete a shipping zone
-    public String deleteZone(String name) {
-        Shipping_Zone zone = findZoneByName(name);
-        if (zone == null) {
-            return "Zone with this name doesn't exist";
-        } else {
-            zoneMap.remove(name);
-            return name + " deleted.";
-        }
-    }
-
-    // Updates the rank of a shipping zone
-    public String updateRank(String name, int rank) {
-        Shipping_Zone zone = findZoneByName(name);
-        if (zone == null) {
-            return "Zone with this name doesn't exist"; // Zone not found
-        } else {
-            zone.setNum(rank); // Update zone rank
-            return "Zone rank updated to " + rank; // Return confirmation message
-        }
-    }
-
-    // Adds a new truck to the system if it doesn't already exist
-    public String insertTruck(String id, int type, int truckWeight, int maxWeight) {
-        if (truckWeight > maxWeight) {
-            return "Error: Truck weight cannot exceed max weight."; // Check if weight is valid
-        }
-        if (!trucksMap.containsKey(id)) {
-            Truck newTruck = new Truck(id, type, truckWeight, maxWeight); // Create a new truck object
-            trucksMap.put(id, newTruck); // Add new truck to the map
-            return "Truck added: " + id; // Return confirmation message
-        } else {
-            return "Truck with ID already exists."; // Truck already exists
-        }
-    }
-
-    // Deletes a truck from the system by its ID
-    public String deleteTruck(String id) {
-        if (trucksMap.containsKey(id)) {
-            trucksMap.remove(id); // Remove truck from the map
-            return "Truck removed: " + id; // Return confirmation message
-        } else {
-            return "Truck with ID " + id + " doesn't exist."; // Truck not found
-        }
-    }
-
-    // Marks a truck as available for driving
-    public boolean isAvailableTruck(String id) {
-        if (trucksMap.containsKey(id)) {
-            trucksMap.get(id).setOnDrive(true); // Set truck to on drive
-            return true; // Truck is available
-        } else {
-            return false; // Truck not found
-        }
-    }
-
-    // Checks if a driver is available for a specific truck
-    public String isAvailableDriver(String id, String truckID) {
-        if (driversMap.containsKey(id)) {
-            Driver driver = driversMap.get(id);
-            if (driver.is_available()) {
-                Truck truck = trucksMap.get(truckID);
-                if (driver.getLicenses_list().contains(truck.getType())) {
-                    driver.set_availability(false); // Mark driver as unavailable
-                    return "Driver is available."; // Return success message
-                }
-                return "Driver doesn't have correct license for this truck type"; // Incorrect license
-            } else {
-                return "Driver is not available for a new delivery"; // Driver unavailable
-            }
-        } else {
-            return "Driver doesn't exist"; // Driver not found
-        }
     }
 
     // Adds a new location to the system
@@ -278,19 +125,6 @@ public class UserController {
         } else {
             return "No location found with address: " + address; // Location not found
         }
-    }
-
-    // Prints all location addresses in the system
-    public String printLocations() {
-        StringBuilder sb = new StringBuilder();
-        for (String key : locationsMap.keySet()) {
-            sb.append("Address: ").append(key).append("\n"); // Append address to result
-        }
-        // Remove the last newline character if the StringBuilder is not empty
-        if (!sb.isEmpty()) {
-            sb.deleteCharAt(sb.length() - 1);
-        }
-        return sb.toString(); // Return formatted string of addresses
     }
 
     // Adds a destination location to a list
@@ -333,59 +167,63 @@ public class UserController {
         Collections.sort(subList, Comparator.comparingInt(loc -> loc.getZone().getNum()));
     }
 
-    // Changes the truck for a route, considering the total weight of items
-    public String changeTruck(List<Location> route, String truckID, String driverID) {
-        Truck truck = trucksMap.get(truckID);
-        truck.setOnDrive(false); // Mark current truck as not in use
-        int total_weight = 0;
-        Driver driver = driversMap.get(driverID);
-        for (int i = 1; i < route.size(); i++) {
-            for (Shipment_item item : route.get(i).getItems_required()) {
-                total_weight += item.getWeight() * item.getAmount(); // Calculate total weight
-            }
-        }
-        for (Truck t : trucksMap.values()) {
-            if (!t.getOnDrive() && driver.getLicenses_list().contains(t.getType())) {
-                int availableCapacity = t.getMax_weight() - t.getTruck_weight();
-                if (total_weight <= availableCapacity) {
-                    try {
-                        t.addItem(total_weight); // Add items to the truck
-                        t.setOnDrive(true); // Set truck as in use
-                        return t.getTruck_id(); // Return new truck ID
-                    } catch (WeightEx e) {
-                        // Continue to next truck if exception occurs
-                    }
-                }
-            }
-        }
-        return null; // No suitable truck found
-    }
+
 
     // Removes items from a route if the truck exceeds weight limits
-    public void removeItems(List<Location> route, String truckID, int total_weight) {
+    public String removeItems(List<Location> route, String truckID, String itemName, int itemAmount, String address, int totalWeight) {
         Truck truck = trucksMap.get(truckID);
-        int max = truck.getMax_weight(); // Get truck's max weight capacity
+        if (truck == null) {
+            return "Truck ID not found.";
+        }
+
+        // Find the location in the route that matches the address (excluding origin at index 0)
+        Location targetLocation = null;
         for (int i = 1; i < route.size(); i++) {
-            List<Shipment_item> items = route.get(i).getItems_required();
-            for (int j = 0; j < items.size() && total_weight > max; j++) {
-                Shipment_item item = items.get(j);
-                int itemWeight = item.getWeight();
-                int itemAmount = item.getAmount();
-
-                while (itemAmount > 0 && total_weight > max) {
-                    itemAmount--; // Remove one item
-                    total_weight -= itemWeight; // Reduce total weight
-                }
-
-                item.setAmount(itemAmount); // Update item amount after removal
-
-                // Remove item entirely if amount is zero
-                if (itemAmount == 0) {
-                    items.remove(j);
-                    j--; // Adjust index after removal
-                }
+            if (route.get(i).getAddress().equals(address)) {
+                targetLocation = route.get(i);
+                break;
             }
         }
+
+        if (targetLocation == null) {
+            return "Address not found in route.";
+        }
+
+        List<Shipment_item> items = targetLocation.getItems_required();
+        Shipment_item targetItem = null;
+        for (Shipment_item item : items) {
+            if (item.getName().equals(itemName)) {
+                targetItem = item;
+                break;
+            }
+        }
+
+        if (targetItem == null) {
+            return "Item not found at the given address.";
+        }
+
+        if (itemAmount > targetItem.getAmount()) {
+            return "Requested amount exceeds available amount.";
+        }
+
+        // Calculate weight to reduce and update truck weight
+        int weightPerItem = targetItem.getWeight();
+        int weightToRemove = weightPerItem * itemAmount;
+        int newTruckWeight = totalWeight - weightToRemove;
+
+        // Update item amount or remove it entirely if amount becomes zero
+        int remainingAmount = targetItem.getAmount() - itemAmount;
+        if (remainingAmount == 0) {
+            items.remove(targetItem);
+        } else {
+            targetItem.setAmount(remainingAmount);
+        }
+        if (truck.getMax_weight() >= newTruckWeight ){
+            truck.setCurr_weight(newTruckWeight);
+            return "Weight after removal still higher than max weight of this truck.";
+        }
+        else{return "Items removed successfully.";}
+
     }
 
     // Returns a list of all items required in a route
@@ -460,6 +298,24 @@ public class UserController {
             sb.append("ID: ").append(key).append("\n"); // Append document IDs to result
         }
         return sb.toString(); // Return all document IDs
+    }
+
+    // Method to print all the route items
+    public String printRouteItems(List<Location> route) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < route.size(); i++) {
+            List<Shipment_item> loc_items = route.get(i).getItems_required();
+            sb.append(route.get(i).getAddress()).append(":\n");
+            for (Shipment_item item : loc_items){
+                sb.append("Item: ").append(item.getName()).append(" Amount: ").append(item.getAmount()).append(" Weight" +
+                        " per one: ").append(item.getWeight()).append("\n");
+            }
+        }
+        // Remove the last newline character if the StringBuilder is not empty
+        if (!sb.isEmpty()) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString(); // Return formatted string of addresses
     }
 
     // Ends a delivery, marking the truck and driver as available

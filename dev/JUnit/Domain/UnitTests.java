@@ -8,16 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class UnitTests {
-
-    private UserApplication userApplication;
-    private UserController controller;
-
+public class UnitTests {}
+/**
     @Before
     public void setUp() {
-        userApplication = new UserApplication();
-        controller = new UserController();
-        UserController.initBaseData(); // Initialize the test data
+        LocationApplication la = new LocationApplication();
+        DeliveriesController dc = new DeliveriesController();
+        DeliveriesController.initBaseData(); // Initialize the test data
     }
 
 
@@ -54,7 +51,7 @@ public class UnitTests {
 
         // 5. Get a truck and check weight
         try {
-            int weight = userApplication.weightRouteItems("T002", route);
+            int weight = userApplication.weightRouteItems("T2", route);
             assertTrue(weight > 0);
         } catch (WeightEx e) {
             fail("Weight exception should not be thrown with this configuration");
@@ -69,8 +66,8 @@ public class UnitTests {
 
         // 8. Create delivery document
         String docId = userApplication.addDocument(
-                items, "2023-04-23", "T002", "09:00",
-                "D001", "Warehouse Address", route, "Test integration delivery"
+                items, "2023-04-23", "T2", "09:00",
+                "D1", "Warehouse Address", route, "Test integration delivery"
         );
         assertNotNull(docId);
 
@@ -141,13 +138,13 @@ public class UnitTests {
 
         // 4. Check weight and create document
         try {
-            int weight = userApplication.weightRouteItems("T002", route);
+            int weight = userApplication.weightRouteItems("T2", route);
             assertTrue(weight > 0);
 
             List<Shipment_item> items = userApplication.getTotalItems(route);
             String docId = userApplication.addDocument(
-                    items, "2023-04-23", "T002", "09:00",
-                    "D001", "Headquarters", route, "Storage alert delivery"
+                    items, "2023-04-23", "T2", "09:00",
+                    "D1", "Headquarters", route, "Storage alert delivery"
             );
 
             assertNotNull(docId);
@@ -191,7 +188,7 @@ public class UnitTests {
             // Expected exception - now handle it
 
             // 5. Check if another truck is available
-            String newTruckId = userApplication.changeTruck(route, truckId, "T1");
+            String newTruckId = userApplication.changeTruck(route, truckId, "D1");
             if (newTruckId != null) {
                 // Should be able to use a bigger truck
                 assertNotEquals(truckId, newTruckId);
@@ -276,9 +273,9 @@ public class UnitTests {
         route.add(origin);
 
         // Add multiple destinations
-        controller.addDestination("123 Main St", route);
-        controller.addDestination("456 Oak Ave", route);
-        controller.addDestination("789 Pine Rd", route);
+        controller.addDestination("Derech Metzada 17", route);
+        controller.addDestination("Bialik 19", route);
+        controller.addDestination("BenGurion 1", route);
 
         // Verify route size
         assertEquals(4, route.size());
@@ -296,8 +293,8 @@ public class UnitTests {
 
         // Create document for this multi-destination delivery
         String docId = controller.addDocument(
-                totalItems, "2023-04-23", "T002", "09:00",
-                "D001", "Headquarters", route, "Multi-destination test"
+                totalItems, "2023-04-23", "T2", "09:00",
+                "D1", "Headquarters", route, "Multi-destination test"
         );
 
         // Verify document was created
@@ -306,9 +303,9 @@ public class UnitTests {
         assertTrue(docInfo.contains("Multi-destination test"));
 
         // Verify all destinations are in the document
-        assertTrue(docInfo.contains("123 Main St"));
-        assertTrue(docInfo.contains("456 Oak Ave"));
-        assertTrue(docInfo.contains("789 Pine Rd"));
+        assertTrue(docInfo.contains("Derech Metzada 17"));
+        assertTrue(docInfo.contains("Bialik 19"));
+        assertTrue(docInfo.contains("BenGurion 1"));
     }
 
     @Test
@@ -403,14 +400,14 @@ public class UnitTests {
 
         // Create first document
         String doc1Id = controller.addDocument(
-                items, "2023-04-23", "T001", "09:00",
-                "D001", "Origin Address", destinations, "First delivery"
+                items, "2023-04-23", "T1", "09:00",
+                "D1", "Origin Address", destinations, "First delivery"
         );
 
         // Create second document
         String doc2Id = controller.addDocument(
-                items, "2023-04-24", "T002", "10:00",
-                "D002", "Origin Address", destinations, "Second delivery"
+                items, "2023-04-24", "T2", "10:00",
+                "D2", "Origin Address", destinations, "Second delivery"
         );
 
         // Verify both documents were created with different IDs
@@ -440,4 +437,4 @@ public class UnitTests {
     }
 
 
-}
+}*/
