@@ -1,7 +1,7 @@
 package Main;
 
-import Controller.EmployeeController;
-import Presentation.NavigationManager;
+import Controller_employee.EmployeeController;
+import Presentation_employee.NavigationManager;
 
 import java.time.LocalDate;
 
