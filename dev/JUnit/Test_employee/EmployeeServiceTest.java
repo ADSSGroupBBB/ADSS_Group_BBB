@@ -1,4 +1,4 @@
-package JUnit.Test_employee;
+package Test_employee;
 
 /**
  * Unit tests for the EmployeeService class.

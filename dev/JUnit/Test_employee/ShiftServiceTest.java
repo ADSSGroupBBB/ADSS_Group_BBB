@@ -1,4 +1,4 @@
-package JUnit.Test_employee;
+package Test_employee;
 
 import Service_employee.*;
 import org.junit.jupiter.api.BeforeEach;

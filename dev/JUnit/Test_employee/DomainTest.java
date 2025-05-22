@@ -1,4 +1,4 @@
-package JUnit.Test_employee;
+package Test_employee;
 /**
  * Comprehensive test suite for core domain classes in the employee and shift management system.
  *
