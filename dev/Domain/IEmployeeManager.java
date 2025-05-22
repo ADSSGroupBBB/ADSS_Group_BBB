@@ -29,6 +29,7 @@ public interface IEmployeeManager {
     Shift getShift(LocalDate date, ShiftType shiftType);
     Shift getShift(String shiftId);
     List<Shift> getAllShifts();
+//    boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName);
     boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName);
     boolean removeAssignmentFromShift(String shiftId, String positionName);
     boolean areAllRequiredPositionsCovered(String shiftId);

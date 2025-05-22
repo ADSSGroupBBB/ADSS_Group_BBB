@@ -155,6 +155,19 @@ public class EmployeeManager implements IEmployeeManager {
         return new ArrayList<>(shifts.values());
     }
 
+//    @Override
+//    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
+//        Shift shift = shifts.get(shiftId);
+//        Employee employee = employees.get(employeeId);
+//        Position position = positions.get(positionName);
+//
+//        if (shift == null || employee == null || position == null) {
+//            return false;
+//        }
+//
+//        return shift.assignEmployee(position, employee);
+//    }
+
     @Override
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
         Shift shift = shifts.get(shiftId);
@@ -165,6 +178,35 @@ public class EmployeeManager implements IEmployeeManager {
             return false;
         }
 
+        // בדיקת תקן
+        RequiredPositions requiredPositions = getRequiredPositions();
+        int requiredCount = requiredPositions.getRequiredCount(shift.getShiftType(), position);
+
+        if (requiredCount == 0) {
+            return false;
+        }
+
+        // בדיקת כמה עובדים כבר משובצים לתפקיד זה
+        long currentAssigned = shift.getAllAssignedEmployees().entrySet().stream()
+                .filter(entry -> entry.getKey().equals(position))
+                .count();
+
+        if (currentAssigned >= requiredCount) {
+            return false;
+        }
+
+        // וידוא שהעובד מוסמך (אם לא, הוסף הסמכה)
+        if (!employee.isQualifiedFor(position)) {
+            employee.addQualifiedPosition(position);
+        }
+
+        // וידוא זמינות (אם לא זמין, עדכן זמינות)
+        DayOfWeek dayOfWeek = shift.getDate().getDayOfWeek();
+        if (!employee.getAvailability().isAvailable(dayOfWeek, shift.getShiftType())) {
+            employee.getAvailability().updateAvailability(dayOfWeek, true, true);
+        }
+
+        // ביצוע השיבוץ
         return shift.assignEmployee(position, employee);
     }
 

@@ -287,39 +287,43 @@ public class EmployeeService {
         return convertShiftToDTO(shift);
     }
 
+//    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
+//        Shift shift = employeeManager.getShift(shiftId);
+//        Employee employee = employeeManager.getEmployee(employeeId);
+//        Position position = employeeManager.getPosition(positionName);
+//
+//        if (shift == null || employee == null || position == null) {
+//            return false;
+//        }
+//
+//        RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
+//        int requiredCount = requiredPositions.getRequiredCount(shift.getShiftType(), position);
+//
+//        if (requiredCount == 0) {
+//            return false;
+//        }
+//
+//        long currentAssigned = shift.getAllAssignedEmployees().entrySet().stream()
+//                .filter(entry -> entry.getKey().equals(position))
+//                .count();
+//
+//        if (currentAssigned >= requiredCount) {
+//            return false;
+//        }
+//
+//        if (!employee.isQualifiedFor(position)) {
+//            employee.addQualifiedPosition(position);
+//        }
+//
+//        DayOfWeek dayOfWeek = shift.getDate().getDayOfWeek();
+//        if (!employee.getAvailability().isAvailable(dayOfWeek, shift.getShiftType())) {
+//            employee.getAvailability().updateAvailability(dayOfWeek, true, true);
+//        }
+//
+//        return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
+//    }
+
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-        Shift shift = employeeManager.getShift(shiftId);
-        Employee employee = employeeManager.getEmployee(employeeId);
-        Position position = employeeManager.getPosition(positionName);
-
-        if (shift == null || employee == null || position == null) {
-            return false;
-        }
-
-        RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
-        int requiredCount = requiredPositions.getRequiredCount(shift.getShiftType(), position);
-
-        if (requiredCount == 0) {
-            return false;
-        }
-
-        long currentAssigned = shift.getAllAssignedEmployees().entrySet().stream()
-                .filter(entry -> entry.getKey().equals(position))
-                .count();
-
-        if (currentAssigned >= requiredCount) {
-            return false;
-        }
-
-        if (!employee.isQualifiedFor(position)) {
-            employee.addQualifiedPosition(position);
-        }
-
-        DayOfWeek dayOfWeek = shift.getDate().getDayOfWeek();
-        if (!employee.getAvailability().isAvailable(dayOfWeek, shift.getShiftType())) {
-            employee.getAvailability().updateAvailability(dayOfWeek, true, true);
-        }
-
         return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
     }
 
