@@ -5,15 +5,18 @@ import java.util.HashMap;
 import java.util.Map;
 //a class for the controller of agreement (manager)
 public class AgreementsController {
-    private static Map<Integer,Agreement> allAgreements;    //all agreements in a Map
-    private static int num=0;   //see if there is at least 1 agreement
+    private static AgreementsController instance;
+    private Map<Integer, Agreement> allAgreements;
 
-    //default constructor
-    public AgreementsController(){
-        if (num==0){
-            allAgreements=new HashMap<>();
-            num++;
+    private AgreementsController() {
+        allAgreements = new HashMap<>();
+    }
+
+    public static AgreementsController getInstance() {
+        if (instance == null) {
+            instance = new AgreementsController();
         }
+        return instance;
     }
 
     //a method to add a new agreement to a supplier
@@ -21,7 +24,7 @@ public class AgreementsController {
     //returns an int
     public int addNewAgreement(int supplierNumber,String date){
         Agreement agree=new Agreement(supplierNumber,date);
-        SupplierController s=new SupplierController();
+        SupplierController s=SupplierController.getInstance();
         s.addAgreement(supplierNumber,agree);
         allAgreements.put(agree.getIDNumber(),agree);
         return agree.getIDNumber();
@@ -29,7 +32,7 @@ public class AgreementsController {
     //add product to agreemennt
     //parameters:int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount
     public void addProToAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount){
-        ProductController p= new ProductController();
+        ProductController p= ProductController.getInstance();
         Product pro=p.getPro(numPro);
         allAgreements.get(id).addProductAgreement(pro,price,catalogNumber,amountToDiscount,discount);
     }
@@ -46,7 +49,7 @@ public class AgreementsController {
     //delete agreement
     //parameters: int numSup,int numAgree
     public void deleteAgree(int numSup,int numAgree){
-        SupplierController s=new SupplierController();
+        SupplierController s=SupplierController.getInstance();
         s.deleteAgreement(numSup,allAgreements.get(numAgree));
         allAgreements.remove(numAgree);
     }

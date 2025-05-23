@@ -4,7 +4,7 @@ import Domain.AgreementsController;
 import java.util.LinkedList;
 
 public class AgreementsApplication {
-    AgreementsController ac=new AgreementsController();
+    AgreementsController ac=AgreementsController.getInstance();
     public int addAgreement(int supplierNumber,String date){
         return ac.addNewAgreement(supplierNumber,date);
     }

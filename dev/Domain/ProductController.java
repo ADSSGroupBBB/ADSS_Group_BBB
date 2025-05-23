@@ -4,13 +4,20 @@ import java.util.HashMap;
 import java.util.Map;
 //a class for the manager (the controller) of Product
 public class ProductController {
-    private static Map<Integer,Product> allProducts;    //a Map of all Products
-    private static int num=0;   // tells if there is at least 1 Product
-    public ProductController(){
-        if (num==0){
-            allProducts=new HashMap<>();
-            num++;
+    private static ProductController instance; // the single instance
+    private Map<Integer, Product> allProducts; // map of all products
+
+    // private constructor to prevent outside instantiation
+    private ProductController() {
+        allProducts = new HashMap<>();
+    }
+
+    // public method to access the single instance
+    public static ProductController getInstance() {
+        if (instance == null) {
+            instance = new ProductController();
         }
+        return instance;
     }
     //checks if a certain product exists
     //parameters:int productNumber
@@ -27,6 +34,7 @@ public class ProductController {
         Product pro=new Product(productName,productNumber,u,manufacturer);
         allProducts.put(productNumber,pro);
     }
+    public Map<Integer,Product> getAllProducts(){ return allProducts;}
 
     public void setNamePro(int productNumber,String productName){
         allProducts.get(productNumber).setProductName(productName);

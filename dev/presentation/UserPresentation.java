@@ -33,10 +33,10 @@ public class UserPresentation {
             }
         }
         if (secondC == 1) {
-            SupplierController s = new SupplierController();
-            ProductController p = new ProductController();
-            AgreementsController a = new AgreementsController();
-            OrderController o = new OrderController();
+            SupplierController s = SupplierController.getInstance();
+            ProductController p = ProductController.getInstance();
+            AgreementsController a = AgreementsController.getInstance();
+            OrderController o = OrderController.getInstance();
             LinkedList<String> contactNames1 = new LinkedList<>();
             contactNames1.add("John Doe");
             LinkedList<String> deliveryDays1 = new LinkedList<>();

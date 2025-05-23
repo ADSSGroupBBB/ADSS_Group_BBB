@@ -3,7 +3,7 @@ package Service;
 import Domain.ProductController;
 
 public class ProductApplication {
-    ProductController pc=new  ProductController();
+    ProductController pc=ProductController.getInstance();
     public boolean existProduct(int productNumber){
         return pc.checkPro(productNumber);
     }

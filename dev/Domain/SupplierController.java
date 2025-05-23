@@ -5,15 +5,22 @@ import java.util.LinkedList;
 import java.util.Map;
 //a class for the manager (the controller) of supplier
 public class SupplierController {
-    private static Map<Integer,Supplier> allSupplier;   //a map of all the suppliers
-    private static int num=0;   //a num to check if there is at least 1 supplier
-    //a default constructor
-    public SupplierController(){
-        if (num==0){
-            allSupplier=new HashMap<>();
-            num++;
-        }
+    private static SupplierController instance; // single instance
+    private Map<Integer, Supplier> allSupplier; // map of all suppliers
+
+    // private constructor to prevent direct instantiation
+    private SupplierController() {
+        allSupplier = new HashMap<>();
     }
+
+    // public method to access the single instance
+    public static SupplierController getInstance() {
+        if (instance == null) {
+            instance = new SupplierController();
+        }
+        return instance;
+    }
+
     //check if a certain supplier exists
     //parameters:int supplierNumber
     //returns a boolean value . if it exists it returns true ,and false otherwise

@@ -5,7 +5,7 @@ import Domain.*;
 import java.util.LinkedList;
 
 public class SupplierApplication {
-    SupplierController sc = new SupplierController();
+    SupplierController sc = SupplierController.getInstance();
     public boolean existSupplier(int supplierNumber){
         return sc.checkSup(supplierNumber);
     }

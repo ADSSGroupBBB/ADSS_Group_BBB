@@ -2,6 +2,7 @@ package presentation;
 
 
 import Service.AgreementsApplication;
+import Service.ProductApplication;
 
 import java.util.Scanner;
 
