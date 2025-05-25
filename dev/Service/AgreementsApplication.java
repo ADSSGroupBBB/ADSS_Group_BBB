@@ -41,4 +41,5 @@ public class AgreementsApplication {
     public boolean existP(int numS,int numP ){
         return ac.existProBySup(numS,numP);
     }
+
 }

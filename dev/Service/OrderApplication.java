@@ -1,30 +1,40 @@
 package Service;
 
-import Domain.AgreementsController;
-import Domain.OrderController;
-import Domain.ProductController;
-import Domain.Stock;
+import Domain.*;
+
 import java.util.*;
 
 
 public class OrderApplication {
     OrderController oc=OrderController.getInstance();
-    ProductController pc = ProductController.getInstance();
-    Stock st = Stock.getInstance(pc);
+    Stock st = Stock.getInstance();
+    static List<Integer> outOfStock = new ArrayList<>();
 
-    public void automatic_order(Stock st , ProductController pc){
-        List<Integer> outOfStock = new ArrayList<>();
-        if (st.getProductStock().containsValue(0)){
-            for (Map.Entry<Integer, Integer> entry : st.getProductStock().entrySet()) {
-                if (entry.getValue() == 0) {
-                    outOfStock.add(entry.getKey());
+    public void automatic_order(Map<Integer,Integer> soldPro){
+        Stock st = Stock.getInstance();
+        for (Map.Entry<Integer, PairInt> i : st.getProductStock().entrySet()){
+            for (Map.Entry<Integer, Integer> j : soldPro.entrySet()){
+                if(Objects.equals(i.getKey(), j.getKey())){
+                    int fir = i.getValue().first;
+                    int sec = i.getValue().second;
+                    PairInt cur = new PairInt(fir- soldPro.get(j.getKey()),sec);
+                    i.setValue(cur);
                 }
+            }
+        }
+        for (Map.Entry<Integer, PairInt> entry : st.getProductStock().entrySet()) {
+            if (entry.getValue().first < entry.getValue().second){
+                outOfStock.add(entry.getKey());
             }
         }
 
     }
 
-    public void addOrder(int orderNumber,int numSupplier,String address,String date,String contactPhone,String statusOrder){
+    public static List<Integer> getOutOfStock() {
+        return outOfStock;
+    }
+
+    public void addOrder(int orderNumber, int numSupplier, String address, String date, String contactPhone, String statusOrder){
          oc.addNewOrder(orderNumber,numSupplier,address,date,contactPhone,statusOrder);
     }
     public boolean orderExist(int orderNumber){
