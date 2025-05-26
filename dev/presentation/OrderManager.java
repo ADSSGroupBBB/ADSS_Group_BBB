@@ -71,19 +71,19 @@ public class OrderManager {
         String contactPhone;
         int amount;
         String statusOrder;
-        int am =0;
+        int a =0;
 
         System.out.println("Would you like to order manually or use an automatic order?");
         System.out.println("1. manual order");
         System.out.println("2. automatic order");
         if (scanner.hasNextInt()) {
-            am = scanner.nextInt();
+            a = scanner.nextInt();
             scanner.nextLine();
         } else {
             System.out.println("This is not a number, please enter it again");
             scanner.nextLine();
         }
-        if (am == 1){
+        if (a == 1){
             while (true) {
                 System.out.println("Enter the number of the supplier you would like to order from");
                 if (scanner.hasNextInt()) {
@@ -251,7 +251,7 @@ public class OrderManager {
                     return;
                 }
             }
-        }else if (am ==2){
+        }else if (a ==2){
             List<Integer> oos=OrderApplication.getOutOfStock();
 
         }
