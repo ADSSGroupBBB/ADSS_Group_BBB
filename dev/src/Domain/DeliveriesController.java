@@ -13,33 +13,8 @@ public class DeliveriesController {
 
     // Initialize base data for drivers, trucks, zones, locations, etc.
     public static void initBaseData() {
-        // Create some sample shipment items
-        Shipment_item item1 = new Shipment_item(10, "Milk");
-        Shipment_item item2 = new Shipment_item(5, "Bread");
-        Shipment_item item3 = new Shipment_item(20, "Juice");
-        Shipment_item item4 = new Shipment_item(2, "Eggs");
-        Shipment_item item5 = new Shipment_item(15, "Meat");
 
-        // Add items to the totalItemsMap
-        totalItemsMap.put(item1.getName(), item1.getWeight());
-        totalItemsMap.put(item2.getName(), item2.getWeight());
-        totalItemsMap.put(item3.getName(), item3.getWeight());
-        totalItemsMap.put(item4.getName(), item4.getWeight());
-        totalItemsMap.put(item5.getName(), item5.getWeight());
-
-        // Create trucks and add them to the trucksMap
-        Truck truck1 = new Truck("T1", 111, 1, 5);
-        Truck truck2 = new Truck("T2", 222, 10000, 20000);
-        Truck truck3 = new Truck("T3", 333, 10000, 19000);
-        Truck truck4 = new Truck("T4", 111, 10000, 16000);
-        Truck truck5 = new Truck("T5", 222, 10000, 30000);
-
-        trucksMap.put(truck1.getTruck_id(), truck1);
-        trucksMap.put(truck2.getTruck_id(), truck2);
-        trucksMap.put(truck3.getTruck_id(), truck3);
-        trucksMap.put(truck4.getTruck_id(), truck4);
-        trucksMap.put(truck5.getTruck_id(), truck5);
-
+/*
         // Create drivers and add them to the driversMap
         List<Integer> licenses1 = new ArrayList<>(Arrays.asList(111, 222, 333));
         List<Integer> licenses2 = new ArrayList<>(Arrays.asList(111, 222, 333));
@@ -53,54 +28,12 @@ public class DeliveriesController {
         Driver driver4 = new Driver("D4", "Muhammad Younes", licenses4);
         Driver driver5 = new Driver("D5", "Lionel Messi", licenses5);
 
-        driversMap.put(driver1.getDriver_id(), driver1);
-        driversMap.put(driver2.getDriver_id(), driver2);
-        driversMap.put(driver3.getDriver_id(), driver3);
-        driversMap.put(driver4.getDriver_id(), driver4);
-        driversMap.put(driver5.getDriver_id(), driver5);
-
-        // Create shipping zones and add them to the zoneMap
-        Shipping_Zone zone1 = new Shipping_Zone(1, "Downtown");
-        Shipping_Zone zone2 = new Shipping_Zone(2, "Airport");
-        Shipping_Zone zone3 = new Shipping_Zone(3, "Suburbs");
-        Shipping_Zone zone4 = new Shipping_Zone(4, "Industrial Park");
-        Shipping_Zone zone5 = new Shipping_Zone(5, "Shopping District");
-
-        zoneMap.put(zone1.getName(), zone1);
-        zoneMap.put(zone2.getName(), zone2);
-        zoneMap.put(zone3.getName(), zone3);
-        zoneMap.put(zone4.getName(), zone4);
-        zoneMap.put(zone5.getName(), zone5);
-
-        // Create sample locations with items required and add them to the locationsMap
-        List<Shipment_item> items1 = new ArrayList<>(Arrays.asList(item1, item2));
-        List<Shipment_item> items2 = new ArrayList<>(Arrays.asList(item3, item4));
-        List<Shipment_item> items3 = new ArrayList<>(Arrays.asList(item5, item3));
-        List<Shipment_item> items4 = new ArrayList<>(Arrays.asList(item1, item5));
-        List<Shipment_item> items5 = new ArrayList<>(Arrays.asList(item2, item4));
-
-        Location location1 = new Location("Omer", "555-1234", "Rager", zone1);
-        Location location2 = new Location("Ben", "555-5678", "Hazaz", zone2);
-        Location location3 = new Location("Lior", "555-9012", "Metzada", zone3);
-        Location location4 = new Location("Meir", "555-3456", "Bialik", zone4);
-        Location location5 = new Location("Ariel", "555-7890", "Bengurion", zone5);
-        Location location6 = new Location("Noam", "123-456", "Headquarters", zone1);
-
-        location1.setItems_required(items1);
-        location2.setItems_required(items2);
-        location3.setItems_required(items3);
-        location4.setItems_required(items4);
-        location5.setItems_required(items5);
-        location6.setItems_required(items1);
-
-        locationsMap.put(location1.getAddress(), location1);
-        locationsMap.put(location2.getAddress(), location2);
-        locationsMap.put(location3.getAddress(), location3);
-        locationsMap.put(location4.getAddress(), location4);
-        locationsMap.put(location5.getAddress(), location5);
-        locationsMap.put(location6.getAddress(), location6);
-
-        documentsMap = new HashMap<>();
+        driversMap.put(driver1.getId(), driver1);
+        driversMap.put(driver2.getId(), driver2);
+        driversMap.put(driver3.getId(), driver3);
+        driversMap.put(driver4.getId(), driver4);
+        driversMap.put(driver5.getId(), driver5);
+*/
     }
 
     // Adds a new location to the system
@@ -322,7 +255,7 @@ public class DeliveriesController {
     public String endDelivery(String doc_id) {
         Document document = documentsMap.get(doc_id);
         if (document != null) {
-            driversMap.get(document.getDriver_id()).set_availability(true); // Mark driver available
+            driversMap.get(document.getDriver_id()).set_availabilityToDrive(true); // Mark driver available
             Truck truck = trucksMap.get(document.getTruck_id());
             truck.setOnDrive(false); // Mark truck not in use
             truck.setCurr_weight(truck.getTruck_weight()); // Reset truck weight

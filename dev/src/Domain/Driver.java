@@ -1,38 +1,23 @@
 package Domain;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-
+import Domain_employee.Employee;
 /**
  * Represents a driver in the system.
  */
-public class Driver {
-    private String driver_id; // Unique identifier for the driver
-    private String name; // Driver's name
+public class Driver extends Employee{
     private List<Integer> licenses_list; // List of license types (as integers)
-    private boolean availability; // Driver's availability status
+    private boolean availableToDrive;// Driver's availability status
 
     // Constructor
-    public Driver(String driver_id, String name, List<Integer> licenses_list) {
+    public Driver(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary,
+                  UserRole role, String password, int sickDays, int vacationDays, String pensionFundName, List<Integer> licenses_list) {
         // Initialize driver fields
-        this.driver_id = driver_id;
-        this.name = name;
+        super(id, firstName, lastName, bankAccount, startDate, salary, role, password, sickDays, vacationDays,pensionFundName);
         this.licenses_list = licenses_list;
-        this.availability = true; // Default availability is true
-    }
-
-    // Getters and Setters
-
-    public String getDriver_id() {
-        return driver_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        this.availableToDrive = true; // Default availability is true
     }
 
     public List<Integer> getLicenses_list() {
@@ -44,11 +29,11 @@ public class Driver {
     }
 
     public boolean is_available() {
-        return availability;
+        return availableToDrive;
     }
 
-    public void set_availability(boolean is_available) {
-        this.availability = is_available;
+    public void set_availabilityToDrive(boolean is_available) {
+        this.availableToDrive = is_available;
     }
 
     // String representation of the driver
@@ -62,6 +47,6 @@ public class Driver {
                 licensesStr.append(" ");
             }
         }
-        return "Driver {id=" + driver_id + ", name='" + name + "', " + " licences list: " + licensesStr + "}";
+        return super.toString() + " licences list: " + licensesStr + " can drive: " + availableToDrive + " }";
     }
 }

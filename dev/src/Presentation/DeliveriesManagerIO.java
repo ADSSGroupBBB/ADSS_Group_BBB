@@ -1,5 +1,6 @@
 package Presentation;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 import Domain.DeliveriesController;
@@ -9,7 +10,7 @@ import Service.*;
 public class DeliveriesManagerIO {
 
     // Method to present the main menu to the user
-    public static void presentingMenu() {
+    public static void presentingMenu() throws SQLException {
         Scanner scanner = new Scanner(System.in);
         final int PASSWORD = 1; // Hardcoded password value
         int attempts = 0; // Counter for password attempts

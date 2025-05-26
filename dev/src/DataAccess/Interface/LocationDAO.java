@@ -1,0 +1,13 @@
+package DataAccess.Interface;
+
+import DTO.LocationDTO;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+
+public interface LocationDAO {
+    Optional<LocationDTO> findById(int id) throws SQLException;
+    List<LocationDTO> findAll() throws SQLException;
+    LocationDTO save(LocationDTO location) throws SQLException;
+}

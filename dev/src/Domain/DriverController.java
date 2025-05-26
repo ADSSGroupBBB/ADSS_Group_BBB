@@ -4,6 +4,7 @@ import java.util.List;
 
 public class DriverController extends DeliveriesController {
     // Method to insert a new driver
+    /**
     public String insertDriver(String id, String name, List<Integer> licenseList) {
         Driver new_d = new Driver(id, name, licenseList);
 
@@ -15,7 +16,7 @@ public class DriverController extends DeliveriesController {
             return "Driver with the same ID already exist.";
         }
     }
-
+*/
     // Method to delete a driver
     public String deleteDriver(String id) {
         if (driversMap.containsKey(id)) {
@@ -65,7 +66,7 @@ public class DriverController extends DeliveriesController {
             if (driver.is_available()) {
                 Truck truck = trucksMap.get(truckID);
                 if (driver.getLicenses_list().contains(truck.getType())) {
-                    driver.set_availability(false); // Mark driver as unavailable
+                    driver.set_availabilityToDrive(false); // Mark driver as unavailable
                     return "Driver is available."; // Return success message
                 }
                 return "Driver doesn't have correct license for this truck type"; // Incorrect license

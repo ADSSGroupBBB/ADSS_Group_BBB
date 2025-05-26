@@ -3,12 +3,13 @@ package Presentation;
 import Service.LocationApplication;
 import Service.TrucksApplication;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class TrucksMenu {
     private static TrucksApplication ta = new TrucksApplication();
     // Method for adding a new truck
-    public void addTruck() {
+    public void addTruck() throws SQLException {
         System.out.println("Add Truck selected.");
         Scanner scanner = new Scanner(System.in);
 
@@ -33,7 +34,7 @@ public class TrucksMenu {
     }
 
     // Method for deleting an existing truck by its ID
-    public void deleteTruck() {
+    public void deleteTruck() throws SQLException {
         System.out.println("Delete Truck selected.");
         Scanner scanner = new Scanner(System.in);
 

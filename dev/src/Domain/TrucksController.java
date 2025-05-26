@@ -1,16 +1,33 @@
 package Domain;
 
+import DTO.TruckDTO;
+import DataAccess.DAO.TruckDAOImpl;
+import DataAccess.Interface.TruckDAO;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class TrucksController  extends DeliveriesController{
+    private static final TruckDAO truckDAO = new TruckDAOImpl();
+
     // Adds a new truck to the system if it doesn't already exist
-    public String insertTruck(String id, int type, int truckWeight, int maxWeight) {
+    public String insertTruck(String id, int type, int truckWeight, int maxWeight) throws SQLException {
         if (truckWeight > maxWeight) {
             return "Error: Truck weight cannot exceed max weight."; // Check if weight is valid
         }
         if (!trucksMap.containsKey(id)) {
+            Optional<TruckDTO> optionalTruck = truckDAO.findById(id);
+            if (optionalTruck.isPresent()) {
+                return "Truck with ID already exists."; // Truck already exists
+            }
             Truck newTruck = new Truck(id, type, truckWeight, maxWeight); // Create a new truck object
             trucksMap.put(id, newTruck); // Add new truck to the map
+            TruckDTO newDto = new TruckDTO(id,type,truckWeight, maxWeight, truckWeight, false);
+            truckDAO.save(newDto);
             return "Truck added: " + id; // Return confirmation message
         } else {
             return "Truck with ID already exists."; // Truck already exists
@@ -18,29 +35,52 @@ public class TrucksController  extends DeliveriesController{
     }
 
     // Deletes a truck from the system by its ID
-    public String deleteTruck(String id) {
+    public String deleteTruck(String id) throws SQLException {
         if (trucksMap.containsKey(id)) {
             trucksMap.remove(id); // Remove truck from the map
+            truckDAO.deleteById(id);
             return "Truck removed: " + id; // Return confirmation message
         } else {
+            Optional<TruckDTO> optionalTruck = truckDAO.findById(id);
+            if (optionalTruck.isPresent()) {
+                truckDAO.deleteById(id);
+                return "Truck removed: " + id; // Return confirmation message
+            }
             return "Truck with ID " + id + " doesn't exist."; // Truck not found
         }
     }
 
     // Marks a truck as available for driving
-    public boolean isAvailableTruck(String id) {
+    public boolean isAvailableTruck(String id) throws SQLException {
         if (trucksMap.containsKey(id)) {
+            if (trucksMap.get(id).getOnDrive()){
+                return false;
+            }
             trucksMap.get(id).setOnDrive(true); // Set truck to on drive
             return true; // Truck is available
-        } else {
-            return false; // Truck not found
+        } else{
+            Optional<TruckDTO> optionalTruck = truckDAO.findById(id);
+            if (optionalTruck.isPresent()) {
+                TruckDTO truck = optionalTruck.get();
+                Truck newTruck = new Truck(truck.truck_id(), truck.type(), truck.truck_weight(), truck.max_weight());
+                newTruck.setOnDrive(true);
+                trucksMap.put(truck.truck_id(), newTruck);
+                if (truck.onDrive()){
+                    newTruck.setOnDrive(true);
+                    return false;
+                }
+                return true;
+            }
+            return false; // Truck not found in table
         }
     }
 
     // Changes the truck for a route, considering the total weight of items
-    public String changeTruck(List<Location> route, String truckID, String driverID) {
+    public String changeTruck(List<Location> route, String truckID, String driverID) throws SQLException {
         Truck truck = trucksMap.get(truckID);
-        truck.setOnDrive(false); // Mark current truck as not in use
+        truck.setOnDrive(false);
+        truck.setCurr_weight(truck.getTruck_weight());// Mark current truck as not in use
+        truckDAO.save(new TruckDTO(truck.getTruck_id(), truck.getType(), truck.getTruck_weight(), truck.getMax_weight(), truck.getCurrWeight(), truck.getOnDrive()));
         int total_weight = 0;
         Driver driver = driversMap.get(driverID);
         for (int i = 1; i < route.size(); i++) {
@@ -55,6 +95,7 @@ public class TrucksController  extends DeliveriesController{
                     try {
                         t.addItem(total_weight); // Add items to the truck
                         t.setOnDrive(true); // Set truck as in use
+                        truckDAO.save(new TruckDTO(t.getTruck_id(), t.getType(), t.getTruck_weight(), t.getMax_weight(), t.getCurrWeight(), t.getOnDrive()));
                         return t.getTruck_id(); // Return new truck ID
                     } catch (WeightEx e) {
                         // Continue to next truck if exception occurs
@@ -66,8 +107,15 @@ public class TrucksController  extends DeliveriesController{
     }
 
     // Prints all trucks id in the system
-    public String printTrucks() {
+    public String printTrucks() throws SQLException {
         StringBuilder sb = new StringBuilder();
+        List<TruckDTO> list = truckDAO.findAll();
+        for (TruckDTO dto : list){
+            if (!trucksMap.containsKey(dto.truck_id())){
+                Truck newTruck = new Truck(dto.truck_id(), dto.type(), dto.truck_weight(), dto.max_weight()); // Create a new truck object
+                trucksMap.put(newTruck.getTruck_id(), newTruck);
+            }
+        }
         for (String key : trucksMap.keySet()) {
             sb.append("Truck: ").append(key).append("\n"); // Append truck to result
         }

@@ -60,7 +60,7 @@ public class DriversMenu {
         }
 
         // Call the service method to insert the new driver
-        System.out.println(da.insertDriver(driverId, name, licenseList));
+        //System.out.println(da.insertDriver(driverId, name, licenseList));
     }
 
     // Method to update or delete an existing driver

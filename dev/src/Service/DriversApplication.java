@@ -6,10 +6,11 @@ import Domain.DriverController;
 public class DriversApplication {
     private static DriverController dc = new DriverController();
     // Method to insert a new driver
+    /**
     public String insertDriver(String id, String name, List<Integer> licenseList) {
         return dc.insertDriver(id, name, licenseList); // Delegate to UserController to insert the driver
     }
-
+*/
     // Method to delete a driver by ID
     public String deleteDriver(String id) {
         return dc.deleteDriver(id); // Delegate to UserController to delete the driver

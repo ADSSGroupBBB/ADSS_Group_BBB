@@ -8,6 +8,7 @@ import Service.DriversApplication;
 import Service.LocationApplication;
 import Service.TrucksApplication;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ public class DeliveriesMenu {
     private static LocationApplication la = new LocationApplication();
 
     // Method to add a new delivery to the system
-    public void addDelivery(List<Location> route) {
+    public void addDelivery(List<Location> route) throws SQLException {
         Scanner scanner = new Scanner(System.in);  // Scanner object to read user input
         TrucksApplication ta = new TrucksApplication();
         DriversApplication dra = new DriversApplication();
@@ -181,7 +182,7 @@ public class DeliveriesMenu {
     }
 
     // Method to handle storage alerts for items
-    public void gotStorageAlert() {
+    public void gotStorageAlert() throws SQLException {
         System.out.println("Got storage alert.");
         Scanner scanner = new Scanner(System.in);  // Scanner object to read user input
 
