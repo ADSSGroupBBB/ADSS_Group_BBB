@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
+import Service_employee.EmployeeService;
 import Service_employee.EmployeeDTO;
 
 /**
@@ -8,7 +8,7 @@ import Service_employee.EmployeeDTO;
  * Implements high cohesion by focusing only on login functionality
  */
 public class LoginScreen extends BaseScreen {
-    private final EmployeeController employeeController;
+    private final EmployeeService employeeController;
     private final NavigationManager navigationManager;
     private EmployeeDTO loggedInEmployee;
 

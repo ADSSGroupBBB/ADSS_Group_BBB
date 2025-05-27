@@ -43,7 +43,7 @@ package Test_employee;
  */
 
 import Service_employee.EmployeeDTO;
-import Service_employee.EmployeeService;
+import Domain_employee.EmployeeController;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,11 +56,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EmployeeServiceTest {
 
-    private EmployeeService employeeService;
+    private EmployeeController employeeService;
 
     @BeforeEach
     void setUp() {
-        employeeService = new EmployeeService();
+        employeeService = new EmployeeController();
 
         // Clear existing data before each test
         for (EmployeeDTO emp : employeeService.getAllEmployees()) {

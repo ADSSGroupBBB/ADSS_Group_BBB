@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 public final class Database {
-    private static final String DB_URL = "jdbc:sqlite:stocks.db";
+    private static final String DB_URL = "jdbc:sqlite:deliveries.db";
     private static Connection conn;
 
     static {
@@ -65,7 +65,7 @@ public final class Database {
 
                 st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS locations (
-                        address       TEXT PRIMARY KEY,
+                        address       TEXT PRIMARY KEY,9
                         contact_name  TEXT NOT NULL,
                         contact_num   TEXT NOT NULL,
                         zone_name     TEXT NOT NULL,

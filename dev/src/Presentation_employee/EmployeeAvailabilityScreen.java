@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
+import Service_employee.EmployeeService;
 import Service_employee.EmployeeDTO;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * EmployeeAvailabilityScreen is responsible for managing the UI related to employee availability.
  */
 public class EmployeeAvailabilityScreen extends BaseScreen {
-    private final EmployeeController employeeController;
+    private final EmployeeService employeeController;
     private final EmployeeDTO loggedInEmployee;
 
     private static final String[] DAYS_IN_HEBREW = {
@@ -26,7 +26,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     /**
      * Constructs an EmployeeAvailabilityScreen with the employee controller and logged-in user.
      */
-    public EmployeeAvailabilityScreen(EmployeeController employeeController, EmployeeDTO loggedInEmployee) {
+    public EmployeeAvailabilityScreen(EmployeeService employeeController, EmployeeDTO loggedInEmployee) {
         this.employeeController = employeeController;
         this.loggedInEmployee = loggedInEmployee;
     }

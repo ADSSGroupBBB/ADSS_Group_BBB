@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Controller_employee.PositionController;
+import Service_employee.PositionService;
 import Service_employee.EmployeeDTO;
 import Service_employee.PositionDTO;
 import java.util.List;
@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
  * employee qualifications in the system.
  */
 public class QualificationManagementScreen extends BaseScreen {
-    private final PositionController positionController;
+    private final PositionService positionController;
     private final EmployeeDTO loggedInEmployee;
 
     /**
      * Constructor that takes a position controller and the logged-in employee for permission checking.
      */
-    public QualificationManagementScreen(PositionController positionController, EmployeeDTO loggedInEmployee) {
+    public QualificationManagementScreen(PositionService positionController, EmployeeDTO loggedInEmployee) {
         this.positionController = positionController;
         this.loggedInEmployee = loggedInEmployee;
     }

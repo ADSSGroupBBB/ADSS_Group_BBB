@@ -1,6 +1,9 @@
 package Test_employee;
 
-import Service_employee.*;
+import Domain_employee.EmployeeController;
+import Domain_employee.ShiftController;
+import Service_employee.EmployeeDTO;
+import Service_employee.ShiftDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.DayOfWeek;
@@ -17,13 +20,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ShiftServiceTest {
 
-    private ShiftService shiftService;
-    private EmployeeService employeeService;
+    private ShiftController shiftService;
+    private EmployeeController employeeService;
 
     @BeforeEach
     void setUp() {
-        employeeService = new EmployeeService();
-        shiftService = new ShiftService();
+        employeeService = new EmployeeController();
+        shiftService = new ShiftController();
 
         // Clean existing employees before each test to ensure a fresh state
         for (EmployeeDTO emp : employeeService.getAllEmployees()) {

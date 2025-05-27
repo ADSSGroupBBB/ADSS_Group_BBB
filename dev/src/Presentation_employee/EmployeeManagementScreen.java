@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
+import Service_employee.EmployeeService;
 import Service_employee.EmployeeDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,7 +12,7 @@ import java.util.List;
  * This screen allows HR managers to add, view, search, update, and remove employees.
  */
 public class EmployeeManagementScreen extends BaseScreen {
-    private final EmployeeController employeeController;
+    private final EmployeeService employeeController;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
     private final NavigationManager navigationManager;
@@ -20,7 +20,7 @@ public class EmployeeManagementScreen extends BaseScreen {
     /**
      * Constructor that takes controllers and the navigation manager.
      */
-    public EmployeeManagementScreen(EmployeeController employeeController, NavigationManager navigationManager) {
+    public EmployeeManagementScreen(EmployeeService employeeController, NavigationManager navigationManager) {
         this.employeeController = employeeController;
         this.navigationManager = navigationManager;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");

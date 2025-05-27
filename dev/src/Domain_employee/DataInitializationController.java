@@ -1,8 +1,10 @@
-package Service_employee;
+package Domain_employee;
 
-import Controller_employee.EmployeeController;
-import Controller_employee.PositionController;
-import Controller_employee.ShiftController;
+import Service_employee.EmployeeService;
+import Service_employee.PositionService;
+import Service_employee.ShiftDTO;
+import Service_employee.ShiftService;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -11,15 +13,15 @@ import java.util.List;
  * Service responsible for initializing the system with sample data.
  * This service now uses Controllers for better separation of concerns.
  */
-public class DataInitializationService {
-    private final EmployeeController employeeController;
-    private final PositionController positionController;
-    private final ShiftController shiftController;
+public class DataInitializationController {
+    private final EmployeeService employeeController;
+    private final PositionService positionController;
+    private final ShiftService shiftController;
 
-    public DataInitializationService() {
-        this.employeeController = new EmployeeController();
-        this.positionController = new PositionController();
-        this.shiftController = new ShiftController();
+    public DataInitializationController() {
+        this.employeeController = new EmployeeService();
+        this.positionController = new PositionService();
+        this.shiftController = new ShiftService();
     }
 
     /**

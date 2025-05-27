@@ -1,8 +1,6 @@
-package Controller_employee;
+package Service_employee;
 
-import Service_employee.EmployeeDTO;
-import Service_employee.EmployeeService;
-import Service_employee.PositionDTO;
+import Domain_employee.EmployeeController;
 
 import java.util.List;
 
@@ -10,11 +8,11 @@ import java.util.List;
  * Controller responsible for handling position and qualification operations.
  * Acts as an intermediary between the presentation layer and the service layer.
  */
-public class PositionController {
-    private final EmployeeService employeeService;
+public class PositionService {
+    private final EmployeeController employeeService;
 
-    public PositionController() {
-        this.employeeService = new EmployeeService();
+    public PositionService() {
+        this.employeeService = new EmployeeController();
     }
 
     /**

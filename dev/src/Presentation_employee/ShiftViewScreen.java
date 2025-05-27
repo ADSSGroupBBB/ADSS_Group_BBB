@@ -1,7 +1,7 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
-import Controller_employee.ShiftController;
+import Service_employee.EmployeeService;
+import Service_employee.ShiftService;
 import Service_employee.EmployeeDTO;
 import Service_employee.ShiftDTO;
 import java.time.LocalDate;
@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
  * ShiftViewScreen provides the user interface for viewing both historical and future shifts.
  */
 public class ShiftViewScreen extends BaseScreen {
-    private final EmployeeController employeeController;
-    private final ShiftController shiftController;
+    private final EmployeeService employeeController;
+    private final ShiftService shiftController;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
-    public ShiftViewScreen(EmployeeController employeeController, ShiftController shiftController, EmployeeDTO loggedInEmployee) {
+    public ShiftViewScreen(EmployeeService employeeController, ShiftService shiftController, EmployeeDTO loggedInEmployee) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");

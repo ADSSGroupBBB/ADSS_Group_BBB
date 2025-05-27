@@ -1,9 +1,9 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
-import Controller_employee.ShiftController;
-import Controller_employee.PositionController;
-import Controller_employee.AssignmentController;
+import Service_employee.EmployeeService;
+import Service_employee.ShiftService;
+import Service_employee.PositionService;
+import Service_employee.AssignmentService;
 import Service_employee.EmployeeDTO;
 
 /**
@@ -11,10 +11,10 @@ import Service_employee.EmployeeDTO;
  * Responsible for initializing and navigating between screens.
  */
 public class NavigationManager {
-    private final EmployeeController employeeController;
-    private final ShiftController shiftController;
-    private final PositionController positionController;
-    private final AssignmentController assignmentController;
+    private final EmployeeService employeeController;
+    private final ShiftService shiftController;
+    private final PositionService positionController;
+    private final AssignmentService assignmentController;
     private LoginScreen loginScreen;
     private EmployeeDTO loggedInEmployee;
 
@@ -23,10 +23,10 @@ public class NavigationManager {
      * Initializes the core controllers and the login screen.
      */
     public NavigationManager() {
-        this.employeeController = new EmployeeController();
-        this.shiftController = new ShiftController();
-        this.positionController = new PositionController();
-        this.assignmentController = new AssignmentController();
+        this.employeeController = new EmployeeService();
+        this.shiftController = new ShiftService();
+        this.positionController = new PositionService();
+        this.assignmentController = new AssignmentService();
         this.loginScreen = new LoginScreen(this);
         this.loggedInEmployee = null;
     }
@@ -135,19 +135,19 @@ public class NavigationManager {
         }
     }
 
-    public EmployeeController getEmployeeController() {
+    public EmployeeService getEmployeeController() {
         return employeeController;
     }
 
-    public ShiftController getShiftController() {
+    public ShiftService getShiftController() {
         return shiftController;
     }
 
-    public PositionController getPositionController() {
+    public PositionService getPositionController() {
         return positionController;
     }
 
-    public AssignmentController getAssignmentController() {
+    public AssignmentService getAssignmentController() {
         return assignmentController;
     }
 

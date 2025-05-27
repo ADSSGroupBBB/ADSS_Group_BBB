@@ -1,8 +1,8 @@
 package Presentation_employee;
 
-import Controller_employee.AssignmentController;
-import Controller_employee.EmployeeController;
-import Controller_employee.ShiftController;
+import Service_employee.AssignmentService;
+import Service_employee.EmployeeService;
+import Service_employee.ShiftService;
 import Service_employee.EmployeeDTO;
 import Service_employee.PositionDTO;
 import Service_employee.ShiftDTO;
@@ -19,17 +19,17 @@ import java.util.Map;
  * ShiftSchedulingScreen provides the user interface for managing and scheduling shifts.
  */
 public class ShiftSchedulingScreen extends BaseScreen {
-    private final EmployeeController employeeController;
-    private final ShiftController shiftController;
-    private final AssignmentController assignmentController;
+    private final EmployeeService employeeController;
+    private final ShiftService shiftController;
+    private final AssignmentService assignmentController;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
     /**
      * Constructor that takes controllers and logged-in employee for permission checking.
      */
-    public ShiftSchedulingScreen(EmployeeController employeeController, ShiftController shiftController,
-                                 AssignmentController assignmentController, EmployeeDTO loggedInEmployee) {
+    public ShiftSchedulingScreen(EmployeeService employeeController, ShiftService shiftController,
+                                 AssignmentService assignmentController, EmployeeDTO loggedInEmployee) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
         this.assignmentController = assignmentController;

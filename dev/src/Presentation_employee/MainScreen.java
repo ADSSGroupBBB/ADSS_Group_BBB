@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Controller_employee.DataInitializationController;
+import Service_employee.DataInitialization;
 import Service_employee.EmployeeDTO;
 
 /**
@@ -11,7 +11,7 @@ import Service_employee.EmployeeDTO;
 public class MainScreen extends BaseScreen {
     private final NavigationManager navigationManager;
     private final EmployeeDTO loggedInEmployee;
-    private final DataInitializationController dataInitializationController;
+    private final DataInitialization dataInitializationController;
 
     /**
      * Constructs a MainScreen with the specified navigation manager.
@@ -22,7 +22,7 @@ public class MainScreen extends BaseScreen {
     public MainScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
         this.loggedInEmployee = navigationManager.getLoggedInEmployee();
-        this.dataInitializationController = new DataInitializationController();
+        this.dataInitializationController = new DataInitialization();
     }
 
     /**

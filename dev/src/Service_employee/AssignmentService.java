@@ -1,7 +1,6 @@
-package Controller_employee;
+package Service_employee;
 
-import Service_employee.EmployeeDTO;
-import Service_employee.EmployeeService;
+import Domain_employee.EmployeeController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -10,11 +9,11 @@ import java.util.List;
  * Controller responsible for handling shift assignments.
  * Acts as an intermediary between the presentation layer and the service layer.
  */
-public class AssignmentController {
-    private final EmployeeService employeeService;
+public class AssignmentService {
+    private final EmployeeController employeeService;
 
-    public AssignmentController() {
-        this.employeeService = new EmployeeService();
+    public AssignmentService() {
+        this.employeeService = new EmployeeController();
     }
 
     /**
