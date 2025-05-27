@@ -491,42 +491,34 @@ public class SupplierManager {
                         case 1: {
                             nameSupplier = enterNameSupplier();
                             ua.setName(numSupplier,nameSupplier);
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 2: {
                             bankAccount = enterBankAccount();
                             ua.setBankAccount(numSupplier,bankAccount);
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 3: {
                             payment = enterPayment();
                             ua.setPayment(numSupplier,payment);
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 4: {
                             editContactNames(ua,numSupplier);
-                            SupplierManagerPresentation();
-                            //לשנות להוספה. מחיקה
                             return;
                         }
                         case 5: {
                             telephone=enterTelephone();
                             ua.setTelephone(numSupplier,telephone);
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 6: {
                             editDeliveryDays(ua,numSupplier);  //לשנות להוספה. מחיקה
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 7: {
                             deliverySending=enterDeliverySending();
                             ua.setDeliverySending(numSupplier,deliverySending);
-                            SupplierManagerPresentation();
                             return;
                         }
                         case 8: {
@@ -586,6 +578,14 @@ public class SupplierManager {
         }
         return false;
     }
+    public boolean constantSupplier(int num){
+        SupplierApplication sa = new SupplierApplication();
+        if (sa.isConstantSupplier(num)){
+            return true;
+        }
+        return false;
+    }
+
 
 }
 

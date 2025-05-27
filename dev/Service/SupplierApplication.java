@@ -51,6 +51,10 @@ public class SupplierApplication {
     public void setDeliverySending(int numSupplier,String deliverySending){
         sc.setDeliverySending(numSupplier,deliverySending);
     }
+    public boolean isConstantSupplier(int num){
+        return sc.isConstantSup(num);
+    }
+
 
 
 }

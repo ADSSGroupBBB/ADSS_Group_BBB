@@ -34,8 +34,8 @@ public class OrderApplication {
         return outOfStock;
     }
 
-    public void addOrder(int orderNumber, int numSupplier, String address, String date, String contactPhone, String statusOrder){
-         oc.addNewOrder(orderNumber,numSupplier,address,date,contactPhone,statusOrder);
+    public int addOrder(int numAgree ,int numSupplier, String address, String date, String contactPhone, String statusOrder){
+         return oc.addNewOrder(numAgree,numSupplier,address,date,contactPhone,statusOrder);
     }
     public boolean orderExist(int orderNumber){
         return oc.existOrder(orderNumber);
@@ -46,8 +46,8 @@ public class OrderApplication {
     public int numProAgreement(int numAgreement){
         return oc.numProByAgree(numAgreement);
     }
-    public boolean addItem(int orderNumber, int numAgreement, int numP,int amount){
-        return oc.addItemOrder(orderNumber, numAgreement, numP, amount);
+    public boolean addItem(int orderNumber, int numP,int amount){
+        return oc.addItemOrder(orderNumber, numP, amount);
     }
     public void deleteOrder(int orderNumber){
         oc.statusDelete(orderNumber);

@@ -1,5 +1,6 @@
 package Domain;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 //a class to represent the supplier
 public class Supplier {
@@ -137,6 +138,15 @@ public class Supplier {
             }
         }
         return printAll;
+    }
+
+    public ArrayList<Integer> listNumAgree() {
+        int i=1;
+        ArrayList<Integer> numbersA=new ArrayList<Integer>();
+        for (Agreement agreement:this.agreements){
+                numbersA.add(agreement.getIDNumber());
+        }
+        return numbersA;
     }
 
     //a method to print all the products from the supplier

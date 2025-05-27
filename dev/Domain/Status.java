@@ -1,4 +1,4 @@
 package Domain;
 //all situations of order status
-public enum Status {canceled,deleted, arrived}
+public enum Status {shipped,deleted, arrived,}
 

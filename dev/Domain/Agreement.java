@@ -3,11 +3,11 @@ package Domain;
 import java.util.LinkedList;
 //a class to represent an agreement between the store and the supplier
 public class Agreement {
-    private static int counterID=1; //a counter to keep track of the amount of agreements
-    private int IDNumber;   //agreement ID
-    private int supplierNumber; //the supplier this agreement belongs to
-    private LinkedList<QuantityAgreement> productsList; //the list of products for this agreement
-    private String date;    //the date the agreement was made
+    protected static int counterID=1; //a counter to keep track of the amount of agreements
+    protected int IDNumber;   //agreement ID
+    protected int supplierNumber; //the supplier this agreement belongs to
+    protected LinkedList<QuantityAgreement> productsList; //the list of products for this agreement
+    protected String date;    //the date the agreement was made
 
     //the agreement constructor
     //gets supplierNumber, date
@@ -16,10 +16,7 @@ public class Agreement {
         this.supplierNumber=supplierNumber;
         this.productsList=new LinkedList<QuantityAgreement>();
         this.date=date;
-//        SimpleDateFormat ft
-//                = new SimpleDateFormat("dd-MM-yyyy");
-//
-//        String str = ft.format(new Date());
+
     }
     //a method to add product to an agreement
     //gets: Product, double,int(catalogNumber),int(amountToDiscount),int(discount)
@@ -118,6 +115,7 @@ public class Agreement {
     public void setDate(String date) {
         this.date = date;
     }
+
 
     //IDNumber getter
     public int getIDNumber() {

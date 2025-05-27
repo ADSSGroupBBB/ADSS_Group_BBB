@@ -65,23 +65,29 @@ public class OrderManager {
         Scanner scanner = new Scanner(System.in);
         int numSupplier;
         int numAgreement;
-        int orderNumber;
         String address;
         String date;
         String contactPhone;
         int amount;
         String statusOrder;
         int a =0;
-
-        System.out.println("Would you like to order manually or use an automatic order?");
-        System.out.println("1. manual order");
-        System.out.println("2. automatic order");
-        if (scanner.hasNextInt()) {
-            a = scanner.nextInt();
-            scanner.nextLine();
-        } else {
-            System.out.println("This is not a number, please enter it again");
-            scanner.nextLine();
+        while (true) {
+            System.out.println("Would you like to order manually or use an automatic order?");
+            System.out.println("1. manual order");
+            System.out.println("2. automatic order");
+            if (scanner.hasNextInt()) {
+                a = scanner.nextInt();
+                scanner.nextLine();
+                if (a >= 1 && a <= 2) {
+                    break;
+                } else {
+                    System.out.println("The number is invalid, please select again");
+                    scanner.nextLine();
+                }
+            } else {
+                System.out.println("This is not a number, please enter it again");
+                scanner.nextLine();
+            }
         }
         if (a == 1){
             while (true) {
@@ -117,22 +123,6 @@ public class OrderManager {
                     System.out.println("The date cannot be empty, please enter again");
                 } else {
                     break;
-                }
-            }
-
-            while (true) {
-                System.out.println("Enter the order number");
-                if (scanner.hasNextInt()) {
-                    orderNumber = scanner.nextInt();
-                    scanner.nextLine();
-                    if (!oa.orderExist(orderNumber)) {
-                        break;
-                    } else {
-                        System.out.println("The order already exists in the system");
-                    }
-                } else {
-                    System.out.println("This is not a number, please enter it again");
-                    scanner.nextLine();
                 }
             }
             while (true) {
@@ -179,7 +169,7 @@ public class OrderManager {
                     numAgreement = scanner.nextInt();
                     scanner.nextLine();
                     AgreementsManager am = new AgreementsManager();
-                    if (am.agreeExist(numSupplier, numAgreement)) {
+                    if (am.regularAgreeExist(numSupplier, numAgreement)) {
                         break;
                     } else {
                         System.out.println("The Agreement not exists in the system");
@@ -189,7 +179,7 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
-            oa.addOrder(orderNumber,numSupplier,address,date,contactPhone,statusOrder);
+            int orderNumber= oa.addOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
             int numP = 0;
             LinkedList<Integer> numProducts=new LinkedList<Integer>();
             while (true) {
@@ -203,7 +193,7 @@ public class OrderManager {
                             System.out.println("The product is already available on order.");
                             continue;
                         }
-                        if (oa.numProAgreement(numAgreement) >= numP) {
+                        if (oa.numProAgreement(numAgreement) >= numP) { //Exceeds the range of options
                             numProducts.add(numP);
                             break;
                         } else {
@@ -225,7 +215,7 @@ public class OrderManager {
                         scanner.nextLine();
                     }
                 }
-                if(!oa.addItem(orderNumber, numAgreement, numP, amount)){
+                if(!oa.addItem(orderNumber, numP, amount)){
                     System.out.println("The product is already available on order.");
                     continue;
                 }
@@ -251,7 +241,32 @@ public class OrderManager {
                     return;
                 }
             }
-        }else if (a ==2){
+        }else {
+            int choiceType;
+            while (true) {
+                System.out.println("What type of automatic order would you like to place?");
+                System.out.println("1. Periodic Order");
+                System.out.println("2. Order Missing Products");
+                if (scanner.hasNextInt()) {
+                    choiceType = scanner.nextInt();
+                    scanner.nextLine();
+                    if (choiceType >= 1 && choiceType <= 2) {
+                        break;
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                        scanner.nextLine();
+                    }
+                } else {
+                    System.out.println("This is not a number, please enter it again");
+                    scanner.nextLine();
+                }
+            }
+            if (choiceType==1){
+
+            }
+
+
+
             List<Integer> oos=OrderApplication.getOutOfStock();
 
         }

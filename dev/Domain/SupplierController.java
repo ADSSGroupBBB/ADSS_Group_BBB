@@ -145,7 +145,21 @@ public class SupplierController {
     //delete supplier
     //parameter:int numSupplier
     public void deleteSup(int numSupplier){
+        AgreementsController ac=AgreementsController.getInstance();
+        Supplier s=allSupplier.get(numSupplier);
+        for (int numAgree: s.listNumAgree()){
+            ac.deleteAgree(numSupplier,numAgree);
+        }
         allSupplier.remove(numSupplier);
+    }
+    public boolean isConstantSup(int numSupplier){
+        if(allSupplier.get(numSupplier).getDeliveryDays()!=null){
+            return true;
+        }
+        return false;
+    }
+    public LinkedList<Days> getDays(int numSupplier){
+        return allSupplier.get(numSupplier).getDeliveryDays();
     }
     //turns a String to Days type
     //parameter:String day

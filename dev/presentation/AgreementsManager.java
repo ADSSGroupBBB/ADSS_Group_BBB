@@ -66,7 +66,7 @@ public class AgreementsManager {
             System.out.println("Enter the payment date");
             date = scanner.nextLine().trim();
             if (date.isEmpty()) {
-                System.out.println("The product's manufacturer cannot be empty, please enter again");
+                System.out.println("The payment date cannot be empty, please enter again");
             } else {
                 return date;
             }
@@ -86,6 +86,34 @@ public class AgreementsManager {
                 scanner.nextLine();
             }
         }
+    }
+    public String enterAdress(){
+        String address;
+        Scanner scanner=new Scanner(System.in);
+        while (true) {
+            System.out.println("Enter the destination address");
+            address = scanner.nextLine().trim();
+            if (address.isEmpty()) {
+                System.out.println("The address cannot be empty, please enter again");
+            } else {
+                break;
+            }
+        }
+        return address;
+    }
+    public String enterContactPhone(){
+        String contactPhone;
+        Scanner scanner=new Scanner(System.in);
+        while (true) {
+            System.out.println("Enter contact phone number");
+            contactPhone = scanner.nextLine().trim();
+            if (contactPhone.isEmpty()) {
+                System.out.println("The contact phone number cannot be empty, please enter again");
+            } else {
+                break;
+            }
+        }
+        return contactPhone;
     }
     public int enterCatalogNumber() {
         Scanner scanner = new Scanner(System.in);
@@ -132,8 +160,23 @@ public class AgreementsManager {
             }
         }
     }
+    public int enterAmountToOrder() {
+        Scanner scanner = new Scanner(System.in);
+        int amountToOrder;
+        while (true) {
+            System.out.println("Enter the fixed quantity you would like to order of the product");
+            if (scanner.hasNextInt()) {
+                amountToOrder = scanner.nextInt();
+                scanner.nextLine();
+                return amountToOrder;
+            } else {
+                System.out.println("This is not a number, please enter it again");
+                scanner.nextLine();
+            }
+        }
+    }
 
-    public void edit2(AgreementsApplication aa,int numSup,int numAgree) {
+    public void edit2(AgreementsApplication aa,int numSup,int numAgree,int typeAgreement) {
         Scanner scanner = new Scanner(System.in);
         int choice=0;
         while (true) {
@@ -153,30 +196,49 @@ public class AgreementsManager {
                                 if (scanner.hasNextInt()) {
                                     productNumber = scanner.nextInt();
                                     scanner.nextLine();
-                                    if (productExistAgre(productNumber,numAgree)) {
-                                        break;
-                                    } else {
+                                    if(typeAgreement==0||typeAgreement==1) {
+                                        if (productExistStandardAgre(productNumber, numAgree)) {
+                                            break;
+                                        }
+                                    }
+                                    else {
+                                        if (productExistPeriodAgre(productNumber, numAgree)) {
+                                            break;
+                                        }
+                                    }
                                         System.out.println("The product not exists in this agreement");
                                         scanner.nextLine();
-                                    }
                                 } else {
                                     System.out.println("This is not a number, please enter it again");
                                     scanner.nextLine();
                                 }
                             }
-                            aa.deleteProFromAgree(numSup,numAgree,productNumber);
+                            if(typeAgreement==0) {
+                                aa.deleteProFromStandardAgree(numSup, numAgree, productNumber);
+                            }
+                            else {
+                                aa.deleteProFromPeriodAgree(numSup, numAgree, productNumber);
+                            }
                             return;
                         }
                         case 2: {
                             ProductManager pm = new ProductManager();
                             int numPro = pm.addProduct();
-                            if (aa.existP(numSup,numPro)) {
+                            if (((typeAgreement!=2)&&(aa.existPRegular(numSup,numPro)))||(((typeAgreement==2))&&((aa.existPPeriod(numSup,numPro))))) {
+                                System.out.println("The product already exists in the agreement");
+                            }
+                            else {
                                 double price = enterPrice();
                                 int catalogNumber = enterCatalogNumber();
                                 int amountToDiscount = enterAmountToDiscount();
                                 int discount = enterDiscount();
-                                aa.addProductToAgreement(numAgree, numPro, price, catalogNumber, amountToDiscount, discount);
-                                return;
+                                if (typeAgreement==0||typeAgreement==1) {
+                                    aa.addProductToStandardAgreement(numAgree, numPro, price, catalogNumber, amountToDiscount, discount);
+                                }
+                                else {
+                                    int amountToOrder=enterAmountToOrder();
+                                    aa.addProductToPeriodAgreement(numAgree, numPro, price, catalogNumber, amountToDiscount, discount,amountToOrder);
+                                }
                             }
                             return;
                         }
@@ -191,60 +253,28 @@ public class AgreementsManager {
                                 if (scanner.hasNextInt()) {
                                     productNumber = scanner.nextInt();
                                     scanner.nextLine();
-                                    if (productExistAgre(productNumber, numAgree)) {
-                                        break;
-                                    } else {
-                                        System.out.println("The product not exists in this agreement\"");
-                                        //לחזור להתחלה
+                                    if(typeAgreement==0||typeAgreement==1) {
+                                        if (productExistStandardAgre(productNumber, numAgree)) {
+                                            break;
+                                        }
                                     }
+                                    else {
+                                        if (productExistPeriodAgre(productNumber, numAgree)) {
+                                            break;
+                                        }
+                                    }
+                                    System.out.println("The product not exists in this agreement");
+                                    scanner.nextLine();
                                 } else {
                                     System.out.println("This is not a number, please enter it again");
                                     scanner.nextLine();
                                 }
                             }
-                            int choiceS = 0;
-                            while (true) {
-                                System.out.println("What detail would you like to edit?");
-                                System.out.println("1. Product catalog number");
-                                System.out.println("2. Product price");
-                                System.out.println("3. Quantity from which discount will be applied");
-                                System.out.println("4. Discount to be applied for the given quantity");
-                                if (scanner.hasNextInt()) {
-                                    choiceS = scanner.nextInt();
-                                    scanner.nextLine();
-                                    if ((choiceS >= 1 && choiceS <= 4)) {
-                                        switch (choiceS) {
-                                            case 1: {
-                                                catalogNumber = enterCatalogNumber();
-                                                aa.setCatalogNumber(productNumber, numAgree, catalogNumber);
-                                                return;
-                                            }
-                                            case 2: {
-                                                price = enterPrice();
-                                                aa.setPrice(productNumber, numAgree, price);
-                                                return;
-                                            }
-                                            case 3: {
-                                                amountToDiscount = enterAmountToDiscount();
-                                                aa.setAmountToDiscount(productNumber, numAgree, amountToDiscount);
-                                                return;
-                                            }
-                                            case 4: {
-                                                discount = enterDiscount();
-                                                aa.setDiscount(productNumber, numAgree, discount);
-                                                return;
-                                            }
-                                        }
-
-                                    } else {
-                                        System.out.println("The number is invalid, please select again");
-
-                                    }
-                                } else {
-                                    System.out.println("The number is invalid, please select again");
-                                    scanner.nextLine();
-                                }
-
+                            if(typeAgreement!=2) {
+                                editProductStandard(scanner,aa,numAgree,productNumber);
+                            }
+                            else {
+                                editProductPeriod(scanner,aa,numAgree,productNumber);
                             }
 
                         }
@@ -256,6 +286,113 @@ public class AgreementsManager {
                 scanner.nextLine();
             }
         }
+    }
+    public void editProductStandard(Scanner scanner,AgreementsApplication aa,int numAgree,int productNumber){
+        int choiceS=0;
+        double price;
+        int catalogNumber;
+        int amountToDiscount;
+        int discount;
+        while (true) {
+            System.out.println("What detail would you like to edit?");
+            System.out.println("1. Product catalog number");
+            System.out.println("2. Product price");
+            System.out.println("3. Quantity from which discount will be applied");
+            System.out.println("4. Discount to be applied for the given quantity");
+            if (scanner.hasNextInt()) {
+                choiceS = scanner.nextInt();
+                scanner.nextLine();
+                if ((choiceS >= 1 && choiceS <= 4)) {
+                    switch (choiceS) {
+                        case 1: {
+                            catalogNumber = enterCatalogNumber();
+                            aa.setRegularCatalogNumber(productNumber, numAgree, catalogNumber);
+                            return;
+                        }
+                        case 2: {
+                            price = enterPrice();
+                            aa.setRegularPrice(productNumber, numAgree, price);
+                            return;
+                        }
+                        case 3: {
+                            amountToDiscount = enterAmountToDiscount();
+                            aa.setRegularAmountToDiscount(productNumber, numAgree, amountToDiscount);
+                            return;
+                        }
+                        case 4: {
+                            discount = enterDiscount();
+                            aa.setRegularDiscount(productNumber, numAgree, discount);
+                            return;
+                        }
+                    }
+
+                } else {
+                    System.out.println("The number is invalid, please select again");
+
+                }
+            } else {
+                System.out.println("The number is invalid, please select again");
+                scanner.nextLine();
+            }
+
+        }
+    }
+
+
+        public void editProductPeriod(Scanner scanner,AgreementsApplication aa,int numAgree,int productNumber){
+            int choiceS=0;
+            double price;
+            int catalogNumber;
+            int amountToDiscount;
+            int discount;
+        while (true) {
+            System.out.println("What detail would you like to edit?");
+            System.out.println("1. Product catalog number");
+            System.out.println("2. Product price");
+            System.out.println("3. Quantity from which discount will be applied");
+            System.out.println("4. Discount to be applied for the given quantity");
+            System.out.println("5. quantity you would like to order of the product");
+            if (scanner.hasNextInt()) {
+                choiceS = scanner.nextInt();
+                scanner.nextLine();
+                if ((choiceS >= 1 && choiceS <= 5)) {
+                    switch (choiceS) {
+                        case 1: {
+                            catalogNumber = enterCatalogNumber();
+                            aa.setPeriodCatalogNumber(productNumber, numAgree, catalogNumber);
+                            return;
+                        }
+                        case 2: {
+                            price = enterPrice();
+                            aa.setPeriodPrice(productNumber, numAgree, price);
+                            return;
+                        }
+                        case 3: {
+                            amountToDiscount = enterAmountToDiscount();
+                            aa.setPeriodAmountToDiscount(productNumber, numAgree, amountToDiscount);
+                            return;
+                        }
+                        case 4: {
+                            discount = enterDiscount();
+                            aa.setPeriodDiscount(productNumber, numAgree, discount);
+                            return;
+                        }
+                        case 5: {
+                            int amount = enterAmountToOrder();
+                            aa.setPeriodAmountToOrder(productNumber, numAgree, amount);
+                            return;
+                        }
+                    }
+                } else {
+                    System.out.println("The number is invalid, please select again");
+
+                }
+            } else {
+                System.out.println("The number is invalid, please select again");
+                scanner.nextLine();
+            }
+        }
+
     }
 
 
@@ -270,8 +407,8 @@ public class AgreementsManager {
             if (scanner.hasNextInt()) {
                 supplierNumber = scanner.nextInt();
                 scanner.nextLine();
-                SupplierManager am = new SupplierManager();
-                if (am.supplierExist(supplierNumber)) {
+                SupplierManager sm = new SupplierManager();
+                if (sm.supplierExist(supplierNumber)) {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
@@ -286,20 +423,30 @@ public class AgreementsManager {
     public void addAgreementBySup(int supplierNumber){
         Scanner scanner = new Scanner(System.in);
         AgreementsApplication aa = new AgreementsApplication();
+        SupplierManager sm = new SupplierManager();
         String date;
         double price;
         int catalogNumber;
         int amountToDiscount;
         int discount;
-        int choice = 0;
-        date=enterDate();
-        int id= aa.addAgreement(supplierNumber,date);
+        int typeChoice = constantSupplier(supplierNumber,scanner);
 
+        date=enterDate();
+        int id;
+        if (typeChoice!=2) {
+             id = aa.addStandardAgreement(supplierNumber, date);
+        }
+        else {
+            String address=enterAdress();
+             String contactPhone=enterContactPhone();
+             id= aa.addPeriodAgreement(supplierNumber, date,address,contactPhone);
+        }
+        int choice=0;
 
         ProductManager pm=new ProductManager();
         while (true) {
             int numPro= pm.addProduct();
-            if (aa.existP(supplierNumber,numPro)) {
+            if (((typeChoice!=2)&&(aa.existPRegular(supplierNumber,numPro)))||(((typeChoice==2))&&((aa.existPPeriod(supplierNumber,numPro))))) {
                 System.out.println("The product already exists in the agreement");
                 continue;
             }
@@ -308,7 +455,13 @@ public class AgreementsManager {
                 catalogNumber=enterCatalogNumber();
                 amountToDiscount=enterAmountToDiscount();
                 discount=enterDiscount();
-                aa.addProductToAgreement(id,numPro, price,catalogNumber,amountToDiscount,discount);
+                if (typeChoice==0||typeChoice==1) {
+                    aa.addProductToStandardAgreement(id, numPro, price, catalogNumber, amountToDiscount, discount);
+                }
+                else {
+                    int amountToOrder=enterAmountToOrder();
+                    aa.addProductToPeriodAgreement(id, numPro, price, catalogNumber, amountToDiscount, discount,amountToOrder);
+                }
 
                 while (true) {
                     System.out.println("Would you like to add another product?");
@@ -333,7 +486,6 @@ public class AgreementsManager {
                 }
 
             }
-            //לחזור לראשי
         }
 
     }
@@ -346,8 +498,8 @@ public class AgreementsManager {
             if (scanner.hasNextInt()) {
                 supplierNumber = scanner.nextInt();
                 scanner.nextLine();
-                SupplierManager am = new SupplierManager();
-                if (am.supplierExist(supplierNumber)) {
+                SupplierManager sm = new SupplierManager();
+                if (sm.supplierExist(supplierNumber)) {
                     break;
                 } else {
                     System.out.println("The supplier not exists in the system");
@@ -364,50 +516,108 @@ public class AgreementsManager {
         Scanner scanner = new Scanner(System.in);
         int numAgreement;
         String date;
+        int typeChoice =constantSupplier(supplierNumber,scanner);
         while (true) {
             System.out.println("Enter the agreement number you would like to edit");
             if (scanner.hasNextInt()) {
                 numAgreement = scanner.nextInt();
                 scanner.nextLine();
-                if (agreeExist(supplierNumber,numAgreement)) {
-                    break;
-                } else {
-                    System.out.println("The Agreement not exists in the system");
+                if (typeChoice == 0||typeChoice==1) {
+                    if (regularAgreeExist(supplierNumber, numAgreement)) {
+                        break;
+                    } else {
+                        System.out.println("The standard agreement not exists in the system");
+                    }
                 }
-            } else {
+                else {
+                    if (PeriodAgreeExist(supplierNumber, numAgreement)) {
+                        break;
+                    } else {
+                        System.out.println("The periodic agreement not exists in the system");
+                    }
+                }
+            }
+            else {
                 System.out.println("This is not a number, please enter it again");
                 scanner.nextLine();
             }
         }
         int choice = 0;
-        while (true) {
-            System.out.println("What would you like to edit?");
-            System.out.println("1. The date");
-            System.out.println("2. Product List");
+        if (typeChoice!=2) {
+            while (true) {
+                System.out.println("What would you like to edit?");
+                System.out.println("1. The date");
+                System.out.println("2. Product List");
 
-            if (scanner.hasNextInt()) {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-                if (choice >= 1 && choice <= 2) {
-                    switch (choice) {
-                        case 1: {
-                            date = enterDate();
-                            aa.setDate(supplierNumber,numAgreement,date);
-                            return;
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    if (choice >= 1 && choice <= 2) {
+                        switch (choice) {
+                            case 1: {
+                                date = enterDate();
+                                aa.setRegularDate(supplierNumber, numAgreement, date);
+                                return;
+                            }
+                            case 2: {
+                                edit2(aa, supplierNumber, numAgreement, typeChoice);
+                                return;
+                            }
                         }
-                        case 2: {
-                            edit2(aa,supplierNumber,numAgreement);
-                            return;
-                        }
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                        scanner.nextLine();
                     }
                 } else {
                     System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
-                }
-            } else {
-                System.out.println("The number is invalid, please select again");
-                scanner.nextLine();
 
+                }
+            }
+        }
+        else {
+            while (true) {
+                System.out.println("What would you like to edit?");
+                System.out.println("1. The date");
+                System.out.println("2. The address");
+                System.out.println("3. The contactPhone");
+                System.out.println("4. Product List");
+
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    if (choice >= 1 && choice <= 4) {
+                        switch (choice) {
+                            case 1: {
+                                date = enterDate();
+                                aa.setPeriodDate(supplierNumber, numAgreement, date);
+                                return;
+
+                            }
+                            case 2: {
+                                String address=enterAdress();
+                                aa.setPeriodaddress(numAgreement, address);
+                                return;
+                            }
+                            case 3:{
+                                String ContactPhone =enterContactPhone();
+                                aa.setPeriodContactPhone(numAgreement, ContactPhone);
+                                return;
+                            }
+                            case 4:{
+                                edit2(aa,supplierNumber,numAgreement,typeChoice);
+                                return;
+                            }
+                        }
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                        scanner.nextLine();
+                    }
+                } else {
+                    System.out.println("The number is invalid, please select again");
+                    scanner.nextLine();
+
+                }
             }
         }
     }
@@ -437,34 +647,90 @@ public class AgreementsManager {
         AgreementsApplication aa = new AgreementsApplication();
         Scanner scanner = new Scanner(System.in);
         int numAgreement;
+        int typeChoice=constantSupplier(supplierNumber,scanner);
         while (true) {
             System.out.println("Enter the agreement number you would like to cancel");
             if (scanner.hasNextInt()) {
                 numAgreement = scanner.nextInt();
                 scanner.nextLine();
-                if (agreeExist(supplierNumber,numAgreement)) {
-                    break;
-                } else {
-                    System.out.println("The Agreement not exists in the system");
+                if (typeChoice == 0||typeChoice==1) {
+                    if (regularAgreeExist(supplierNumber, numAgreement)) {
+                        break;
+                    } else {
+                        System.out.println("The standard agreement not exists in the system");
+                    }
+                }
+                else {
+                    if (PeriodAgreeExist(supplierNumber, numAgreement)) {
+                        break;
+                    } else {
+                        System.out.println("The periodic agreement not exists in the system");
+                    }
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
                 scanner.nextLine();
             }
         }
-        aa.deleteAgreement(supplierNumber,numAgreement);
+        if (typeChoice!=2) {
+            aa.deleteStandardAgreement(supplierNumber, numAgreement);
+        }
+        else {
+            aa.deletePeriodAgreement(supplierNumber, numAgreement);
+        }
     }
 
-    public boolean productExistAgre(int numP,int numA){
+
+    public int constantSupplier(int supplierNumber,Scanner scanner ){
+        SupplierManager sm = new SupplierManager();
+        int typeChoice=0;
+        if (sm.constantSupplier(supplierNumber)) {
+            while (true) {
+                System.out.println("What type of agreement would you like to edit?");
+                System.out.println("1.Standard Agreement");
+                System.out.println("2.Periodic Agreement");
+                if (scanner.hasNextInt()) {
+                    typeChoice = scanner.nextInt();
+                    scanner.nextLine();
+                    if (typeChoice >= 1 && typeChoice <= 2) {
+                        break;
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                        scanner.nextLine();
+                    }
+                } else {
+                    System.out.println("The number is invalid, please select again");
+                    scanner.nextLine();
+                }
+            }
+        }
+        return typeChoice;
+    }
+
+    public boolean productExistStandardAgre(int numP,int numA){
     AgreementsApplication aa = new AgreementsApplication();
-    if (aa.existProductAgre(numP,numA)) {
+    if (aa.existProductStandardAgre(numP,numA)) {
         return true;
     }
     return false;
 }
-    public boolean agreeExist(int numS,int numA){
+    public boolean productExistPeriodAgre(int numP,int numA){
         AgreementsApplication aa = new AgreementsApplication();
-        if (aa.existAgree(numS,numA)) {
+        if (aa.existProductPeriodAgre(numP,numA)) {
+            return true;
+        }
+        return false;
+    }
+    public boolean regularAgreeExist(int numS,int numA){
+        AgreementsApplication aa = new AgreementsApplication();
+        if (aa.existRegularAgree(numS,numA)) {
+            return true;
+        }
+        return false;
+    }
+    public boolean PeriodAgreeExist(int numS,int numA){
+        AgreementsApplication aa = new AgreementsApplication();
+        if (aa.existConstantAgree(numS,numA)) {
             return true;
         }
         return false;

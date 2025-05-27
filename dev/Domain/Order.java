@@ -3,7 +3,9 @@ package Domain;
 import java.util.LinkedList;
 //a class to represent the supplier orders
 public class Order {
-    private int orderNumber;    //order ID
+    private int orderNumber;//order ID
+    private static int counterID=1;
+    private int numAgreement;
     private String supplierName;    //the name of the supplier the order is from
     private int supplierNumber; //the number of the supplier the order is from
     private String address; //the address for shipment
@@ -12,10 +14,12 @@ public class Order {
     private LinkedList<ItemOrder> items;    //the items in the order
     private Status statusOrder; //the status of the order
 
+
     //order constructor
     //parameters: int orderNumber,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder
-    public Order(int orderNumber,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder){
-        this.orderNumber=orderNumber;
+    public Order(int numAgreement,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder){
+        this.orderNumber=counterID++;
+        this.numAgreement=numAgreement;
         this.supplierName=supplierName;
         this.supplierNumber=supplierNumber;
         this.address=address;
@@ -170,6 +174,10 @@ public class Order {
             }
         String printO="orderNumber:"+this.orderNumber+"\nsupplierName:"+this.supplierName+"\nsupplierNumber:"+this.supplierNumber+"\naddress:"+this.address+"\ndate:"+this.date+"\ntelephone:"+this.contactPhone+printList+"\nstatus:"+this.statusOrder;
         return printO;
+    }
+
+    public int getNumAgreement() {
+        return numAgreement;
     }
 
 }

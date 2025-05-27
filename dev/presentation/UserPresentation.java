@@ -1,7 +1,6 @@
 package presentation;
 
 
-//import Domain.*;
 import Service.AgreementsApplication;
 import Service.OrderApplication;
 import Service.ProductApplication;
@@ -53,16 +52,16 @@ public class UserPresentation {
             p.addPro("p2",2,"kg","man");
             p.addPro("p3",3,"g","man");
             p.addPro("p4",4,"kg","ma");
-            a.addAgreement(1,"01-01-2025");
-            a.addAgreement(1,"02-02-2025");
-            a.addProductToAgreement(1,1,20.5,1,10,10);
-            a.addProductToAgreement(2,2,11,2,8,8);
-            a.addAgreement(2,"03-03-2025");
-            a.addProductToAgreement(3,3,12,3,5,5);
-            a.addProductToAgreement(3,4,10,4,6,5);
-            o.addOrder(1,2,"Beer","01-03-2025","tom","arrived");
-            o.addItem(1,3,1,7);
-            o.addItem(1,3,2,8);
+            a.addStandardAgreement(1,"01-01-2025");
+            a.addStandardAgreement(1,"02-02-2025");
+            a.addProductToStandardAgreement(1,1,20.5,1,10,10);
+            a.addProductToStandardAgreement(2,2,11,2,8,8);
+            a.addStandardAgreement(2,"03-03-2025");
+            a.addProductToStandardAgreement(3,3,12,3,5,5);
+            a.addProductToStandardAgreement(3,4,10,4,6,5);
+            o.addOrder(1,2,1,"Beer","01-03-2025","tom","arrived");
+            o.addItem(1,1,7);
+            o.addItem(1,2,8);
         }
         while (true){
             System.out.println("Welcome, what would you like to do?");

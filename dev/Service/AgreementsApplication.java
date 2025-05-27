@@ -5,41 +5,86 @@ import java.util.LinkedList;
 
 public class AgreementsApplication {
     AgreementsController ac=AgreementsController.getInstance();
-    public int addAgreement(int supplierNumber,String date){
-        return ac.addNewAgreement(supplierNumber,date);
+    public int addStandardAgreement(int supplierNumber,String date){
+        return ac.addNewStandardAgreement(supplierNumber,date);
     }
-    public void addProductToAgreement(int id,int numPro,double price,int catalogNumber,int amountToDiscount,int discount){
-        ac.addProToAgreement(id,numPro, price,catalogNumber,amountToDiscount,discount);
+    public int addPeriodAgreement(int supplierNumber,String date,String address,String contactPhone){
+        return ac.addNewPeriodAgreement(supplierNumber,date,address,contactPhone);
     }
-    public void deleteProFromAgree(int numSup,int numAgree,int productNumber){
-        ac.deleteProductFromAgree(numAgree,productNumber);
+    public void addProductToStandardAgreement(int id,int numPro,double price,int catalogNumber,int amountToDiscount,int discount){
+        ac.addProToStandardAgreement(id,numPro, price,catalogNumber,amountToDiscount,discount);
     }
-    public void setDate(int supplierNumber,int numAgreement,String date ) {
-        ac.setDateAgree(numAgreement,date);
+    public void addProductToPeriodAgreement(int id,int numPro,double price,int catalogNumber,int amountToDiscount,int discount,int amountToOrder){
+        ac.addProToPeriodAgreement(id,numPro, price,catalogNumber,amountToDiscount,discount,amountToOrder);
     }
-    public void deleteAgreement(int numSup,int numAgree){
-        ac.deleteAgree(numSup,numAgree);
+    public void deleteProFromStandardAgree(int numSup,int numAgree,int productNumber){
+        ac.deleteProductFromStandardAgree(numAgree,productNumber);
     }
-    public boolean existProductAgre(int numP,int numA){
-        return ac.existProAgre(numP,numA);
+    public void deleteProFromPeriodAgree(int numSup,int numAgree,int productNumber){
+        ac.deleteProductFromPeriodAgree(numAgree,productNumber);
     }
-    public boolean existAgree(int sup,int numAgree){
-        return ac.existAgreement(sup,numAgree);
+    public void setRegularDate(int supplierNumber,int numAgreement,String date ) {
+        ac.setDateStandardAgree(numAgreement,date);
     }
-    public void setCatalogNumber(int productNumber,int numAgree,int catalogNumber){
-        ac.setcatalogNum(productNumber,numAgree,catalogNumber);
+    public void setPeriodDate(int supplierNumber,int numAgreement,String date ) {
+        ac.setDatePeriodAgree(numAgreement,date);
     }
-    public void setPrice(int productNumber,int numAgree,double price){
-        ac.setPriceAgree(productNumber,numAgree,price);
+    public void deleteStandardAgreement(int numSup,int numAgree){
+        ac.deleteStandardAgree(numSup,numAgree);
     }
-    public void setAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
-        ac.setAmountToDiscountAgree(productNumber,numAgree,amountToDiscount);
+    public void deletePeriodAgreement(int numSup,int numAgree) {
+        ac.deletePeriodAgree(numSup, numAgree);
     }
-    public void setDiscount(int productNumber,int numAgree,int discount){
-        ac.setDiscountAgree(productNumber,numAgree,discount);
+    public boolean existProductStandardAgre(int numP,int numA){
+        return ac.existProStandardAgre(numP,numA);
     }
-    public boolean existP(int numS,int numP ){
-        return ac.existProBySup(numS,numP);
+    public boolean existProductPeriodAgre(int numP,int numA){
+        return ac.existProPeriodAgre(numP,numA);
+    }
+    public boolean existRegularAgree(int sup,int numAgree){
+        return ac.existRegularAgreement(sup,numAgree);
+    }
+    public boolean existConstantAgree(int sup,int numAgree){
+        return ac.existConstantAgreement(sup,numAgree);
+    }
+    public void setRegularCatalogNumber(int productNumber,int numAgree,int catalogNumber){
+        ac.setcatalogStandardNum(productNumber,numAgree,catalogNumber);
+    }
+    public void setPeriodCatalogNumber(int productNumber,int numAgree,int catalogNumber){
+        ac.setcatalogPeriodNum(productNumber,numAgree,catalogNumber);
+    }
+    public void setPeriodPrice(int productNumber,int numAgree,double price){
+        ac.setPricePeriodAgree(productNumber,numAgree,price);
+    }
+    public void setRegularPrice(int productNumber,int numAgree,double price){
+        ac.setPriceStandardAgree(productNumber,numAgree,price);
+    }
+    public void setRegularAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
+        ac.setAmountToDiscountStandardAgree(productNumber,numAgree,amountToDiscount);
+    }
+    public void setPeriodAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
+        ac.setAmountToDiscountPeriodAgree(productNumber,numAgree,amountToDiscount);
+    }
+    public void setRegularDiscount(int productNumber,int numAgree,int discount){
+        ac.setDiscountStandardAgree(productNumber,numAgree,discount);
+    }
+    public void setPeriodDiscount(int productNumber,int numAgree,int discount){
+        ac.setDiscountPeriodAgree(productNumber,numAgree,discount);
+    }
+    public boolean existPRegular(int numS,int numP ){
+        return ac.existProByRegularSup(numS,numP);
+    }
+    public boolean existPPeriod(int numS,int numP ){
+        return ac.existProByPeriodSup(numS,numP);
+    }
+    public void setPeriodaddress( int numAgree,String address ){
+        ac.setAddressPeriod(numAgree,address);
+    }
+    public void setPeriodContactPhone( int numAgree,String ContactPhone ){
+        ac.setContactPhonePeriod(numAgree,ContactPhone);
+    }
+    public void setPeriodAmountToOrder(int productNumber, int numAgree,int amount ){
+        ac.setAmountOrder(productNumber,numAgree,amount);
     }
 
 }

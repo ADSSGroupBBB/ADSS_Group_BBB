@@ -1,7 +1,10 @@
 package Domain;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDate;
+
 //a class for the manager (the controller) of Order
 public class OrderController {
     private static OrderController instance; // the single instance
@@ -21,12 +24,12 @@ public class OrderController {
     }
     //add order to supplier
     //parameters:int orderNumber,int numSupplier,String address,String date,String contactPhone,String statusOrder
-    public void addNewOrder(int orderNumber,int numSupplier,String address,String date,String contactPhone,String statusOrder){
+    public int addNewOrder(int numAgree,int numSupplier,String address,String date,String contactPhone,String statusOrder){
         SupplierController s=SupplierController.getInstance();
         String name= s.getName(numSupplier);
         Status st;
-        if (statusOrder.equals("canceled")){
-            st=Status.canceled;
+        if (statusOrder.equals("shipped")){
+            st=Status.shipped;
         }
         else if(statusOrder.equals("deleted")){
             st=Status.deleted;
@@ -34,8 +37,9 @@ public class OrderController {
         else {
             st=Status.arrived;
         }
-        Order o=new Order(orderNumber,name,numSupplier,address,date,contactPhone,st);
-        allOrder.put(orderNumber,o);
+        Order o=new Order(numAgree,name,numSupplier,address,date,contactPhone,st);
+        allOrder.put(o.getOrderNumber(),o);
+        return o.getOrderNumber();
     }
     //checks if a certain order exists
     //parameters: int orderNumber
@@ -63,8 +67,9 @@ public class OrderController {
     //add item to order
     //parameters:int orderNumber, int numAgreement, int numP,int amount
     //returns bool
-    public boolean addItemOrder(int orderNumber, int numAgreement, int numP,int amount){
+    public boolean addItemOrder(int orderNumber, int numP,int amount){
         AgreementsController ag=AgreementsController.getInstance();
+        int numAgreement=allOrder.get(orderNumber).getNumAgreement();
         QuantityAgreement qa=ag.productFromAgreeByIndex(numAgreement,numP);
         return allOrder.get(orderNumber).addProductOrder(qa,amount);
     }
@@ -79,6 +84,16 @@ public class OrderController {
     //returns String
     public String StringOrder(int orderNumber) {
         return allOrder.get(orderNumber).print_Order();
+    }
+    public String addPeriodOrder(){
+        AgreementsController ac=AgreementsController.getInstance();
+        PeriodAgreement todayPeriodOrder=ac.getPeriodOrderToday();
+        LocalDate todayDate = LocalDate.now(); // התאריך של היום
+        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dateAsString = todayDate.format(formatDate);
+        for (PeriodAgreement agree: todayPeriodOrder){
+            addNewOrder(agree.getIDNumber(),agree.getSupplierNumber(),agree.getAddress(),dateAsString,agree.getContactPhone(),"shipped");
+        }
     }
 
     }
