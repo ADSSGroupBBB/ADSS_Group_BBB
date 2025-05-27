@@ -12,4 +12,6 @@ public interface ShippingZoneDAO {
     List<ShippingZoneDTO> findAll() throws SQLException;
 
     ShippingZoneDTO save(ShippingZoneDTO item) throws SQLException;
+
+    boolean deleteByName(String name) throws SQLException;
 }

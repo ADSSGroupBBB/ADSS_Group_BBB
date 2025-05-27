@@ -13,10 +13,10 @@ import java.util.Optional;
 public class LocationDAOImpl implements LocationDAO {
 
     @Override
-    public Optional<LocationDTO> findById(int id) throws SQLException {
-        String sql = "SELECT address, contact_name, contact_num, zone_name, zone_rank FROM locations WHERE id = ?";
+    public Optional<LocationDTO> findByAddress(String address) throws SQLException {
+        String sql = "SELECT address, contact_name, contact_num, zone_name, zone_rank FROM locations WHERE address = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setString(1, address);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ShippingZoneDTO zone = new ShippingZoneDTO(
@@ -71,5 +71,14 @@ public class LocationDAOImpl implements LocationDAO {
             ps.executeUpdate();
         }
         return location;
+    }
+
+    public boolean deleteByAddress(String address) throws SQLException {
+        String sql = "DELETE FROM locations WHERE address = ?";
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setString(1, address);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
     }
 }

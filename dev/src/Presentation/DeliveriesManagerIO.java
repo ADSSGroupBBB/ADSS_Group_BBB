@@ -75,7 +75,6 @@ public class DeliveriesManagerIO {
             System.out.println("10. Add location");
             System.out.println("11. Delete location");
             System.out.println("12. End delivery");
-            System.out.println("13. Upload base info");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
 
@@ -124,10 +123,6 @@ public class DeliveriesManagerIO {
                     break;
                 case 12:
                     deliverysMenu.endDelivery();
-                    break;
-                case 13:
-                    DeliveriesController.initBaseData(); // Uploads base info
-                    System.out.println("Data uploaded.");
                     break;
                 case 0:
                     System.out.println("Exiting the system."); // Exit message

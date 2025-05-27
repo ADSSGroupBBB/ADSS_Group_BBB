@@ -34,7 +34,8 @@ public final class Database {
 
                 st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS documents (
-                        doc_id        INTEGER PRIMARY KEY,
+                        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                        doc_id        TEXT NOT NULL,
                         date          TEXT NOT NULL,
                         truck_id      TEXT NOT NULL,
                         dep_hour      TEXT NOT NULL,
@@ -47,25 +48,37 @@ public final class Database {
 
                 st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS shipment_items (
-                        id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                        document_id  INTEGER NOT NULL,
+                        name         TEXT PRIMARY KEY,
+                        weight       INTEGER NOT NULL,
+                    );
+                """);
+
+                st.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS doc_items (
+                        document_id  TEXT PRIMARY KEY,
                         name         TEXT NOT NULL,
                         weight       INTEGER NOT NULL,
                         amount       INTEGER NOT NULL,
-                        FOREIGN KEY(document_id) REFERENCES documents(doc_id)
+                        FOREIGN KEY(name) REFERENCES shipment_items(name)
                     );
                 """);
 
                 st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS locations (
-                        id            INTEGER PRIMARY KEY AUTOINCREMENT,
-                        document_id   INTEGER NOT NULL,
-                        address       TEXT NOT NULL,
+                        address       TEXT PRIMARY KEY,
                         contact_name  TEXT NOT NULL,
                         contact_num   TEXT NOT NULL,
                         zone_name     TEXT NOT NULL,
-                        FOREIGN KEY(document_id) REFERENCES documents(doc_id),
+                        zone_rank     TEXT NOT NULL,
                         FOREIGN KEY(zone_name) REFERENCES shipping_zones(name)
+                    );
+                """);
+
+                st.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS doc_locations (
+                        document_id   TEXT PRIMARY KEY,
+                        address       TEXT PRIMARY KEY,
+                        FOREIGN KEY(address) REFERENCES locations(address)
                     );
                 """);
             }

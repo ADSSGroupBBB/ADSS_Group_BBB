@@ -5,14 +5,11 @@ import DataAccess.DAO.TruckDAOImpl;
 import DataAccess.Interface.TruckDAO;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class TrucksController  extends DeliveriesController{
-    private static final TruckDAO truckDAO = new TruckDAOImpl();
+    protected static final TruckDAO truckDAO = new TruckDAOImpl();
 
     // Adds a new truck to the system if it doesn't already exist
     public String insertTruck(String id, int type, int truckWeight, int maxWeight) throws SQLException {
@@ -41,9 +38,7 @@ public class TrucksController  extends DeliveriesController{
             truckDAO.deleteById(id);
             return "Truck removed: " + id; // Return confirmation message
         } else {
-            Optional<TruckDTO> optionalTruck = truckDAO.findById(id);
-            if (optionalTruck.isPresent()) {
-                truckDAO.deleteById(id);
+            if (truckDAO.deleteById(id)) {
                 return "Truck removed: " + id; // Return confirmation message
             }
             return "Truck with ID " + id + " doesn't exist."; // Truck not found

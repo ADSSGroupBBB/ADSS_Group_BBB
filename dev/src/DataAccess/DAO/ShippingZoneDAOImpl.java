@@ -69,4 +69,13 @@ public class ShippingZoneDAOImpl implements ShippingZoneDAO {
             }
         }
     }
+
+    public boolean deleteByName(String name) throws SQLException {
+        String sql = "DELETE FROM shipping_zones WHERE name = ?";
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setString(1, name);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
 }

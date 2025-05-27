@@ -5,6 +5,7 @@ import Domain.Location;
 import Domain.Shipment_item;
 import Domain.WeightEx;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class DeliveriesApplication {
@@ -12,12 +13,12 @@ public class DeliveriesApplication {
 
 
     // Method to add a destination to a route
-    public String addDestination(String address, List<Location> list) {
+    public String addDestination(String address, List<Location> list) throws SQLException {
         return dc.addDestination(address, list); // Delegate to UserController to add destination to route
     }
 
     // Method to calculate and return the total weight of items in the route
-    public int weightRouteItems(String id, List<Location> list) throws WeightEx {
+    public int weightRouteItems(String id, List<Location> list) throws WeightEx, SQLException {
         return dc.weightRouteItems(id, list); // Delegate to UserController to calculate weight
     }
 
@@ -26,7 +27,7 @@ public class DeliveriesApplication {
         dc.sortRouteAccordingToZones(list); // Delegate to UserController to sort the route
     }
     // Method to remove items from the route based on truck capacity
-    public String removeItems(List<Location> route, String truckID, String itemName, int itemAmount,String address, int totalWeight) {
+    public String removeItems(List<Location> route, String truckID, String itemName, int itemAmount,String address, int totalWeight) throws SQLException {
         return dc.removeItems(route, truckID,  itemName,  itemAmount, address, totalWeight); // Delegate to UserController to remove items from the route
     }
 
@@ -37,7 +38,7 @@ public class DeliveriesApplication {
 
     // Method to add a shipment document to the system
     public String addDocument(List<Shipment_item> items, String date, String truck_id, String dep_hour,
-                              String driver_id, String dep_from, List<Location> destinations, String eventMessage) {
+                              String driver_id, String dep_from, List<Location> destinations, String eventMessage) throws SQLException {
         return dc.addDocument(items, date, truck_id, dep_hour, driver_id, dep_from, destinations, eventMessage);
         // Delegate to UserController to add the document
     }
@@ -58,12 +59,12 @@ public class DeliveriesApplication {
     }
 
     // Method to print a specific shipment document by ID
-    public String printDocument(String doc_id) {
+    public String printDocument(String doc_id) throws SQLException {
         return dc.printDocument(doc_id); // Delegate to UserController to print the document
     }
 
     // Method to print all document IDs
-    public String printDocIDS() {
+    public String printDocIDS() throws SQLException {
         return dc.printDocIDS(); // Delegate to UserController to print all document IDs
     }
 
@@ -73,7 +74,7 @@ public class DeliveriesApplication {
     }
 
     // Method to end the delivery and finalize the document
-    public String endDelivery(String doc_id) {
+    public String endDelivery(String doc_id) throws SQLException {
         return dc.endDelivery(doc_id); // Delegate to UserController to end the delivery and finalize the document
     }
 }

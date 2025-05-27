@@ -123,8 +123,8 @@ public class DeliveriesMenu {
                     String new_id = ta.changeTruck(route, truckID, driverID);  // Try changing the truck
                     if (new_id == null) {  // If no matching truck is found
                         removeItemsWrapper(route, truckID, total_weight);
-                        System.out.println("Removed items because of weight overflow, after no matching truck found.");
                         eventMessage = "Removed items because of weight overflow, after no matching truck found.";
+                        System.out.println(eventMessage);
                     } else {
                         System.out.println("Switched to truck: " + new_id);  // Truck switch successful
                         eventMessage = "Switched to truck: " + new_id;
@@ -146,7 +146,7 @@ public class DeliveriesMenu {
         System.out.println("Delivery ongoing");
     }
 
-    public void removeItemsWrapper(List<Location> route, String truckID, int totalWeight) {
+    public void removeItemsWrapper(List<Location> route, String truckID, int totalWeight) throws SQLException {
         System.out.println(da.printRouteItems(route));
         Scanner scanner = new Scanner(System.in);
         String success = "false";
@@ -227,7 +227,7 @@ public class DeliveriesMenu {
     }
 
     // Method to end the current delivery
-    public void endDelivery(){
+    public void endDelivery() throws SQLException {
         System.out.println("End delivery selected.");
         Scanner scanner = new Scanner(System.in);  // Scanner object to read user input
 
@@ -250,7 +250,7 @@ public class DeliveriesMenu {
     }
 
     // Method to view documentation for deliveries
-    public void viewDocumentation() {
+    public void viewDocumentation() throws SQLException {
         System.out.println("View Documentation selected.");
         Scanner scanner = new Scanner(System.in);  // Scanner object to read user input
 

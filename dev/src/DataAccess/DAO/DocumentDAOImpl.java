@@ -12,17 +12,17 @@ import java.util.Optional;
 public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
-    public Optional<DocumentDTO> findById(int documentId) throws SQLException {
+    public Optional<DocumentDTO> findById(String documentId) throws SQLException {
         String sql = "SELECT document_id, date, truck_id, dep_hour, driver_id, dep_from, event_message FROM documents WHERE document_id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, documentId);
+            ps.setString(1, documentId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     List<ShipmentItemDTO> items = findItemsByDocumentId(documentId);
                     List<LocationDTO> destinations = findDestinationsByDocumentId(documentId);
 
                     DocumentDTO doc = new DocumentDTO(
-                            rs.getInt("documentId"),
+                            rs.getString("documentId"),
                             items,
                             rs.getString("date"),
                             rs.getString("truck_id"),
@@ -46,7 +46,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         try (Statement st = Database.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                int docId = rs.getInt("document_id");
+                String docId = rs.getString("document_id");
                 findById(docId).ifPresent(documents::add);
             }
         }
@@ -57,7 +57,7 @@ public class DocumentDAOImpl implements DocumentDAO {
     public DocumentDTO save(DocumentDTO doc) throws SQLException {
         String sql = "INSERT INTO documents (document_id, date, truck_id, dep_hour, driver_id, dep_from, event_message) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, doc.docID());
+            ps.setString(1, doc.docID());
             ps.setString(2, doc.date());
             ps.setString(3, doc.truck_id());
             ps.setString(4, doc.dep_hour());
@@ -73,11 +73,41 @@ public class DocumentDAOImpl implements DocumentDAO {
         return doc;
     }
 
-    private List<ShipmentItemDTO> findItemsByDocumentId(int docId) throws SQLException {
+    @Override
+    public int getNextId() throws SQLException{
+        String sql = "SELECT MAX(id) AS max_id FROM documents";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt("max_id");
+                return rs.wasNull() ? 1 : maxId+1; // null if table is empty
+            } else {
+                return 1;
+            }
+        }
+    }
+
+    @Override
+    public int getId(String document_id) throws SQLException{
+        String sql = "SELECT id FROM documents WHERE document_id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int id = rs.getInt("id");
+                return rs.wasNull() ? -1 : id; // null if table is empty
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    private List<ShipmentItemDTO> findItemsByDocumentId(String docId) throws SQLException {
         List<ShipmentItemDTO> items = new ArrayList<>();
         String sql = "SELECT name, weight, amount FROM shipment_items WHERE document_id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, docId);
+            ps.setString(1, docId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     ShipmentItemDTO item = new ShipmentItemDTO(
@@ -92,12 +122,12 @@ public class DocumentDAOImpl implements DocumentDAO {
         return items;
     }
 
-    private List<LocationDTO> findDestinationsByDocumentId(int docId) throws SQLException {
+    private List<LocationDTO> findDestinationsByDocumentId(String docId) throws SQLException {
         List<LocationDTO> destinations = new ArrayList<>();
         String sql = "SELECT address, contact_name, phone, zoneName, zoneRank FROM document_destinations WHERE document_id = ?";
 
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, docId);
+            ps.setString(1, docId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     ShippingZoneDTO zone = new ShippingZoneDTO(
@@ -120,11 +150,11 @@ public class DocumentDAOImpl implements DocumentDAO {
         return destinations;
     }
 
-    private void saveItems(int docId, List<ShipmentItemDTO> items) throws SQLException {
+    private void saveItems(String docId, List<ShipmentItemDTO> items) throws SQLException {
         String sql = "INSERT INTO shipment_items (document_id, name, weight, amount) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             for (ShipmentItemDTO item : items) {
-                ps.setInt(1, docId);
+                ps.setString(1, docId);
                 ps.setString(2, item.name());
                 ps.setInt(3, item.weight());
                 ps.setInt(4, item.amount());
@@ -134,11 +164,11 @@ public class DocumentDAOImpl implements DocumentDAO {
         }
     }
 
-    private void saveDestinations(int docId, List<LocationDTO> destinations) throws SQLException {
-        String sql = "INSERT INTO document_destinations (document_id, address, contact_name, phone) VALUES (?, ?, ?, ?)";
+    private void saveDestinations(String docId, List<LocationDTO> destinations) throws SQLException {
+        String sql = "INSERT INTO doc_locations (document_id, address, contact_name, phone) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             for (LocationDTO loc : destinations) {
-                ps.setInt(1, docId);
+                ps.setString(1, docId);
                 ps.setString(2, loc.address());
                 ps.setString(3, loc.contact_name());
                 ps.setString(4, loc.contact_num());

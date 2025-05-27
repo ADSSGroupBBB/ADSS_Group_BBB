@@ -3,13 +3,14 @@ package Presentation;
 import Service.LocationApplication;
 import Service.ZonesApplication;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ZonesMenu {
     private static ZonesApplication za = new ZonesApplication();
 
     // Method to add a new shipping zone
-    public void addShippingZone() {
+    public void addShippingZone() throws SQLException {
         System.out.println("Add Shipment Zone selected.");
         Scanner scanner = new Scanner(System.in);
         String name = "";
@@ -34,7 +35,7 @@ public class ZonesMenu {
     }
 
     // Method to update or delete an existing shipping zone
-    public void updateOrDeleteShipmentZone() {
+    public void updateOrDeleteShipmentZone() throws SQLException {
         System.out.println("Update/Delete Shipment Zone selected.");
         Scanner scanner = new Scanner(System.in);
         String zoneName = "";

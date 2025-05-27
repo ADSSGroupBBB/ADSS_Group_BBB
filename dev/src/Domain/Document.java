@@ -14,15 +14,14 @@ public class Document {
     private String dep_from; // Source location
     private List<Location> destinations; // List of destination locations
     private final String document_id; // Unique document ID
-    private static int doc_id=0; // Static counter for document ID generation
     private String eventMessage; // Optional event message or notes
 
     /**
      * Constructor for Document.
      */
-    public Document(List<Shipment_item> items, String date, String truck_id,
+    public Document(int id, List<Shipment_item> items, String date, String truck_id,
                     String dep_hour, String driver_id, String dep_from, List<Location> destinations, String eventMessage) {
-        this.document_id = generateID();
+        this.document_id = "DOC-" + String.format("%03d", id);
         this.items = items;
         this.date = date;
         this.truck_id = truck_id;
@@ -81,13 +80,6 @@ public class Document {
 
     public String getDocument_id() {
         return document_id;
-    }
-
-    /**
-     * Generates a unique document ID.
-     */
-    private synchronized String generateID() {
-        return "DOC-" + String.format("%03d", doc_id++);
     }
 
     public void setEventMessage(String eventMessage) {

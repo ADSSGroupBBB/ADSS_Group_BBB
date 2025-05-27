@@ -1,6 +1,13 @@
 package Domain;
 
+import DTO.*;
+import DataAccess.DAO.DocumentDAOImpl;
+import DataAccess.Interface.DocumentDAO;
+
+import java.sql.SQLException;
 import java.util.*;
+import static Domain.LocationController.locationDao;
+import static Domain.TrucksController.truckDAO;
 
 public class DeliveriesController {
 
@@ -10,6 +17,7 @@ public class DeliveriesController {
     protected static Map<String, Shipping_Zone> zoneMap = new HashMap<>();
     protected static Map<String, Location> locationsMap = new HashMap<>();
     protected static Map<String, Document> documentsMap = new HashMap<>();
+    private static final DocumentDAO documentDAO = new DocumentDAOImpl();
 
     // Initialize base data for drivers, trucks, zones, locations, etc.
     public static void initBaseData() {
@@ -36,35 +44,19 @@ public class DeliveriesController {
 */
     }
 
-    // Adds a new location to the system
-    public String insertLocation(String contactName, String contactNum, String address, String input_zone) {
-        if (locationsMap.containsKey(address)) {
-            return "A location with this address already exists."; // Check if address exists
-        }
-        Shipping_Zone zone = zoneMap.get(input_zone);
-        if (zone == null) {
-            return "Zone doesn't exist. Add it before adding new location."; // Zone not found
-        }
-        Location newLocation = new Location(contactName, contactNum, address, zone); // Create new location object
-        locationsMap.put(address, newLocation); // Add new location to the map
-        return "New location added: " + address; // Return confirmation message
-    }
-
-    // Deletes a location from the system by its address
-    public String deleteLocation(String address) {
-        if (locationsMap.containsKey(address)) {
-            locationsMap.remove(address); // Remove location from the map
-            return "Location removed: " + address; // Return confirmation message
-        } else {
-            return "No location found with address: " + address; // Location not found
-        }
-    }
-
     // Adds a destination location to a list
-    public String addDestination(String address, List<Location> list) {
+    public String addDestination(String address, List<Location> list) throws SQLException {
         Location new_dest = locationsMap.get(address);
         if (new_dest == null) {
-            return "Location unknown."; // Location not found
+            Optional<LocationDTO> optional = locationDao.findByAddress(address);
+            if (optional.isPresent()) {
+                LocationDTO dto = optional.get();
+                Shipping_Zone getZone = zoneMap.get(dto.zone().name());
+                new_dest = new Location(dto.contact_name(), dto.contact_num(), dto.address(), getZone); // Create a new location object
+            }
+            else{
+                return "Location unknown."; // Location not found
+            }
         }
         if (!list.contains(new_dest)) {
             list.add(new_dest); // Add destination to list
@@ -74,7 +66,7 @@ public class DeliveriesController {
     }
 
     // Calculates the total weight of items in the route
-    public int weightRouteItems(String id, List<Location> list) throws WeightEx {
+    public int weightRouteItems(String id, List<Location> list) throws WeightEx, SQLException {
         Truck truck = trucksMap.get(id);
         int curr_weight = truck.getTruck_weight(); // Get truck's current weight
         for (int i = 1; i < list.size(); i++) {
@@ -86,6 +78,8 @@ public class DeliveriesController {
             throw new WeightEx(curr_weight); // Throw exception if weight exceeds max
         }
         truck.setCurr_weight(curr_weight); // Update truck's current weight
+        TruckDTO newDto = new TruckDTO(id,truck.getType(),truck.getTruck_weight(), truck.getMax_weight(), truck.getCurrWeight(), true);
+        truckDAO.save(newDto);
         return curr_weight; // Return total weight
     }
 
@@ -97,17 +91,14 @@ public class DeliveriesController {
         List<Location> subList = list.subList(1, list.size());
 
         // Sort the sublist based on the rank of the zone
-        Collections.sort(subList, Comparator.comparingInt(loc -> loc.getZone().getNum()));
+        subList.sort(Comparator.comparingInt(loc -> loc.getZone().getNum()));
     }
 
 
 
     // Removes items from a route if the truck exceeds weight limits
-    public String removeItems(List<Location> route, String truckID, String itemName, int itemAmount, String address, int totalWeight) {
+    public String removeItems(List<Location> route, String truckID, String itemName, int itemAmount, String address, int totalWeight) throws SQLException {
         Truck truck = trucksMap.get(truckID);
-        if (truck == null) {
-            return "Truck ID not found.";
-        }
 
         // Find the location in the route that matches the address (excluding origin at index 0)
         Location targetLocation = null;
@@ -153,9 +144,13 @@ public class DeliveriesController {
         }
         if (truck.getMax_weight() >= newTruckWeight ){
             truck.setCurr_weight(newTruckWeight);
+            TruckDTO newDto = new TruckDTO(truckID,truck.getType(),truck.getTruck_weight(), truck.getMax_weight(), truck.getCurrWeight(), true);
+            truckDAO.save(newDto);
+            return "Items removed successfully.";
+        }
+        else{
             return "Weight after removal still higher than max weight of this truck.";
         }
-        else{return "Items removed successfully.";}
 
     }
 
@@ -171,9 +166,26 @@ public class DeliveriesController {
 
     // Adds a new document to the system
     public String addDocument(List<Shipment_item> items, String date, String truck_id,
-                              String dep_hour, String driver_id, String dep_from, List<Location> destinations, String eventMessage) {
-        Document document = new Document(items, date, truck_id, dep_hour, driver_id, dep_from, destinations, eventMessage);
+                              String dep_hour, String driver_id, String dep_from, List<Location> destinations, String eventMessage) throws SQLException {
+        int id = 0;
+        id = documentDAO.getNextId();
+        Document document = new Document(id, items, date, truck_id, dep_hour, driver_id, dep_from, destinations, eventMessage);
         documentsMap.put(document.getDocument_id(), document); // Add document to the map
+
+        List<ShipmentItemDTO> itemDTOs = items.stream()
+                .map(item -> new ShipmentItemDTO(item.getName(), item.getWeight(), item.getAmount()))
+                .toList();
+
+        List<LocationDTO> destinationDTOs = destinations.stream()
+                .map(loc -> new LocationDTO(
+                        loc.getAddress(),
+                        loc.getContact_name(),
+                        loc.getContact_num(),
+                        new ShippingZoneDTO(loc.getZone().getName(), loc.getZone().getNum()) // Adjust if ShippingZoneDTO has different fields
+                ))
+                .toList();
+        DocumentDTO dto = new DocumentDTO(document.getDocument_id(), itemDTOs, date, truck_id, dep_hour, driver_id, dep_from, destinationDTOs, eventMessage);
+        documentDAO.save(dto);
         return document.getDocument_id(); // Return document ID
     }
 
@@ -216,17 +228,55 @@ public class DeliveriesController {
     }
 
     // Prints the details of a specific document by ID
-    public String printDocument(String doc_id) {
+    public String printDocument(String doc_id) throws SQLException {
         if (documentsMap.get(doc_id) != null) {
             return documentsMap.get(doc_id).toString(); // Return document details
         } else {
-            return "Document doesn't exist"; // Document not found
+            Optional<DocumentDTO> optional = documentDAO.findById(doc_id);
+            if (optional.isPresent()) {
+                DocumentDTO dto = optional.get();
+                List<Shipment_item> items = dto.items().stream()
+                        .map(itemDTO -> new Shipment_item(itemDTO.weight(), itemDTO.name()))
+                        .toList();
+
+                List<Location> destinations = dto.destinations().stream()
+                        .map(locDto -> new Location(
+                                locDto.address(),
+                                locDto.contact_name(),
+                                locDto.contact_num(),
+                                new Shipping_Zone(locDto.zone().num(), locDto.zone().name())))
+                        .toList();
+                Document newDoc = new Document(documentDAO.getId(dto.docID()), items, dto.date(), dto.truck_id(), dto.dep_hour(), dto.driver_id(), dto.dep_from(), destinations, dto.eventMessage()); // Create a new truck object
+                documentsMap.put(newDoc.getDocument_id(), newDoc);
+                return newDoc.toString();
+            }
+            else {
+                return "Document doesn't exist"; // Document not found
+            }
         }
     }
 
     // Prints all document IDs in the system
-    public String printDocIDS() {
+    public String printDocIDS() throws SQLException {
         StringBuilder sb = new StringBuilder();
+        List<DocumentDTO> list = documentDAO.findAll();
+        for (DocumentDTO dto : list){
+            if (!documentsMap.containsKey(dto.truck_id())){
+                List<Shipment_item> items = dto.items().stream()
+                        .map(itemDTO -> new Shipment_item(itemDTO.weight(), itemDTO.name()))
+                        .toList();
+
+                List<Location> destinations = dto.destinations().stream()
+                        .map(locDto -> new Location(
+                                locDto.address(),
+                                locDto.contact_name(),
+                                locDto.contact_num(),
+                                new Shipping_Zone(locDto.zone().num(), locDto.zone().name())))
+                        .toList();
+                Document newDoc = new Document(documentDAO.getId(dto.docID()), items, dto.date(), dto.truck_id(), dto.dep_hour(), dto.driver_id(), dto.dep_from(), destinations, dto.eventMessage()); // Create a new truck object
+                documentsMap.put(newDoc.getDocument_id(), newDoc);
+            }
+        }
         for (String key : documentsMap.keySet()) {
             sb.append("ID: ").append(key).append("\n"); // Append document IDs to result
         }
@@ -252,21 +302,52 @@ public class DeliveriesController {
     }
 
     // Ends a delivery, marking the truck and driver as available
-    public String endDelivery(String doc_id) {
+    public String endDelivery(String doc_id) throws SQLException {
         Document document = documentsMap.get(doc_id);
-        if (document != null) {
-            driversMap.get(document.getDriver_id()).set_availabilityToDrive(true); // Mark driver available
-            Truck truck = trucksMap.get(document.getTruck_id());
-            truck.setOnDrive(false); // Mark truck not in use
-            truck.setCurr_weight(truck.getTruck_weight()); // Reset truck weight
-            for (Location loc : document.getDestinations()) {
-                loc.setItems_required(null); // All needs fulfilled
-            }
-            document.setEventMessage("Delivery finished."); // Set event message
+        if (document == null) {
+            Optional<DocumentDTO> optional = documentDAO.findById(doc_id);
+            if (optional.isPresent()) {
+                DocumentDTO dto = optional.get();
+                List<Shipment_item> items = dto.items().stream()
+                        .map(itemDTO -> new Shipment_item(itemDTO.weight(), itemDTO.name()))
+                        .toList();
 
-            return "Delivery ended successfully.\nDriver is now available for another delivery.\nTruck is now available for another delivery."; // Return success message
-        } else {
-            return "Delivery doesn't exist"; // Document not found
+                List<Location> destinations = dto.destinations().stream()
+                        .map(locDto -> new Location(
+                                locDto.address(),
+                                locDto.contact_name(),
+                                locDto.contact_num(),
+                                new Shipping_Zone(locDto.zone().num(), locDto.zone().name())))
+                        .toList();
+                Document newDoc = new Document(documentDAO.getId(dto.docID()), items, dto.date(), dto.truck_id(), dto.dep_hour(), dto.driver_id(), dto.dep_from(), destinations, dto.eventMessage()); // Create a new truck object
+                documentsMap.put(newDoc.getDocument_id(), newDoc);
+            } else {
+                return "Delivery doesn't exist"; // Document not found
+            }
         }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        driversMap.get(document.getDriver_id()).set_availabilityToDrive(true); // Mark driver available
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Truck truck;
+        if (trucksMap.containsKey(document.getTruck_id())) {
+            truck = trucksMap.get(document.getTruck_id());
+
+        } else {
+            Optional<TruckDTO> optionalTruck = truckDAO.findById(document.getTruck_id());
+            if (optionalTruck.isPresent()) {
+                TruckDTO truckDTO = optionalTruck.get();
+                truck = new Truck(truckDTO.truck_id(), truckDTO.type(), truckDTO.truck_weight(), truckDTO.max_weight());
+            } else {
+                return "Truck doesn't exist"; // Document not found
+            }
+        }
+        truck.setOnDrive(false); // Mark truck not in use
+        truck.setCurr_weight(truck.getTruck_weight()); // Reset truck weight
+        for (Location loc : document.getDestinations()) {
+            loc.setItems_required(null); // All needs fulfilled
+        }
+        document.setEventMessage("Delivery finished."); // Set event message
+
+        return "Delivery ended successfully.\nDriver is now available for another delivery.\nTruck is now available for another delivery."; // Return success message
     }
 }

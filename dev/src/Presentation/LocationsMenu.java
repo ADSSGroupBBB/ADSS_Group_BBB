@@ -2,12 +2,13 @@ package Presentation;
 
 import Service.LocationApplication;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class LocationsMenu {
     private static LocationApplication ua = new LocationApplication();
     // Method to add a new location
-    public void addLocation() {
+    public void addLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
 
         // Prompt for Contact Name
@@ -43,7 +44,7 @@ public class LocationsMenu {
     }
 
     // Method to delete an existing location
-    public void deleteLocation() {
+    public void deleteLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
 
         // Prompt for the address of the location to delete
@@ -53,7 +54,7 @@ public class LocationsMenu {
         // Call the service method to delete the location
         System.out.println(ua.deleteLocation(address));
     }
-    public void addItemToLocation() {
+    public void addItemToLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
 
         // Prompt for the location address

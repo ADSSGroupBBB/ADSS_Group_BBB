@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DocumentDAO {
-    Optional<DocumentDTO> findById(int id) throws SQLException;
+    Optional<DocumentDTO> findById(String id) throws SQLException;
     List<DocumentDTO> findAll() throws SQLException;
     DocumentDTO save(DocumentDTO document) throws SQLException;
+    int getNextId() throws SQLException;
+    int getId(String document_id) throws SQLException;
 }

@@ -73,4 +73,13 @@ public class ShipmentItemDAOImpl implements ShipmentItemDAO {
             }
         }
     }
+
+    public boolean deleteByName(String name) throws SQLException {
+        String sql = "DELETE FROM shipment_items WHERE name = ?";
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setString(1, name);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        }
+    }
 }
