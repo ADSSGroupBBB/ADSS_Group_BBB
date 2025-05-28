@@ -1,11 +1,6 @@
 package Presentation_employee;
 
-import Service_employee.AssignmentService;
-import Service_employee.EmployeeService;
-import Service_employee.ShiftService;
-import Service_employee.EmployeeDTO;
-import Service_employee.PositionDTO;
-import Service_employee.ShiftDTO;
+import Service_employee.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -16,23 +11,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ShiftSchedulingScreen provides the user interface for managing and scheduling shifts.
+ * Updated ShiftSchedulingScreen with branch support.
+ * Provides the user interface for managing and scheduling shifts.
  */
 public class ShiftSchedulingScreen extends BaseScreen {
-    private final EmployeeService employeeController;
-    private final ShiftService shiftController;
-    private final AssignmentService assignmentController;
+    private final NavigationManager navigationManager;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
     /**
-     * Constructor that takes controllers and logged-in employee for permission checking.
+     * Constructor that takes navigation manager and logged-in employee for permission checking.
      */
-    public ShiftSchedulingScreen(EmployeeService employeeController, ShiftService shiftController,
-                                 AssignmentService assignmentController, EmployeeDTO loggedInEmployee) {
-        this.employeeController = employeeController;
-        this.shiftController = shiftController;
-        this.assignmentController = assignmentController;
+    public ShiftSchedulingScreen(NavigationManager navigationManager, EmployeeDTO loggedInEmployee) {
+        this.navigationManager = navigationManager;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         this.loggedInEmployee = loggedInEmployee;
     }
@@ -50,12 +41,15 @@ public class ShiftSchedulingScreen extends BaseScreen {
 
         String[] options = {
                 "Create Shifts for Week",
+                "Create Shifts for Week by Branch",
                 "View Future Shifts",
+                "View Future Shifts by Branch",
                 "Assign Employee to Shift",
                 "Remove Employee from Shift",
                 "View Missing Positions in Shifts",
                 "Manage Shift Hours"
         };
+
         int choice;
         do {
             choice = displayMenu("Shift Scheduling", options);
@@ -64,18 +58,24 @@ public class ShiftSchedulingScreen extends BaseScreen {
                     createShiftsForWeek();
                     break;
                 case 2:
-                    viewFutureShifts();
+                    createShiftsForWeekByBranch();
                     break;
                 case 3:
-                    assignEmployeeToShift();
+                    viewFutureShifts();
                     break;
                 case 4:
-                    removeEmployeeFromShift();
+                    viewFutureShiftsByBranch();
                     break;
                 case 5:
-                    viewMissingPositions();
+                    assignEmployeeToShift();
                     break;
                 case 6:
+                    removeEmployeeFromShift();
+                    break;
+                case 7:
+                    viewMissingPositions();
+                    break;
+                case 8:
                     manageShiftHours();
                     break;
                 case 0:
@@ -89,56 +89,52 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Creates shifts for an entire week starting from a specified Sunday date.
      */
     private void createShiftsForWeek() {
-        displayTitle("Create Shifts for Week");
-        LocalDate startDate = null;
+        displayTitle("Create Shifts for Week (All Branches)");
+        LocalDate startDate = getStartDate();
+        if (startDate == null) return;
 
+        if (!validateManagerPositions()) return;
 
-        List<PositionDTO> managerPositions = employeeController.getAllPositions().stream().filter(PositionDTO::isRequiresShiftManager).collect(java.util.stream.Collectors.toList());
-
-        if (managerPositions.isEmpty()) {
-            displayError("Cannot create shifts: No shift manager positions defined in the system.");
-            displayError("Please create a shift manager position first.");
-            return;
-        }
-
-
-        boolean hasQualifiedManagers = false;
-        for (PositionDTO position : managerPositions) {
-            List<EmployeeDTO> qualifiedEmployees = employeeController.getQualifiedEmployeesForPosition(position.getName());
-            if (!qualifiedEmployees.isEmpty()) {
-                hasQualifiedManagers = true;
-                break;
-            }
-        }
-
-        if (!hasQualifiedManagers) {
-            displayError("Cannot create shifts: No employees are qualified for shift manager positions.");
-            displayError("Please assign shift manager qualification to at least one employee first.");
-            return;
-        }
-
-        while (startDate == null) {
-            try {
-                String dateStr = getInput("Enter start date (Sunday) in format DD/MM/YYYY");
-                startDate = LocalDate.parse(dateStr, dateFormatter);
-                if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
-                    displayError("The date must be a Sunday");
-                    startDate = null;
-                }
-            } catch (DateTimeParseException e) {
-                displayError("Invalid date format. Please use DD/MM/YYYY");
-            }
-        }
-
-        // Create shifts for the week
-        List<ShiftDTO> createdShifts = shiftController.createShiftsForWeek(startDate);
+        // Create shifts without specific branch assignment
+        List<ShiftDTO> createdShifts = navigationManager.getShiftService().createShiftsForWeek(startDate);
 
         if (createdShifts.isEmpty()) {
             displayError("No shifts were created. This may be because:");
             displayError("1. Shifts already exist for this week");
             displayError("2. No shift managers are available for the required shifts");
         } else {
-            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " + startDate.format(dateFormatter));
+            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " +
+                    startDate.format(dateFormatter));
+            displayMessage("Shift managers have been automatically assigned to each shift.");
+        }
+    }
+
+    /**
+     * Creates shifts for a specific branch.
+     */
+    private void createShiftsForWeekByBranch() {
+        displayTitle("Create Shifts for Week by Branch");
+
+        BranchDTO selectedBranch = selectBranch();
+        if (selectedBranch == null) return;
+
+        LocalDate startDate = getStartDate();
+        if (startDate == null) return;
+
+        if (!validateManagerPositions()) return;
+
+        // Create shifts for specific branch
+        List<ShiftDTO> createdShifts = navigationManager.getShiftService()
+                .createShiftsForWeek(startDate, selectedBranch.getAddress());
+
+        if (createdShifts.isEmpty()) {
+            displayError("No shifts were created for branch " + selectedBranch.getAddress());
+            displayError("Possible reasons:");
+            displayError("1. Shifts already exist for this week and branch");
+            displayError("2. No shift managers are available for this branch");
+        } else {
+            displayMessage(createdShifts.size() + " shifts were created successfully for branch " +
+                    selectedBranch.getAddress() + " for week starting " + startDate.format(dateFormatter));
             displayMessage("Shift managers have been automatically assigned to each shift.");
         }
     }
@@ -147,17 +143,50 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Displays a list of future shifts sorted by date.
      */
     private void viewFutureShifts() {
-        displayTitle("Future Shifts");
-        List<ShiftDTO> futureShifts = shiftController.getFutureShifts();
+        displayTitle("Future Shifts (All Branches)");
+        List<ShiftDTO> futureShifts = navigationManager.getShiftService().getFutureShifts();
+
         if (futureShifts.isEmpty()) {
             displayMessage("No future shifts in the system");
             return;
         }
+
+        displayShiftsList(futureShifts);
+    }
+
+    /**
+     * Displays future shifts filtered by branch.
+     */
+    private void viewFutureShiftsByBranch() {
+        displayTitle("Future Shifts by Branch");
+
+        BranchDTO selectedBranch = selectBranch();
+        if (selectedBranch == null) return;
+
+        List<ShiftDTO> futureShifts = navigationManager.getShiftService()
+                .getFutureShiftsByBranch(selectedBranch.getAddress());
+
+        if (futureShifts.isEmpty()) {
+            displayMessage("No future shifts found for branch: " + selectedBranch.getAddress());
+            return;
+        }
+
+        displayTitle("Future Shifts at " + selectedBranch.getAddress());
+        displayShiftsList(futureShifts);
+    }
+
+    /**
+     * Helper method to display a list of shifts.
+     */
+    private void displayShiftsList(List<ShiftDTO> shifts) {
         // Sort shifts by date
-        futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
-        for (ShiftDTO shift : futureShifts) {
+        shifts.sort(Comparator.comparing(ShiftDTO::getDate));
+
+        for (ShiftDTO shift : shifts) {
             String hasManager = shift.hasShiftManager() ? "Yes" : "No";
-            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() + " (Has Manager: " + hasManager + ", ID: " + shift.getId() + ")");
+            String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
+            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() +
+                    branchInfo + " (Has Manager: " + hasManager + ", ID: " + shift.getId() + ")");
         }
     }
 
@@ -177,19 +206,15 @@ public class ShiftSchedulingScreen extends BaseScreen {
         PositionDTO position = selectPosition();
         if (position == null) return;
 
-        // Find eligible employees (qualified and available)
-        List<EmployeeDTO> qualifiedEmployees = employeeController.getQualifiedEmployeesForPosition(position.getName());
-        List<EmployeeDTO> availableEmployees = assignmentController.getAvailableEmployeesForShift(shift.getDate(), shift.getShiftType());
-
-        List<EmployeeDTO> eligibleEmployees = new ArrayList<>();
-        for (EmployeeDTO employee : qualifiedEmployees) {
-            if (availableEmployees.stream().anyMatch(e -> e.getId().equals(employee.getId()))) {
-                eligibleEmployees.add(employee);
-            }
-        }
+        // Find eligible employees based on shift branch
+        List<EmployeeDTO> eligibleEmployees = getEligibleEmployeesForShift(shift, position.getName());
 
         if (eligibleEmployees.isEmpty()) {
             displayError("No eligible employees for this position and shift");
+            displayMessage("Consider:");
+            displayMessage("1. Adding qualifications to employees");
+            displayMessage("2. Updating employee availability");
+            displayMessage("3. Assigning employees to the shift's branch");
             return;
         }
 
@@ -198,26 +223,46 @@ public class ShiftSchedulingScreen extends BaseScreen {
         if (employee == null) return;
 
         // Check if employee is already assigned
-        if (assignmentController.isEmployeeAlreadyAssignedToShift(shift.getId(), employee.getId())) {
+        if (navigationManager.getAssignmentService().isEmployeeAlreadyAssignedToShift(shift.getId(), employee.getId())) {
             displayError("This employee is already assigned to this shift.");
             return;
         }
 
         // Try to assign employee
-        boolean success = assignmentController.assignEmployeeToShift(shift.getId(), employee.getId(), position.getName());
+        boolean success = navigationManager.getAssignmentService()
+                .assignEmployeeToShift(shift.getId(), employee.getId(), position.getName());
 
         if (success) {
             displayMessage("Employee successfully assigned to shift");
-            if (assignmentController.areAllRequiredPositionsCovered(shift.getId())) {
+            if (navigationManager.getAssignmentService().areAllRequiredPositionsCovered(shift.getId())) {
                 displayMessage("All required positions for this shift are now covered");
             }
-        } else {// Check the specific reason for failure
-            int requiredCount = assignmentController.getRequiredPositionsCount(shift.getShiftType(), position.getName());
+        } else {
+            int requiredCount = navigationManager.getAssignmentService()
+                    .getRequiredPositionsCount(shift.getShiftType(), position.getName());
             if (requiredCount == 0) {
-                displayError("Cannot assign employee: No required positions defined for '" + position.getName() + "' in this shift.");
+                displayError("Cannot assign employee: No required positions defined for '" +
+                        position.getName() + "' in this shift.");
             } else {
-                displayError("Failed to assign employee. Possible reasons: all positions are filled, lack of qualification, or availability issues.");
+                displayError("Failed to assign employee. Possible reasons: all positions are filled, " +
+                        "lack of qualification, or availability issues.");
             }
+        }
+    }
+
+    /**
+     * Gets eligible employees for a shift considering branch assignment.
+     */
+    private List<EmployeeDTO> getEligibleEmployeesForShift(ShiftDTO shift, String positionName) {
+        if (shift.hasBranch()) {
+            // Shift has specific branch - get employees for that branch
+            return navigationManager.getAssignmentService()
+                    .getQualifiedAndAvailableEmployeesByBranch(
+                            shift.getDate(), shift.getShiftType(), positionName, shift.getBranchAddress());
+        } else {
+            // Shift has no specific branch - get all qualified and available employees
+            return navigationManager.getAssignmentService()
+                    .getQualifiedAndAvailableEmployees(shift.getDate(), shift.getShiftType(), positionName);
         }
     }
 
@@ -258,8 +303,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
 
         String selectedPosition = assignedPositions.get(positionIndex - 1);
 
-
-        PositionDTO positionDTO = employeeController.getPositionDetails(selectedPosition);
+        PositionDTO positionDTO = navigationManager.getPositionService().getPosition(selectedPosition);
         if (positionDTO != null && positionDTO.isRequiresShiftManager()) {
             displayError("Cannot remove a shift manager from the shift.");
             displayError("Every shift must have a shift manager assigned.");
@@ -271,7 +315,8 @@ public class ShiftSchedulingScreen extends BaseScreen {
 
         if (getBooleanInput("Are you sure you want to remove " +
                 employee + " from position " + selectedPosition + "?")) {
-            boolean success = assignmentController.removeAssignmentFromShift(shift.getId(), selectedPosition);
+            boolean success = navigationManager.getAssignmentService()
+                    .removeAssignmentFromShift(shift.getId(), selectedPosition);
 
             if (success) {
                 displayMessage("Assignment successfully removed");
@@ -286,22 +331,54 @@ public class ShiftSchedulingScreen extends BaseScreen {
      */
     private void viewMissingPositions() {
         displayTitle("Missing Positions in Future Shifts");
-        List<ShiftDTO> futureShifts = shiftController.getFutureShifts();
-        if (futureShifts.isEmpty()) {
-            displayMessage("No future shifts in the system");
+
+        // Option to view by branch or all
+        String[] options = {"All Branches", "Specific Branch"};
+        int viewChoice = displayMenu("View Missing Positions", options);
+
+        if (viewChoice == 0) {
             return;
         }
+
+        List<ShiftDTO> futureShifts;
+        String title;
+
+        if (viewChoice == 1) {
+            futureShifts = navigationManager.getShiftService().getFutureShifts();
+            title = "Missing Positions in All Future Shifts";
+        } else {
+            BranchDTO selectedBranch = selectBranch();
+            if (selectedBranch == null) return;
+
+            futureShifts = navigationManager.getShiftService()
+                    .getFutureShiftsByBranch(selectedBranch.getAddress());
+            title = "Missing Positions at " + selectedBranch.getAddress();
+        }
+
+        if (futureShifts.isEmpty()) {
+            displayMessage("No future shifts found");
+            return;
+        }
+
+        displayTitle(title);
         boolean foundMissing = false;
+
         for (ShiftDTO shift : futureShifts) {
-            List<PositionDTO> missingPositions = shiftController.getMissingPositionsForShift(shift.getId());
+            List<PositionDTO> missingPositions = navigationManager.getShiftService()
+                    .getMissingPositionsForShift(shift.getId());
             if (!missingPositions.isEmpty()) {
                 foundMissing = true;
-                displayTitle(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
+                String shiftTitle = shift.getDate().format(dateFormatter) + " - " + shift.getShiftType();
+                if (shift.hasBranch()) {
+                    shiftTitle += " at " + shift.getBranchAddress();
+                }
+                displayTitle(shiftTitle);
                 for (PositionDTO position : missingPositions) {
                     displayMessage("- " + position.getName());
                 }
             }
         }
+
         if (!foundMissing) {
             displayMessage("No missing positions in future shifts");
         }
@@ -311,11 +388,19 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Displays detailed information about a shift.
      */
     private void displayShiftDetails(ShiftDTO shift) {
-        displayTitle("Shift Details: " + shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
+        String shiftTitle = "Shift Details: " + shift.getDate().format(dateFormatter) + " - " + shift.getShiftType();
+        if (shift.hasBranch()) {
+            shiftTitle += " at " + shift.getBranchAddress();
+        }
+        displayTitle(shiftTitle);
 
         displayMessage("Shift ID: " + shift.getId());
         displayMessage("Start Time: " + shift.getStartTime());
         displayMessage("End Time: " + shift.getEndTime());
+
+        if (shift.hasBranch()) {
+            displayMessage("Branch: " + shift.getBranchAddress());
+        }
 
         if (shift.hasShiftManager()) {
             displayMessage("Shift Manager: " + shift.getShiftManagerName());
@@ -323,45 +408,22 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayMessage("Shift Manager: Not assigned");
         }
 
-        // Display assigned employees:
+        // Display assigned employees
         Map<String, String> assignments = shift.getAssignments();
 
         if (assignments.isEmpty()) {
             displayMessage("Assigned Employees: None");
         } else {
             displayMessage("\nAssigned Employees:");
-
-            // For future shifts, always show all assignments
-            if (!shift.getDate().isBefore(LocalDate.now())) {
-                for (Map.Entry<String, String> entry : assignments.entrySet()) {
-                    displayMessage("- " + entry.getKey() + ": " + entry.getValue());
-                }
-            }
-            // For historical shifts, display based on user role
-            else {
-                if (loggedInEmployee.isManager()) {
-                    for (Map.Entry<String, String> entry : assignments.entrySet()) {
-                        displayMessage("- " + entry.getKey() + ": " + entry.getValue());
-                    }
-                } else {
-                    // Regular employees see only themselves
-                    boolean found = false;
-                    for (Map.Entry<String, String> entry : assignments.entrySet()) {
-                        if (entry.getValue().equals(loggedInEmployee.getFullName())) {
-                            displayMessage("- " + entry.getKey() + ": " + entry.getValue());
-                            found = true;
-                        }
-                    }
-                    if (!found) {
-                        displayMessage("You were not assigned to this shift.");
-                    }
-                }
+            for (Map.Entry<String, String> entry : assignments.entrySet()) {
+                displayMessage("- " + entry.getKey() + ": " + entry.getValue());
             }
         }
 
         // Display missing positions (for managers only)
         if (loggedInEmployee.isManager()) {
-            List<PositionDTO> missingPositions = shiftController.getMissingPositionsForShift(shift.getId());
+            List<PositionDTO> missingPositions = navigationManager.getShiftService()
+                    .getMissingPositionsForShift(shift.getId());
             if (!missingPositions.isEmpty()) {
                 displayMessage("\nMissing Positions:");
                 for (PositionDTO position : missingPositions) {
@@ -372,26 +434,113 @@ public class ShiftSchedulingScreen extends BaseScreen {
     }
 
     /**
+     * Helper method to get start date from user input.
+     */
+    private LocalDate getStartDate() {
+        LocalDate startDate = null;
+        while (startDate == null) {
+            try {
+                String dateStr = getInput("Enter start date (Sunday) in format DD/MM/YYYY");
+                startDate = LocalDate.parse(dateStr, dateFormatter);
+                if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                    displayError("The date must be a Sunday");
+                    startDate = null;
+                }
+            } catch (DateTimeParseException e) {
+                displayError("Invalid date format. Please use DD/MM/YYYY");
+            }
+        }
+        return startDate;
+    }
+
+    /**
+     * Validates that manager positions exist.
+     */
+    private boolean validateManagerPositions() {
+        List<PositionDTO> managerPositions = navigationManager.getPositionService().getAllPositions().stream()
+                .filter(PositionDTO::isRequiresShiftManager)
+                .toList();
+
+        if (managerPositions.isEmpty()) {
+            displayError("Cannot create shifts: No shift manager positions defined in the system.");
+            displayError("Please create a shift manager position first.");
+            return false;
+        }
+
+        boolean hasQualifiedManagers = false;
+        for (PositionDTO position : managerPositions) {
+            List<EmployeeDTO> qualifiedEmployees = navigationManager.getPositionService()
+                    .getQualifiedEmployeesForPosition(position.getName());
+            if (!qualifiedEmployees.isEmpty()) {
+                hasQualifiedManagers = true;
+                break;
+            }
+        }
+
+        if (!hasQualifiedManagers) {
+            displayError("Cannot create shifts: No employees are qualified for shift manager positions.");
+            displayError("Please assign shift manager qualification to at least one employee first.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to select a branch.
+     */
+    private BranchDTO selectBranch() {
+        List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+
+        if (branches.isEmpty()) {
+            displayError("No branches available in the system");
+            return null;
+        }
+
+        String[] branchNames = new String[branches.size()];
+        for (int i = 0; i < branches.size(); i++) {
+            BranchDTO branch = branches.get(i);
+            branchNames[i] = branch.getAddress() + " (" + branch.getZoneName() + ")";
+        }
+
+        int choice = displayMenu("Select Branch", branchNames);
+
+        if (choice == 0) {
+            return null;
+        }
+
+        return branches.get(choice - 1);
+    }
+
+    /**
      * Displays a menu for selecting a future shift from those available in the system.
      */
     private ShiftDTO selectFutureShift() {
-        List<ShiftDTO> futureShifts = shiftController.getFutureShifts();
+        List<ShiftDTO> futureShifts = navigationManager.getShiftService().getFutureShifts();
         if (futureShifts.isEmpty()) {
             displayError("No future shifts in the system");
             return null;
         }
+
         // Sort shifts by date
         futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
+
         // Build array of descriptions for display in menu
         String[] shiftDescriptions = new String[futureShifts.size()];
         for (int i = 0; i < futureShifts.size(); i++) {
             ShiftDTO shift = futureShifts.get(i);
-            shiftDescriptions[i] = shift.getDate().format(dateFormatter) + " - " + shift.getShiftType();
+            String description = shift.getDate().format(dateFormatter) + " - " + shift.getShiftType();
+            if (shift.hasBranch()) {
+                description += " at " + shift.getBranchAddress();
+            }
+            shiftDescriptions[i] = description;
         }
+
         int choice = displayMenu("Select Shift", shiftDescriptions);
         if (choice == 0) {
             return null; // User chose to go back
         }
+
         return futureShifts.get(choice - 1);
     }
 
@@ -399,11 +548,12 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Displays a menu for selecting a position from those available in the system.
      */
     private PositionDTO selectPosition() {
-        List<PositionDTO> positions = employeeController.getAllPositions();
+        List<PositionDTO> positions = navigationManager.getPositionService().getAllPositions();
         if (positions.isEmpty()) {
             displayError("No positions defined in the system");
             return null;
         }
+
         // Build array of names for display in menu
         String[] positionNames = new String[positions.size()];
         for (int i = 0; i < positions.size(); i++) {
@@ -411,10 +561,12 @@ public class ShiftSchedulingScreen extends BaseScreen {
             String isManager = pos.isRequiresShiftManager() ? " (Shift Manager)" : "";
             positionNames[i] = pos.getName() + isManager;
         }
+
         int choice = displayMenu("Select Position", positionNames);
         if (choice == 0) {
             return null; // User chose to go back
         }
+
         return positions.get(choice - 1);
     }
 
@@ -426,16 +578,20 @@ public class ShiftSchedulingScreen extends BaseScreen {
             displayError("No employees to select from");
             return null;
         }
+
         // Build array of names for display in menu
         String[] employeeNames = new String[employees.size()];
         for (int i = 0; i < employees.size(); i++) {
             EmployeeDTO emp = employees.get(i);
-            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+            String branchInfo = emp.hasBranch() ? " [" + emp.getBranchAddress() + "]" : " [No Branch]";
+            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")" + branchInfo;
         }
+
         int choice = displayMenu("Select Employee", employeeNames);
         if (choice == 0) {
             return null; // User chose to go back
         }
+
         return employees.get(choice - 1);
     }
 
@@ -455,7 +611,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
         String newStart = getInput("Enter new start time (HH:mm)");
         String newEnd = getInput("Enter new end time (HH:mm)");
 
-        boolean success = employeeController.updateShiftHours(shiftTypeStr, newStart, newEnd);
+        boolean success = navigationManager.getEmployeeService().updateShiftHours(shiftTypeStr, newStart, newEnd);
 
         if (success) {
             displayMessage("Shift hours updated successfully for " + shiftTypes[choice - 1]);

@@ -1,6 +1,5 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeService;
 import Service_employee.EmployeeDTO;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -8,10 +7,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * EmployeeAvailabilityScreen is responsible for managing the UI related to employee availability.
+ * Updated EmployeeAvailabilityScreen with the new service architecture.
+ * Responsible for managing the UI related to employee availability.
  */
 public class EmployeeAvailabilityScreen extends BaseScreen {
-    private final EmployeeService employeeController;
+    private final NavigationManager navigationManager;
     private final EmployeeDTO loggedInEmployee;
 
     private static final String[] DAYS_IN_HEBREW = {
@@ -24,10 +24,10 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     };
 
     /**
-     * Constructs an EmployeeAvailabilityScreen with the employee controller and logged-in user.
+     * Constructs an EmployeeAvailabilityScreen with the navigation manager and logged-in user.
      */
-    public EmployeeAvailabilityScreen(EmployeeService employeeController, EmployeeDTO loggedInEmployee) {
-        this.employeeController = employeeController;
+    public EmployeeAvailabilityScreen(NavigationManager navigationManager, EmployeeDTO loggedInEmployee) {
+        this.navigationManager = navigationManager;
         this.loggedInEmployee = loggedInEmployee;
     }
 
@@ -43,8 +43,10 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void displayManagerOptions() {
         String[] options = {
                 "Display Employee Availability",
+                "Display Availability by Branch",
                 "Update Employee Availability",
                 "Generate Weekly Availability Report",
+                "Generate Branch Availability Report",
                 "Reset Employee Availability"
         };
 
@@ -57,12 +59,18 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
                     displayEmployeeAvailability();
                     break;
                 case 2:
-                    updateEmployeeAvailability();
+                    displayAvailabilityByBranch();
                     break;
                 case 3:
-                    generateWeeklyAvailabilityReport();
+                    updateEmployeeAvailability();
                     break;
                 case 4:
+                    generateWeeklyAvailabilityReport();
+                    break;
+                case 5:
+                    generateBranchAvailabilityReport();
+                    break;
+                case 6:
                     resetEmployeeAvailability();
                     break;
                 case 0:
@@ -89,7 +97,8 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
                 case 2:
                     updateMyAvailability();
                     break;
-                case 0:      // Return to previous menu
+                case 0:
+                    // Return to previous menu
                     break;
             }
         } while (choice != 0);
@@ -105,6 +114,86 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         displayEmployeeAvailabilityInfo(employee);
     }
 
+    private void displayAvailabilityByBranch() {
+        displayTitle("Employee Availability by Branch");
+
+        // Option to view specific branch or employees without branch
+        List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+
+        if (branches.isEmpty()) {
+            displayError("No branches available in the system");
+            return;
+        }
+
+        String[] options = new String[branches.size() + 1];
+        for (int i = 0; i < branches.size(); i++) {
+            options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
+        }
+        options[branches.size()] = "Employees without branch assignment";
+
+        int choice = displayMenu("Select Branch or Option", options);
+
+        if (choice == 0) {
+            return;
+        }
+
+        List<EmployeeDTO> employees;
+        String title;
+
+        if (choice <= branches.size()) {
+            // Specific branch selected
+            Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
+            title = "Availability at " + selectedBranch.getAddress();
+        } else {
+            // Employees without branch
+            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
+                    .filter(emp -> !emp.hasBranch())
+                    .collect(Collectors.toList());
+            title = "Availability - Employees without branch";
+        }
+
+        displayTitle(title);
+
+        if (employees.isEmpty()) {
+            displayMessage("No employees found");
+            return;
+        }
+
+        // Display availability for each day
+        for (int i = 0; i < DAYS_OF_WEEK.length; i++) {
+            DayOfWeek day = DAYS_OF_WEEK[i];
+            String dayName = DAYS_IN_HEBREW[i];
+
+            displayTitle(dayName);
+            displayMessage("Morning Shift:");
+            boolean foundMorning = false;
+            for (EmployeeDTO employee : employees) {
+                if (navigationManager.getEmployeeService().isEmployeeAvailable(employee.getId(), day, "MORNING")) {
+                    displayMessage("- " + employee.getFullName());
+                    foundMorning = true;
+                }
+            }
+            if (!foundMorning) {
+                displayMessage("No available employees");
+            }
+
+            displayMessage("\nEvening Shift:");
+            boolean foundEvening = false;
+            for (EmployeeDTO employee : employees) {
+                if (navigationManager.getEmployeeService().isEmployeeAvailable(employee.getId(), day, "EVENING")) {
+                    displayMessage("- " + employee.getFullName());
+                    foundEvening = true;
+                }
+            }
+            if (!foundEvening) {
+                displayMessage("No available employees");
+            }
+
+            displayMessage(""); // Empty line between days
+        }
+    }
+
     private void displayMyAvailability() {
         displayEmployeeAvailabilityInfo(loggedInEmployee);
     }
@@ -112,13 +201,19 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void displayEmployeeAvailabilityInfo(EmployeeDTO employee) {
         displayTitle("Employee Availability: " + employee.getFullName());
 
+        if (employee.hasBranch()) {
+            displayMessage("Branch: " + employee.getBranchAddress());
+        }
+
         // Display availability for each day of the week
         for (int i = 0; i < DAYS_OF_WEEK.length; i++) {
             DayOfWeek day = DAYS_OF_WEEK[i];
             String dayName = DAYS_IN_HEBREW[i];
 
-            boolean morningAvailable = employeeController.isEmployeeAvailable(employee.getId(), day, "MORNING");
-            boolean eveningAvailable = employeeController.isEmployeeAvailable(employee.getId(), day, "EVENING");
+            boolean morningAvailable = navigationManager.getEmployeeService()
+                    .isEmployeeAvailable(employee.getId(), day, "MORNING");
+            boolean eveningAvailable = navigationManager.getEmployeeService()
+                    .isEmployeeAvailable(employee.getId(), day, "EVENING");
 
             String morningStatus = morningAvailable ? "Available" : "Unavailable";
             String eveningStatus = eveningAvailable ? "Available" : "Unavailable";
@@ -142,6 +237,10 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void updateEmployeeAvailabilityForEmployee(EmployeeDTO employee) {
         displayTitle("Update Availability for: " + employee.getFullName());
 
+        if (employee.hasBranch()) {
+            displayMessage("Employee Branch: " + employee.getBranchAddress());
+        }
+
         DayOfWeek today = LocalDate.now().getDayOfWeek();
         if (today == DayOfWeek.FRIDAY || today == DayOfWeek.SATURDAY) {
             displayError("You can only update next week's availability until Thursday.");
@@ -157,8 +256,10 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         String dayName = DAYS_IN_HEBREW[dayIndex];
         displayTitle("Update Availability for " + dayName + " (Next Week)");
 
-        boolean currentMorningAvailable = employeeController.isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "MORNING");
-        boolean currentEveningAvailable = employeeController.isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "EVENING");
+        boolean currentMorningAvailable = navigationManager.getEmployeeService()
+                .isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "MORNING");
+        boolean currentEveningAvailable = navigationManager.getEmployeeService()
+                .isEmployeeAvailableForNextWeek(employee.getId(), selectedDay, "EVENING");
 
         displayMessage("Current availability: Morning - " + (currentMorningAvailable ? "Available" : "Unavailable")
                 + ", Evening - " + (currentEveningAvailable ? "Available" : "Unavailable"));
@@ -166,7 +267,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         boolean morningAvailable = getBooleanInput("Is employee available for morning shift?");
         boolean eveningAvailable = getBooleanInput("Is employee available for evening shift?");
 
-        boolean success = employeeController.updateEmployeeAvailabilityForNextWeek(
+        boolean success = navigationManager.getEmployeeService().updateEmployeeAvailabilityForNextWeek(
                 employee.getId(), selectedDay, morningAvailable, eveningAvailable);
 
         if (success) {
@@ -177,23 +278,76 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     }
 
     private void generateWeeklyAvailabilityReport() {
-        displayTitle("Weekly Availability Report");
-        List<EmployeeDTO> employees = employeeController.getAllEmployees();
+        displayTitle("Weekly Availability Report (All Employees)");
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService().getAllEmployees();
 
         if (employees.isEmpty()) {
             displayError("No employees in the system");
             return;
         }
 
+        generateAvailabilityReportForEmployees(employees);
+    }
+
+    private void generateBranchAvailabilityReport() {
+        displayTitle("Branch Availability Report");
+
+        // Select branch
+        List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+
+        if (branches.isEmpty()) {
+            displayError("No branches available in the system");
+            return;
+        }
+
+        String[] options = new String[branches.size() + 1];
+        for (int i = 0; i < branches.size(); i++) {
+            options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
+        }
+        options[branches.size()] = "Employees without branch assignment";
+
+        int choice = displayMenu("Select Branch for Report", options);
+
+        if (choice == 0) {
+            return;
+        }
+
+        List<EmployeeDTO> employees;
+        String title;
+
+        if (choice <= branches.size()) {
+            Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
+            title = "Availability Report - " + selectedBranch.getAddress();
+        } else {
+            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
+                    .filter(emp -> !emp.hasBranch())
+                    .collect(Collectors.toList());
+            title = "Availability Report - Employees without branch";
+        }
+
+        displayTitle(title);
+
+        if (employees.isEmpty()) {
+            displayMessage("No employees found");
+            return;
+        }
+
+        generateAvailabilityReportForEmployees(employees);
+    }
+
+    private void generateAvailabilityReportForEmployees(List<EmployeeDTO> employees) {
         for (int i = 0; i < DAYS_OF_WEEK.length; i++) {
             DayOfWeek day = DAYS_OF_WEEK[i];
             String dayName = DAYS_IN_HEBREW[i];
             displayTitle(dayName);
+
             displayMessage("Morning Shift:");
             boolean foundMorning = false;
             for (EmployeeDTO employee : employees) {
-                if (employeeController.isEmployeeAvailable(employee.getId(), day, "MORNING")) {
-                    displayMessage("- " + employee.getFullName());
+                if (navigationManager.getEmployeeService().isEmployeeAvailable(employee.getId(), day, "MORNING")) {
+                    String branchInfo = employee.hasBranch() ? " [" + employee.getBranchAddress() + "]" : "";
+                    displayMessage("- " + employee.getFullName() + branchInfo);
                     foundMorning = true;
                 }
             }
@@ -204,8 +358,9 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             displayMessage("\nEvening Shift:");
             boolean foundEvening = false;
             for (EmployeeDTO employee : employees) {
-                if (employeeController.isEmployeeAvailable(employee.getId(), day, "EVENING")) {
-                    displayMessage("- " + employee.getFullName());
+                if (navigationManager.getEmployeeService().isEmployeeAvailable(employee.getId(), day, "EVENING")) {
+                    String branchInfo = employee.hasBranch() ? " [" + employee.getBranchAddress() + "]" : "";
+                    displayMessage("- " + employee.getFullName() + branchInfo);
                     foundEvening = true;
                 }
             }
@@ -230,8 +385,8 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             // Reset availability for each day of the week
             boolean success = true;
             for (DayOfWeek day : DAYS_OF_WEEK) {
-                boolean result = employeeController.updateEmployeeAvailability(
-                        employee.getId(), day, true, true);
+                boolean result = navigationManager.getEmployeeService()
+                        .updateEmployeeAvailability(employee.getId(), day, true, true);
                 if (!result) {
                     success = false;
                 }
@@ -248,7 +403,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private EmployeeDTO selectEmployee() {
         displayTitle("Select Employee");
 
-        List<EmployeeDTO> employees = employeeController.getAllEmployees().stream()
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService().getAllEmployees().stream()
                 .filter(emp -> !emp.getId().equals("admin"))
                 .collect(Collectors.toList());
 
@@ -261,7 +416,8 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         String[] employeeNames = new String[employees.size()];
         for (int i = 0; i < employees.size(); i++) {
             EmployeeDTO emp = employees.get(i);
-            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+            String branchInfo = emp.hasBranch() ? " [" + emp.getBranchAddress() + "]" : " [No Branch]";
+            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")" + branchInfo;
         }
 
         int choice = displayMenu("Select Employee", employeeNames);

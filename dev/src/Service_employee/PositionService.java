@@ -5,84 +5,53 @@ import Domain_employee.EmployeeController;
 import java.util.List;
 
 /**
- * Controller responsible for handling position and qualification operations.
- * Acts as an intermediary between the presentation layer and the service layer.
+ * Thin service layer for position operations.
+ * Acts as a bridge between presentation layer and controller (business logic).
  */
 public class PositionService {
-    private final EmployeeController employeeService;
+    private final EmployeeController employeeController;
 
     public PositionService() {
-        this.employeeService = new EmployeeController();
+        this.employeeController = new EmployeeController();
     }
 
-    /**
-     * Adds a new position to the system.
-     */
+    // Position Management
     public boolean addPosition(String name, boolean isShiftManagerRole) {
-        return employeeService.addPosition(name, isShiftManagerRole);
+        return employeeController.addPosition(name, isShiftManagerRole);
     }
 
-    /**
-     * Gets all positions defined in the system.
-     */
     public List<PositionDTO> getAllPositions() {
-        return employeeService.getAllPositions();
+        return employeeController.getAllPositions();
     }
 
-    /**
-     * Gets a position by name.
-     */
     public PositionDTO getPosition(String name) {
-        return employeeService.getPositionDetails(name);
+        return employeeController.getPositionDetails(name);
     }
 
-    /**
-     * Assigns a qualification to an employee.
-     */
-
-
+    // Qualification Management
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
-        boolean success = employeeService.addQualificationToEmployee(employeeId, positionName);
-
-        if (success) {
-            // בדוק אם מדובר בתפקיד של מנהל משמרת
-            PositionDTO position = employeeService.getPositionDetails(positionName);
-            EmployeeDTO employee = employeeService.getEmployeeDetails(employeeId);
-
-            if (position != null && position.isRequiresShiftManager() && employee != null) {
-                // עדכן את תפקיד העובד ל-SHIFT_MANAGER
-                return employeeService.updateEmployeeRole(employeeId, "SHIFT_MANAGER");
-            }
-        }
-
-        return success;
+        return employeeController.addQualificationToEmployee(employeeId, positionName);
     }
 
-    /**
-     * Removes a qualification from an employee.
-     */
     public boolean removeQualificationFromEmployee(String employeeId, String positionName) {
-        return employeeService.removeQualificationFromEmployee(employeeId, positionName);
+        return employeeController.removeQualificationFromEmployee(employeeId, positionName);
     }
 
-    /**
-     * Gets employees qualified for a specific position.
-     */
     public List<EmployeeDTO> getQualifiedEmployeesForPosition(String positionName) {
-        return employeeService.getQualifiedEmployeesForPosition(positionName);
+        return employeeController.getQualifiedEmployeesForPosition(positionName);
     }
 
-    /**
-     * Sets requirements for a position in shifts.
-     */
+    // Required Positions for Shifts
     public boolean setRequiredPosition(String shiftType, String positionName, int count) {
-        return employeeService.addRequiredPosition(shiftType, positionName, count);
+        return employeeController.addRequiredPosition(shiftType, positionName, count);
     }
 
-    /**
-     * Gets all employees.
-     */
+    public int getRequiredPositionsCount(String shiftType, String positionName) {
+        return employeeController.getRequiredPositionsCount(shiftType, positionName);
+    }
+
+    // Employee Access (for position management screens)
     public List<EmployeeDTO> getAllEmployees() {
-        return employeeService.getAllEmployees();
+        return employeeController.getAllEmployees();
     }
 }

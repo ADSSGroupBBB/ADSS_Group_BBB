@@ -1,28 +1,25 @@
 package Presentation_employee;
 
-import Service_employee.DataInitialization;
+import Domain_employee.DataInitializationController;
 import Service_employee.EmployeeDTO;
 
 /**
- * MainScreen serves as the primary navigation hub of the application.
- * It displays the main menu and routes the user to various functional screens
- * based on their selection.
+ * Updated MainScreen with branch management support.
+ * Serves as the primary navigation hub of the application.
  */
 public class MainScreen extends BaseScreen {
     private final NavigationManager navigationManager;
     private final EmployeeDTO loggedInEmployee;
-    private final DataInitialization dataInitializationController;
+    private final DataInitializationController dataInitializationController;
 
     /**
      * Constructs a MainScreen with the specified navigation manager.
      * Retrieves the logged-in employee from the navigation manager.
-     *
-     * @param navigationManager The manager responsible for screen navigation
      */
     public MainScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
         this.loggedInEmployee = navigationManager.getLoggedInEmployee();
-        this.dataInitializationController = new DataInitialization();
+        this.dataInitializationController = new DataInitializationController();
     }
 
     /**
@@ -31,7 +28,7 @@ public class MainScreen extends BaseScreen {
      * provides options for navigating to different functional areas.
      */
     @Override
-    public void display() { // main menu
+    public void display() {
         displayTitle("Super-Li Employee Management System");
 
         String employeeType = "Regular Employee";
@@ -41,14 +38,30 @@ public class MainScreen extends BaseScreen {
             employeeType = "Shift Manager";
         }
 
-        displayMessage("Welcome, " + loggedInEmployee.getFullName() + " (" + employeeType + ")");
+        String branchInfo = loggedInEmployee.hasBranch() ?
+                " - Branch: " + loggedInEmployee.getBranchAddress() : " - No specific branch";
+
+        displayMessage("Welcome, " + loggedInEmployee.getFullName() + " (" + employeeType + ")" + branchInfo);
 
         String[] options;
 
-        // Only managers (HR or shift managers) have access to data initialization
-        if (loggedInEmployee.isManager()) {
+        // Different menu options based on user role
+        if (loggedInEmployee.isHRManager()) {
+            // HR Managers have access to all features including branch management
             options = new String[]{
                     "Employee Management",
+                    "Employee Availability",
+                    "Qualification Management",
+                    "Shift Scheduling",
+                    "Shift History",
+                    "View Future Shifts",
+                    "Branch Management",
+                    "Initialize Sample Data",
+                    "Logout"
+            };
+        } else if (loggedInEmployee.isShiftManager()) {
+            // Shift Managers have access to most features but not employee management
+            options = new String[]{
                     "Employee Availability",
                     "Qualification Management",
                     "Shift Scheduling",
@@ -58,11 +71,9 @@ public class MainScreen extends BaseScreen {
                     "Logout"
             };
         } else {
+            // Regular employees have limited access
             options = new String[]{
-                    "Employee Management",
                     "Employee Availability",
-                    "Qualification Management",
-                    "Shift Scheduling",
                     "Shift History",
                     "View Future Shifts",
                     "Logout"
@@ -73,7 +84,7 @@ public class MainScreen extends BaseScreen {
         do {
             choice = displayMenu("Main Menu", options);
 
-            if (loggedInEmployee.isManager()) {
+            if (loggedInEmployee.isHRManager()) {
                 switch (choice) {
                     case 1:
                         navigationManager.showEmployeeManagement();
@@ -94,9 +105,40 @@ public class MainScreen extends BaseScreen {
                         navigationManager.showFutureShifts();
                         break;
                     case 7:
-                        initializeSampleData(); // Call to initialize sample data
+                        navigationManager.showBranchManagement();
                         break;
                     case 8:
+                        initializeSampleData();
+                        break;
+                    case 9:
+                        navigationManager.logout();
+                        displayMessage("Logged out successfully");
+                        return;
+                    case 0:
+                        displayMessage("Exiting system...");
+                        return;
+                }
+            } else if (loggedInEmployee.isShiftManager()) {
+                switch (choice) {
+                    case 1:
+                        navigationManager.showEmployeeAvailability();
+                        break;
+                    case 2:
+                        navigationManager.showQualificationManagement();
+                        break;
+                    case 3:
+                        navigationManager.showShiftScheduling();
+                        break;
+                    case 4:
+                        navigationManager.showShiftHistory();
+                        break;
+                    case 5:
+                        navigationManager.showFutureShifts();
+                        break;
+                    case 6:
+                        initializeSampleData();
+                        break;
+                    case 7:
                         navigationManager.logout();
                         displayMessage("Logged out successfully");
                         return;
@@ -105,26 +147,18 @@ public class MainScreen extends BaseScreen {
                         return;
                 }
             } else {
+                // Regular employee menu
                 switch (choice) {
                     case 1:
-                        navigationManager.showEmployeeManagement();
-                        break;
-                    case 2:
                         navigationManager.showEmployeeAvailability();
                         break;
-                    case 3:
-                        navigationManager.showQualificationManagement();
-                        break;
-                    case 4:
-                        navigationManager.showShiftScheduling();
-                        break;
-                    case 5:
+                    case 2:
                         navigationManager.showShiftHistory();
                         break;
-                    case 6:
+                    case 3:
                         navigationManager.showFutureShifts();
                         break;
-                    case 7:
+                    case 4:
                         navigationManager.logout();
                         displayMessage("Logged out successfully");
                         return;
@@ -148,8 +182,9 @@ public class MainScreen extends BaseScreen {
 
             if (success) {
                 displayMessage("Sample data successfully loaded into the system.");
-                displayMessage("Added 5 regular employees, 1 shift manager, 5 positions, and weekly shift requirements.");
-                displayMessage("You can now test the system with these sample data.");
+                displayMessage("Added employees, positions, shifts, and branch assignments.");
+                displayMessage("Note: Sample data includes employees assigned to available branches.");
+                displayMessage("You can now test the system with this sample data.");
             } else {
                 displayError("Failed to initialize sample data. Please check the logs for details.");
             }

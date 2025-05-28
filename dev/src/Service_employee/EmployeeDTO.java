@@ -1,10 +1,8 @@
-
 package Service_employee;
 
 import Domain_employee.Employee.UserRole;
 import java.time.LocalDate;
 import java.util.List;
-
 
 /**
  * Data Transfer Object for Employee information.
@@ -14,9 +12,8 @@ import java.util.List;
  * It encapsulates employee details in a read-only structure.
  * All fields are immutable (final).
  *
- * Fields include personal info, employment details, permissions, and benefits.
+ * Fields include personal info, employment details, permissions, benefits, and branch assignment.
  */
-
 public class EmployeeDTO {
     private final String id;
     private final String firstName;
@@ -29,6 +26,7 @@ public class EmployeeDTO {
     private final int sickDays;
     private final int vacationDays;
     private final String pensionFundName;
+    private final String branchAddress; // New field for branch assignment
 
     /**
      * Constructor to initialize all fields of the EmployeeDTO.
@@ -44,10 +42,11 @@ public class EmployeeDTO {
      * @param sickDays          Number of sick days
      * @param vacationDays      Number of vacation days
      * @param pensionFundName   Pension fund name
+     * @param branchAddress     Branch address where employee works
      */
     public EmployeeDTO(String id, String firstName, String lastName, String bankAccount,
                        LocalDate startDate, double salary, List<String> qualifiedPositions, UserRole role,
-                       int sickDays, int vacationDays, String pensionFundName) {
+                       int sickDays, int vacationDays, String pensionFundName, String branchAddress) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -59,6 +58,15 @@ public class EmployeeDTO {
         this.sickDays = sickDays;
         this.vacationDays = vacationDays;
         this.pensionFundName = pensionFundName;
+        this.branchAddress = branchAddress;
+    }
+
+    // Constructor without branch (for backward compatibility)
+    public EmployeeDTO(String id, String firstName, String lastName, String bankAccount,
+                       LocalDate startDate, double salary, List<String> qualifiedPositions, UserRole role,
+                       int sickDays, int vacationDays, String pensionFundName) {
+        this(id, firstName, lastName, bankAccount, startDate, salary, qualifiedPositions,
+                role, sickDays, vacationDays, pensionFundName, null);
     }
 
     public String getId() {
@@ -108,7 +116,24 @@ public class EmployeeDTO {
     public boolean isShiftManager() {
         return role == UserRole.SHIFT_MANAGER;
     }
-    public int getSickDays() { return sickDays; }
-    public int getVacationDays() { return vacationDays; }
-    public String getPensionFundName() { return pensionFundName; }
+
+    public int getSickDays() {
+        return sickDays;
+    }
+
+    public int getVacationDays() {
+        return vacationDays;
+    }
+
+    public String getPensionFundName() {
+        return pensionFundName;
+    }
+
+    public String getBranchAddress() {
+        return branchAddress;
+    }
+
+    public boolean hasBranch() {
+        return branchAddress != null && !branchAddress.trim().isEmpty();
+    }
 }

@@ -1,20 +1,21 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeService;
+import Service_employee.EmployeeDTO;
+
+
+
 import Service_employee.EmployeeDTO;
 
 /**
- * Screen for system login
- * Implements high cohesion by focusing only on login functionality
+ * Updated LoginScreen with the new service architecture.
+ * Screen for system login with branch information display.
  */
 public class LoginScreen extends BaseScreen {
-    private final EmployeeService employeeController;
     private final NavigationManager navigationManager;
     private EmployeeDTO loggedInEmployee;
 
     public LoginScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
-        this.employeeController = navigationManager.getEmployeeController();
         this.loggedInEmployee = null;
     }
 
@@ -53,7 +54,7 @@ public class LoginScreen extends BaseScreen {
         String id = getInput("Enter your ID");
 
         // Check if employee exists
-        EmployeeDTO employee = employeeController.getEmployee(id);
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
@@ -63,7 +64,7 @@ public class LoginScreen extends BaseScreen {
         if (employee.isManager()) {
             String password = getInput("Enter your password");
             // Verify password
-            if (!employeeController.verifyEmployeeCredentials(id, password)) {
+            if (!navigationManager.getEmployeeService().verifyPassword(id, password)) {
                 displayError("Invalid password");
                 return;
             }
@@ -82,6 +83,13 @@ public class LoginScreen extends BaseScreen {
         }
 
         displayMessage("You are logged in as: " + roleMessage);
+
+        // Display branch information
+        if (employee.hasBranch()) {
+            displayMessage("Your assigned branch: " + employee.getBranchAddress());
+        } else {
+            displayMessage("You are not assigned to a specific branch");
+        }
     }
 
     public EmployeeDTO getLoggedInEmployee() {
