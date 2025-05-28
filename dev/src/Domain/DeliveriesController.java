@@ -191,7 +191,7 @@ public class DeliveriesController {
 
     // Returns the origin address from the route
     public String getOriginAddressFromRoute(List<Location> route) {
-        return route.getFirst().getAddress(); // Get address of the first location
+        return route.get(0).getAddress(); // Get address of the first location
     }
 
     // Checks if an item exists in the system

@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 public final class Database {
-    private static final String DB_URL = "jdbc:sqlite:stocks.db";
+    private static final String DB_URL = "jdbc:sqlite:deliveries.db";
     private static Connection conn;
 
     static {
@@ -117,7 +117,7 @@ public final class Database {
                 ps.setString(4, "08:00");
                 ps.setString(5, "D1");
                 ps.setString(6, "HQ");
-                ps.setString(7, "Departure scheduled");
+                ps.setString(7, "Delivery finished.");
                 ps.executeUpdate();
             }
 
@@ -142,12 +142,12 @@ public final class Database {
             // Insert locations
             try (PreparedStatement ps = conn.prepareStatement("INSERT INTO locations (document_id, address, contact_name, contact_num, zone_name) VALUES (?, ?, ?, ?, ?)");) {
                 Object[][] locs = {
-                        {"Rager", "Omer", "555-1234", "Downtown"},
-                        {"Hazaz", "Ben", "555-5678", "Airport"},
-                        {"Metzada", "Lior", "555-9012", "Suburbs"},
-                        {"Bialik", "Meir", "555-3456", "Industrial Park"},
-                        {"Bengurion", "Ariel", "555-7890", "Shopping District"},
-                        {"Headquarters", "Noam", "123-456", "Downtown"},
+                        {"Rager", "Omer", "555-1234", "Downtown, 1"},
+                        {"Hazaz", "Ben", "555-5678", "Airport, 2"},
+                        {"Metzada", "Lior", "555-9012", "Suburbs, 3"},
+                        {"Bialik", "Meir", "555-3456", "Industrial Park, 4"},
+                        {"Bengurion", "Ariel", "555-7890", "Shopping District, 5"},
+                        {"Headquarters", "Noam", "123-456", "Downtown, 1"},
                 };
                 for (Object[] loc : locs) {
                     ps.setInt(1, 1);
