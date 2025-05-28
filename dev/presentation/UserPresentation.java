@@ -59,7 +59,7 @@ public class UserPresentation {
             a.addStandardAgreement(2,"03-03-2025");
             a.addProductToStandardAgreement(3,3,12,3,5,5);
             a.addProductToStandardAgreement(3,4,10,4,6,5);
-            o.addOrder(1,2,1,"Beer","01-03-2025","tom","arrived");
+            o.addOrder(1,2,"Beer","01-03-2025","tom","arrived");
             o.addItem(1,1,7);
             o.addItem(1,2,8);
         }

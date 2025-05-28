@@ -246,7 +246,7 @@ public class OrderManager {
             while (true) {
                 System.out.println("What type of automatic order would you like to place?");
                 System.out.println("1. Periodic Order");
-                System.out.println("2. Order Missing Products");
+                System.out.println("2. Order For Missing Products");
                 if (scanner.hasNextInt()) {
                     choiceType = scanner.nextInt();
                     scanner.nextLine();
@@ -263,11 +263,11 @@ public class OrderManager {
             }
             if (choiceType==1){
 
+            }else{
+                List<Integer> oos=OrderApplication.getOutOfStock();
+
             }
 
-
-
-            List<Integer> oos=OrderApplication.getOutOfStock();
 
         }
 

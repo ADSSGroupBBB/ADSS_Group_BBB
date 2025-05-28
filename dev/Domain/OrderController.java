@@ -95,6 +95,9 @@ public class OrderController {
             addNewOrder(agree.getIDNumber(),agree.getSupplierNumber(),agree.getAddress(),dateAsString,agree.getContactPhone(),"shipped");
         }
     }
+    public Agreement estimatePrice (){
+
+    }
 
     }
 
