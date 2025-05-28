@@ -1,32 +1,30 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
-import Controller_employee.ShiftController;
-import Controller_employee.PositionController;
-import Controller_employee.AssignmentController;
-import Service_employee.EmployeeDTO;
+import Service_employee.*;
 
 /**
- * Navigation manager for the application.
- * Responsible for initializing and navigating between screens.
+ * Updated Navigation manager for the application.
+ * Now uses the new service architecture with DAO support.
  */
 public class NavigationManager {
-    private final EmployeeController employeeController;
-    private final ShiftController shiftController;
-    private final PositionController positionController;
-    private final AssignmentController assignmentController;
+    private final EmployeeService employeeService;
+    private final ShiftService shiftService;
+    private final PositionService positionService;
+    private final AssignmentService assignmentService;
+    private final BranchService branchService;
     private LoginScreen loginScreen;
     private EmployeeDTO loggedInEmployee;
 
     /**
      * Constructs a NavigationManager instance.
-     * Initializes the core controllers and the login screen.
+     * Initializes the core services and the login screen.
      */
     public NavigationManager() {
-        this.employeeController = new EmployeeController();
-        this.shiftController = new ShiftController();
-        this.positionController = new PositionController();
-        this.assignmentController = new AssignmentController();
+        this.employeeService = new EmployeeService();
+        this.shiftService = new ShiftService();
+        this.positionService = new PositionService();
+        this.assignmentService = new AssignmentService();
+        this.branchService = new BranchService();
         this.loginScreen = new LoginScreen(this);
         this.loggedInEmployee = null;
     }
@@ -34,7 +32,6 @@ public class NavigationManager {
     /**
      * Starts the application by displaying the login screen.
      * If login is successful, proceeds to the main screen.
-     * This method represents the main entry point for the UI flow.
      */
     public void start() {
         // First show the login screen
@@ -52,9 +49,8 @@ public class NavigationManager {
      * Restricts access to HR managers only.
      */
     public void showEmployeeManagement() {
-        // Option 1 - HR manager only
         if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
-            EmployeeManagementScreen screen = new EmployeeManagementScreen(employeeController, this);
+            EmployeeManagementScreen screen = new EmployeeManagementScreen(this);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -67,7 +63,7 @@ public class NavigationManager {
      */
     public void showEmployeeAvailability() {
         if (loggedInEmployee != null) {
-            EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(employeeController, loggedInEmployee);
+            EmployeeAvailabilityScreen screen = new EmployeeAvailabilityScreen(this, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -79,9 +75,8 @@ public class NavigationManager {
      * Restricts access to managers only (both shift managers and HR managers).
      */
     public void showQualificationManagement() {
-        // Option 3 - Managers only (shift managers and HR managers)
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
-            QualificationManagementScreen screen = new QualificationManagementScreen(positionController, loggedInEmployee);
+            QualificationManagementScreen screen = new QualificationManagementScreen(this, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -94,8 +89,7 @@ public class NavigationManager {
      */
     public void showShiftScheduling() {
         if (loggedInEmployee != null && loggedInEmployee.isManager()) {
-            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(employeeController, shiftController,
-                    assignmentController, loggedInEmployee);
+            ShiftSchedulingScreen screen = new ShiftSchedulingScreen(this, loggedInEmployee);
             screen.display();
         } else {
             displayUnauthorizedMessage();
@@ -107,7 +101,7 @@ public class NavigationManager {
      * Available to all users but with different views based on user role.
      */
     public void showShiftHistory() {
-        ShiftViewScreen screen = new ShiftViewScreen(employeeController, shiftController, loggedInEmployee);
+        ShiftViewScreen screen = new ShiftViewScreen(this, loggedInEmployee);
         screen.displayShiftHistory();
     }
 
@@ -116,8 +110,21 @@ public class NavigationManager {
      * Available to all users but with different views based on user role.
      */
     public void showFutureShifts() {
-        ShiftViewScreen screen = new ShiftViewScreen(employeeController, shiftController, loggedInEmployee);
+        ShiftViewScreen screen = new ShiftViewScreen(this, loggedInEmployee);
         screen.displayFutureShifts();
+    }
+
+    /**
+     * Shows the branch management screen.
+     * Available to HR managers only.
+     */
+    public void showBranchManagement() {
+        if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
+            BranchManagementScreen screen = new BranchManagementScreen(this);
+            screen.display();
+        } else {
+            displayUnauthorizedMessage();
+        }
     }
 
     /**
@@ -135,20 +142,25 @@ public class NavigationManager {
         }
     }
 
-    public EmployeeController getEmployeeController() {
-        return employeeController;
+    // Getters for services
+    public EmployeeService getEmployeeService() {
+        return employeeService;
     }
 
-    public ShiftController getShiftController() {
-        return shiftController;
+    public ShiftService getShiftService() {
+        return shiftService;
     }
 
-    public PositionController getPositionController() {
-        return positionController;
+    public PositionService getPositionService() {
+        return positionService;
     }
 
-    public AssignmentController getAssignmentController() {
-        return assignmentController;
+    public AssignmentService getAssignmentService() {
+        return assignmentService;
+    }
+
+    public BranchService getBranchService() {
+        return branchService;
     }
 
     public EmployeeDTO getLoggedInEmployee() {

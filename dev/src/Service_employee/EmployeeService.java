@@ -1,456 +1,244 @@
 package Service_employee;
 
-import Domain_employee.*;
+import Domain_employee.EmployeeController;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Service layer for handling employee-related operations.
- * Acts as a bridge between the controller layer and the domain layer.
+ * Thin service layer for employee operations.
+ * Acts as a bridge between presentation layer and controller (business logic).
+ * This service should be thin and mainly delegate to the controller.
  */
 public class EmployeeService {
-    private final IEmployeeManager employeeManager;
+    private final EmployeeController employeeController;
 
-    /**
-     * Constructor initializes the service with employeeManager from factory.
-     */
     public EmployeeService() {
-        this.employeeManager = EmployeeManagerFactory.getEmployeeManager();
+        this.employeeController = new EmployeeController();
     }
 
-    // EmployeeDTO operations
-    public EmployeeDTO getEmployee(String employeeId) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return null;
-        }
-        return convertEmployeeToDTO(employee);
+    // Employee Management
+    public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName) {
+        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, null);
     }
 
-    public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
-                                  LocalDate startDate, double salary,
-                                  int sickDays, int vacationDays, String pensionFundName) {Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
-            Employee.UserRole.REGULAR_EMPLOYEE, "", sickDays, vacationDays, pensionFundName);
-        return employeeManager.addEmployee(employee);
+    public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName, String branchAddress) {
+        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
-    public boolean addNewEmployee(String id, String firstName, String lastName, String bankAccount,
-                                  LocalDate startDate, double salary, String role, String password,
-                                  int sickDays, int vacationDays, String pensionFundName) {
-        try {
-            Employee.UserRole userRole = Employee.UserRole.valueOf(role);
-            Employee employee = new Employee(id, firstName, lastName, bankAccount, startDate, salary,
-                    userRole, password, sickDays, vacationDays, pensionFundName);
-            return employeeManager.addEmployee(employee);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+    public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
+                                      LocalDate startDate, double salary, String role, String password,
+                                      int sickDays, int vacationDays, String pensionFundName) {
+        return employeeController.addManagerEmployee(id, firstName, lastName, bankAccount,
+                startDate, salary, role, password, sickDays, vacationDays, pensionFundName, null);
     }
 
-    public boolean removeEmployee(String employeeId) {
-        return employeeManager.removeEmployee(employeeId) != null;
+    public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
+                                      LocalDate startDate, double salary, String role, String password,
+                                      int sickDays, int vacationDays, String pensionFundName, String branchAddress) {
+        return employeeController.addManagerEmployee(id, firstName, lastName, bankAccount,
+                startDate, salary, role, password, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
-    public EmployeeDTO getEmployeeDetails(String employeeId) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return null;
-        }
-        return convertEmployeeToDTO(employee);
+    public EmployeeDTO getEmployeeDetails(String id) {
+        return employeeController.getEmployee(id);
     }
 
     public List<EmployeeDTO> getAllEmployees() {
-        List<EmployeeDTO> result = new ArrayList<>();
-
-        for (Employee employee : employeeManager.getAllEmployees()) {
-            result.add(convertEmployeeToDTO(employee));
-        }
-
-        return result;
+        return employeeController.getAllEmployees();
     }
 
-    public EmployeeDTO convertEmployeeToDTO(Employee employee) {
-        List<String> qualifiedPositions = employee.getQualifiedPositions().stream()
-                .map(Position::getName)
-                .collect(Collectors.toList());
-
-        return new EmployeeDTO(
-                employee.getId(),
-                employee.getFirstName(),
-                employee.getLastName(),
-                employee.getBankAccount(),
-                employee.getStartDate(),
-                employee.getSalary(),
-                qualifiedPositions,
-                employee.getRole(),
-                employee.getSickDays(),
-                employee.getVacationDays(),
-                employee.getPensionFundName()
-        );
+    public List<EmployeeDTO> getEmployeesByBranch(String branchAddress) {
+        return employeeController.getEmployeesByBranch(branchAddress);
     }
 
-    public boolean verifyPassword(String employeeId, String password) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-
-        return employee.getPassword().equals(password);
+    public boolean removeEmployee(String id) {
+        return employeeController.removeEmployee(id);
     }
 
-    public boolean updateEmployeeFirstName(String employeeId, String firstName) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        employee.setFirstName(firstName);
-        return true;
-    }
-
-    public boolean updateEmployeeLastName(String employeeId, String lastName) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        employee.setLastName(lastName);
-        return true;
-    }
-
-    public boolean updateEmployeeBankAccount(String employeeId, String bankAccount) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        employee.setBankAccount(bankAccount);
-        return true;
-    }
-
-    public boolean updateEmployeeSalary(String employeeId, double salary) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        employee.setSalary(salary);
-        return true;
-    }
-
-    public boolean updateEmployeeRole(String employeeId, String roleName) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-
-        try {
-            Employee.UserRole role = Employee.UserRole.valueOf(roleName);
-            employee.setRole(role);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public boolean updateEmployeePassword(String employeeId, String password) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-
-        employee.setPassword(password);
-        return true;
-    }
-
-    public boolean updateEmployeeAvailabilityForNextWeek(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        employee.getAvailability().updateAvailability(dayOfWeek, morningAvailable, eveningAvailable);
-        return true;
-    }
-
-    public boolean isEmployeeAvailableForNextWeek(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-        ShiftType type = ShiftType.valueOf(shiftType);
-        return employee.getAvailability().isAvailable(dayOfWeek, type);
-    }
-
-    private boolean canUpdateNextWeekAvailability() {
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
-        return today.getValue() <= DayOfWeek.THURSDAY.getValue();
-    }
-
-    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek, boolean morningAvailable, boolean eveningAvailable) {
-        return employeeManager.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
-    }
-
-    public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return false;
-        }
-
-        ShiftType type = ShiftType.valueOf(shiftType);
-        return employee.getAvailability().isAvailable(dayOfWeek, type);
-    }
-
+    // Position Management
     public boolean addPosition(String name, boolean isShiftManagerRole) {
-        Position position = new Position(name, isShiftManagerRole);
-        return employeeManager.addPosition(position);
-    }
-
-    public PositionDTO getPositionDetails(String positionName) {
-        Position position = employeeManager.getPosition(positionName);
-        if (position == null) {
-            return null;
-        }
-
-        return new PositionDTO(position.getName(), position.isRequiresShiftManager());
+        return employeeController.addPosition(name, isShiftManagerRole);
     }
 
     public List<PositionDTO> getAllPositions() {
-        List<PositionDTO> result = new ArrayList<>();
-
-        for (Position position : employeeManager.getAllPositions()) {
-            result.add(new PositionDTO(position.getName(), position.isRequiresShiftManager()));
-        }
-
-        return result;
+        return employeeController.getAllPositions();
     }
 
+    public PositionDTO getPositionDetails(String name) {
+        return employeeController.getPositionDetails(name);
+    }
+
+    // Qualification Management
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
-        return employeeManager.addQualificationToEmployee(employeeId, positionName);
-    }
-
-    public List<EmployeeDTO> getQualifiedEmployeesForPosition(String positionName) {
-        Position position = employeeManager.getPosition(positionName);
-        if (position == null) {
-            return new ArrayList<>();
-        }
-
-        List<EmployeeDTO> result = new ArrayList<>();
-        for (Employee employee : employeeManager.getQualifiedEmployeesForPosition(position)) {
-            result.add(convertEmployeeToDTO(employee));
-        }
-
-        return result;
-    }
-
-    public List<EmployeeDTO> getAccessibleEmployees(String employeeId) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        if (employee == null) {
-            return new ArrayList<>();
-        }
-
-        List<EmployeeDTO> result = new ArrayList<>();
-
-        if (employee.isManager()) {
-            return getAllEmployees();
-        } else {
-            result.add(convertEmployeeToDTO(employee));
-        }
-
-        return result;
-    }
-
-    public boolean addRequiredPosition(String shiftType, String positionName, int count) {
-        ShiftType type = ShiftType.valueOf(shiftType.toUpperCase());
-        return employeeManager.addRequiredPosition(type, positionName, count);
-    }
-
-    public List<EmployeeDTO> getAvailableEmployeesForShift(LocalDate date, String shiftType) {
-        ShiftType type = ShiftType.valueOf(shiftType);
-        List<Employee> availableEmployees = employeeManager.getAvailableEmployeesForShift(date, type);
-
-        List<EmployeeDTO> result = new ArrayList<>();
-        for (Employee employee : availableEmployees) {
-            result.add(convertEmployeeToDTO(employee));
-        }
-
-        return result;
-    }
-
-    public ShiftDTO createShift(LocalDate date, String shiftType) {
-        ShiftType type = ShiftType.valueOf(shiftType);
-        Shift shift = employeeManager.createShift(date, type);
-        if (shift == null) {
-            return null;
-        }
-
-        return convertShiftToDTO(shift);
-    }
-
-//    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-//        Shift shift = employeeManager.getShift(shiftId);
-//        Employee employee = employeeManager.getEmployee(employeeId);
-//        Position position = employeeManager.getPosition(positionName);
-//
-//        if (shift == null || employee == null || position == null) {
-//            return false;
-//        }
-//
-//        RequiredPositions requiredPositions = employeeManager.getRequiredPositions();
-//        int requiredCount = requiredPositions.getRequiredCount(shift.getShiftType(), position);
-//
-//        if (requiredCount == 0) {
-//            return false;
-//        }
-//
-//        long currentAssigned = shift.getAllAssignedEmployees().entrySet().stream()
-//                .filter(entry -> entry.getKey().equals(position))
-//                .count();
-//
-//        if (currentAssigned >= requiredCount) {
-//            return false;
-//        }
-//
-//        if (!employee.isQualifiedFor(position)) {
-//            employee.addQualifiedPosition(position);
-//        }
-//
-//        DayOfWeek dayOfWeek = shift.getDate().getDayOfWeek();
-//        if (!employee.getAvailability().isAvailable(dayOfWeek, shift.getShiftType())) {
-//            employee.getAvailability().updateAvailability(dayOfWeek, true, true);
-//        }
-//
-//        return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
-//    }
-
-    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-        return employeeManager.assignEmployeeToShift(shiftId, employeeId, positionName);
-    }
-
-    public boolean removeAssignmentFromShift(String shiftId, String positionName) {
-        return employeeManager.removeAssignmentFromShift(shiftId, positionName);
-    }
-
-    public boolean areAllRequiredPositionsCovered(String shiftId) {
-        return employeeManager.areAllRequiredPositionsCovered(shiftId);
-    }
-
-    private ShiftDTO convertShiftToDTO(Shift shift) {
-        // Get shift manager info
-        String managerId = null;
-        String managerName = null;
-        if (shift.getShiftManager() != null) {
-            managerId = shift.getShiftManager().getId();
-            managerName = shift.getShiftManager().getFullName();
-        }
-
-        // Build assignments map (position name -> employee name)
-        Map<String, String> assignments = new HashMap<>();
-        for (Map.Entry<Position, Employee> entry : shift.getAllAssignedEmployees().entrySet()) {
-            assignments.put(entry.getKey().getName(), entry.getValue().getFullName());
-        }
-
-        return new ShiftDTO(
-                shift.getId(),
-                shift.getDate(),
-                shift.getShiftType().toString(),
-                shift.getStartTime(),
-                shift.getEndTime(),
-                managerId,
-                managerName,
-                assignments
-        );
-    }
-
-    public List<ShiftDTO> getAllShiftsAsDTO() {
-        List<ShiftDTO> result = new ArrayList<>();
-        for (Shift shift : employeeManager.getAllShifts()) {
-            result.add(convertShiftToDTO(shift));
-        }
-        return result;
-    }
-
-    public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
-        ShiftType shiftType;
-        if ("MORNING".equalsIgnoreCase(shiftTypeStr)) {
-            shiftType = ShiftType.MORNING;
-        } else if ("EVENING".equalsIgnoreCase(shiftTypeStr)) {
-            shiftType = ShiftType.EVENING;
-        } else {
-            return false;
-        }
-
-        return employeeManager.updateShiftHours(shiftType, newStart, newEnd);
-    }
-
-    public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
-        Shift shift = employeeManager.getShift(shiftId);
-        Employee employee = employeeManager.getEmployee(employeeId);
-
-        if (shift == null || employee == null) {
-            return false;
-        }
-
-        return shift.getAllAssignedEmployees().containsValue(employee);
-    }
-
-    public int getRequiredPositionsCount(String shiftTypeStr, String positionName) {
-        ShiftType shiftType = ShiftType.valueOf(shiftTypeStr.toUpperCase());
-        Position position = employeeManager.getPosition(positionName);
-        if (position == null) {
-            return 0;
-        }
-        return employeeManager.getRequiredPositions().getRequiredCount(shiftType, position);
+        return employeeController.addQualificationToEmployee(employeeId, positionName);
     }
 
     public boolean removeQualificationFromEmployee(String employeeId, String positionName) {
-        Employee employee = employeeManager.getEmployee(employeeId);
-        Position position = employeeManager.getPosition(positionName);
+        return employeeController.removeQualificationFromEmployee(employeeId, positionName);
+    }
 
-        if (employee == null || position == null) {
-            return false;
-        }
+    public List<EmployeeDTO> getQualifiedEmployeesForPosition(String positionName) {
+        return employeeController.getQualifiedEmployeesForPosition(positionName);
+    }
 
-        return employee.removeQualifiedPosition(position);
+    // Availability Management
+    public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
+                                              boolean morningAvailable, boolean eveningAvailable) {
+        return employeeController.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
+    }
+
+    public boolean updateEmployeeAvailabilityForNextWeek(String employeeId, DayOfWeek dayOfWeek,
+                                                         boolean morningAvailable, boolean eveningAvailable) {
+        // For now, same as regular availability update
+        return employeeController.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
+    }
+
+    public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
+        return employeeController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
+    }
+
+    public boolean isEmployeeAvailableForNextWeek(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
+        // For now, same as regular availability check
+        return employeeController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
+    }
+
+    // Shift Management
+    public ShiftDTO createShift(LocalDate date, String shiftType) {
+        return employeeController.createShift(date, shiftType, null);
+    }
+
+    public ShiftDTO createShift(LocalDate date, String shiftType, String branchAddress) {
+        return employeeController.createShift(date, shiftType, branchAddress);
+    }
+
+    public List<ShiftDTO> getAllShiftsAsDTO() {
+        return employeeController.getAllShifts();
+    }
+
+    public List<ShiftDTO> getFutureShifts() {
+        return employeeController.getFutureShifts();
+    }
+
+    public List<ShiftDTO> getHistoricalShifts() {
+        return employeeController.getHistoricalShifts();
+    }
+
+    public List<ShiftDTO> getShiftsByBranch(String branchAddress) {
+        return employeeController.getShiftsByBranch(branchAddress);
+    }
+
+    // Shift Assignment
+    public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
+        return employeeController.assignEmployeeToShift(shiftId, employeeId, positionName);
+    }
+
+    public boolean removeAssignmentFromShift(String shiftId, String positionName) {
+        return employeeController.removeAssignmentFromShift(shiftId, positionName);
+    }
+
+    public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
+        return employeeController.isEmployeeAlreadyAssignedToShift(shiftId, employeeId);
+    }
+
+    public boolean areAllRequiredPositionsCovered(String shiftId) {
+        return employeeController.areAllRequiredPositionsCovered(shiftId);
+    }
+
+    // Required Positions
+    public boolean addRequiredPosition(String shiftType, String positionName, int count) {
+        return employeeController.addRequiredPosition(shiftType, positionName, count);
+    }
+
+    public int getRequiredPositionsCount(String shiftType, String positionName) {
+        return employeeController.getRequiredPositionsCount(shiftType, positionName);
+    }
+
+    // Employee Updates
+    public boolean updateEmployeeFirstName(String id, String firstName) {
+        return employeeController.updateEmployeeFirstName(id, firstName);
+    }
+
+    public boolean updateEmployeeLastName(String id, String lastName) {
+        return employeeController.updateEmployeeLastName(id, lastName);
+    }
+
+    public boolean updateEmployeeBankAccount(String id, String bankAccount) {
+        return employeeController.updateEmployeeBankAccount(id, bankAccount);
+    }
+
+    public boolean updateEmployeeSalary(String id, double salary) {
+        return employeeController.updateEmployeeSalary(id, salary);
+    }
+
+    public boolean updateEmployeeRole(String id, String role) {
+        return employeeController.updateEmployeeRole(id, role);
+    }
+
+    public boolean updateEmployeePassword(String id, String password) {
+        return employeeController.updateEmployeePassword(id, password);
     }
 
     public boolean updateEmployeeSickDays(String id, int sickDays) {
-        Employee employee = employeeManager.getEmployee(id);
-        if (employee == null) {
-            return false;
-        }
-        employee.setSickDays(sickDays);
-        return true;
+        return employeeController.updateEmployeeSickDays(id, sickDays);
     }
 
     public boolean updateEmployeeVacationDays(String id, int vacationDays) {
-        Employee employee = employeeManager.getEmployee(id);
-        if (employee == null) {
-            return false;
-        }
-        employee.setVacationDays(vacationDays);
-        return true;
+        return employeeController.updateEmployeeVacationDays(id, vacationDays);
     }
 
     public boolean updateEmployeePensionFund(String id, String pensionFundName) {
-        Employee employee = employeeManager.getEmployee(id);
-        if (employee == null) {
-            return false;
-        }
-        employee.setPensionFundName(pensionFundName);
-        return true;
+        return employeeController.updateEmployeePensionFund(id, pensionFundName);
     }
 
+    public boolean updateEmployeeBranch(String id, String branchAddress) {
+        return employeeController.updateEmployeeBranch(id, branchAddress);
+    }
+
+    // Branch Management
+    public List<BranchDTO> getAllBranches() {
+        return employeeController.getAllBranches();
+    }
+
+    public BranchDTO getBranchByAddress(String address) {
+        return employeeController.getBranchByAddress(address);
+    }
+
+    public boolean branchExists(String address) {
+        return employeeController.branchExists(address);
+    }
+
+    // Utility Methods
     public boolean hasShiftManagers() {
-        for (Employee employee : employeeManager.getAllEmployees()) {
-            if (employee.isShiftManager() || employee.isHRManager()) {
-                return true;
-            }
-        }
-        return false;
+        return employeeController.hasShiftManagers();
+    }
+
+    public List<EmployeeDTO> getAvailableEmployeesForShift(LocalDate date, String shiftType) {
+        return employeeController.getAvailableEmployeesForShift(date, shiftType);
+    }
+
+    public List<PositionDTO> getMissingPositionsForShift(String shiftId) {
+        return employeeController.getMissingPositionsForShift(shiftId);
     }
 
     public boolean deleteShift(String shiftId) {
-        return employeeManager.deleteShift(shiftId);
+        return employeeController.deleteShift(shiftId);
+    }
+
+    // Password verification (for login)
+    public boolean verifyPassword(String id, String password) {
+        return employeeController.verifyPassword(id, password);
+    }
+
+    // Shift hours management
+    public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
+        return employeeController.updateShiftHours(shiftTypeStr, newStart, newEnd);
     }
 }

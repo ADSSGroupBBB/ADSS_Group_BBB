@@ -1,16 +1,16 @@
-package Controller_employee;
+package Service_employee;
 
-import Service_employee.DataInitializationService;
+import Domain_employee.DataInitializationController;
 
 /**
  * Controller responsible for initializing the system with sample data.
  * Acts as an intermediary between the presentation layer and the service layer.
  */
-public class DataInitializationController {
-    private final DataInitializationService dataInitializationService;
+public class DataInitialization {
+    private final DataInitializationController dataInitializationService;
 
-    public DataInitializationController() {
-        this.dataInitializationService = new DataInitializationService();
+    public DataInitialization() {
+        this.dataInitializationService = new DataInitializationController();
     }
 
     /**

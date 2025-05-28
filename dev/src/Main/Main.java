@@ -1,6 +1,6 @@
 package Main;
 
-import Controller_employee.EmployeeController;
+import Service_employee.EmployeeService;
 import Presentation_employee.NavigationManager;
 
 import java.time.LocalDate;
@@ -26,7 +26,7 @@ public class Main {
 
     private static void initializeFirstUser() {
         try {
-            EmployeeController employeeController = new EmployeeController();
+            EmployeeService employeeController = new EmployeeService();
 
             // check if there is employee in the system
             if (employeeController.getAllEmployees().isEmpty()) {

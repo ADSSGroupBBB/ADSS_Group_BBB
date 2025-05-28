@@ -65,7 +65,7 @@ public final class Database {
 
                 st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS locations (
-                        address       TEXT PRIMARY KEY,
+                        address       TEXT PRIMARY KEY,9
                         contact_name  TEXT NOT NULL,
                         contact_num   TEXT NOT NULL,
                         zone_name     TEXT NOT NULL,

@@ -1,7 +1,5 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
-import Controller_employee.ShiftController;
 import Service_employee.EmployeeDTO;
 import Service_employee.ShiftDTO;
 import java.time.LocalDate;
@@ -16,16 +14,14 @@ import java.util.stream.Collectors;
  * ShiftViewScreen provides the user interface for viewing both historical and future shifts.
  */
 public class ShiftViewScreen extends BaseScreen {
-    private final EmployeeController employeeController;
-    private final ShiftController shiftController;
+    private final NavigationManager navigationManager;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
 
-    public ShiftViewScreen(EmployeeController employeeController, ShiftController shiftController, EmployeeDTO loggedInEmployee) {
-        this.employeeController = employeeController;
-        this.shiftController = shiftController;
-        this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public ShiftViewScreen(NavigationManager navigationManager, EmployeeDTO loggedInEmployee) {
+        this.navigationManager = navigationManager;
         this.loggedInEmployee = loggedInEmployee;
+        this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     }
 
     @Override
@@ -92,7 +88,7 @@ public class ShiftViewScreen extends BaseScreen {
 
     private void displayHistoricShifts() {
         displayTitle("Historic Shifts");
-        List<ShiftDTO> historicShifts = shiftController.getHistoricalShifts();
+        List<ShiftDTO> historicShifts = navigationManager.getShiftService().getHistoricalShifts();
         if (historicShifts.isEmpty()) {
             displayMessage("No historic shifts in the system");
             return;
@@ -101,8 +97,9 @@ public class ShiftViewScreen extends BaseScreen {
         historicShifts.sort((s1, s2) -> s2.getDate().compareTo(s1.getDate())); // Newest first
         // Display shifts in list format
         for (ShiftDTO shift : historicShifts) {
+            String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
             displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() +
-                    " (ID: " + shift.getId() + ")");
+                    branchInfo + " (ID: " + shift.getId() + ")");
         }
     }
 
@@ -123,7 +120,7 @@ public class ShiftViewScreen extends BaseScreen {
 
     private void displayEmployeeShiftHistoryInfo(EmployeeDTO employee) {
         // Get shift history for employee
-        List<ShiftDTO> employeeShifts = shiftController.getEmployeeShiftHistory(employee.getId());
+        List<ShiftDTO> employeeShifts = navigationManager.getShiftService().getEmployeeShiftHistory(employee.getId());
 
         if (employeeShifts.isEmpty()) {
             displayMessage("No shift history found for employee: " + employee.getFullName());
@@ -131,8 +128,11 @@ public class ShiftViewScreen extends BaseScreen {
         }
         // Sort shifts by date
         employeeShifts.sort((s1, s2) -> s2.getDate().compareTo(s1.getDate())); // Newest first
-        displayTitle("Shift History for " + employee.getFullName());   // Display shifts
-        for (ShiftDTO shift : employeeShifts) {    // Find position for this employee in this shift
+        displayTitle("Shift History for " + employee.getFullName());
+
+        // Display shifts
+        for (ShiftDTO shift : employeeShifts) {
+            // Find position for this employee in this shift
             String position = "Unknown";
             for (Map.Entry<String, String> entry : shift.getAssignments().entrySet()) {
                 if (entry.getValue().equals(employee.getFullName())) {
@@ -140,12 +140,15 @@ public class ShiftViewScreen extends BaseScreen {
                     break;
                 }
             }
-            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() + " - Position: " + position);
+            String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
+            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() +
+                    branchInfo + " - Position: " + position);
         }
     }
 
     private void displayShiftDetails() {
-        displayTitle("Shift Details");// Select shift
+        displayTitle("Shift Details");
+        // Select shift
         ShiftDTO shift = selectShift();
         if (shift == null) {
             return;
@@ -167,9 +170,12 @@ public class ShiftViewScreen extends BaseScreen {
         }
 
         // Get all shifts
-        List<ShiftDTO> allShifts = employeeController.getAllShiftsAsDTO();
+        List<ShiftDTO> allShifts = navigationManager.getEmployeeService().getAllShiftsAsDTO();
         // Filter shifts for the period
-        List<ShiftDTO> periodShifts = allShifts.stream().filter(shift -> !shift.getDate().isBefore(startDate) && !shift.getDate().isAfter(endDate)).sorted(Comparator.comparing(ShiftDTO::getDate)).collect(Collectors.toList());
+        List<ShiftDTO> periodShifts = allShifts.stream()
+                .filter(shift -> !shift.getDate().isBefore(startDate) && !shift.getDate().isAfter(endDate))
+                .sorted(Comparator.comparing(ShiftDTO::getDate))
+                .collect(Collectors.toList());
 
         if (periodShifts.isEmpty()) {
             displayMessage("No shifts found for the selected period");
@@ -177,16 +183,9 @@ public class ShiftViewScreen extends BaseScreen {
         }
 
         displayTitle("Shift History Report: " + startDate.format(dateFormatter) + " to " + endDate.format(dateFormatter));
-        // Count shifts by day
-        Map<LocalDate, Long> shiftCountByDay = periodShifts.stream()
-                .collect(Collectors.groupingBy(ShiftDTO::getDate, Collectors.counting()));
 
         // Display summary
         displayMessage("Total shifts in period: " + periodShifts.size());
-        displayMessage("Shifts by date:");
-        for (Map.Entry<LocalDate, Long> entry : shiftCountByDay.entrySet()) {
-            displayMessage("- " + entry.getKey().format(dateFormatter) + ": " + entry.getValue() + " shifts");
-        }
 
         // Ask if detailed report is wanted
         if (getBooleanInput("Display detailed shift information?")) {
@@ -197,13 +196,21 @@ public class ShiftViewScreen extends BaseScreen {
     }
 
     private void displayShiftDetailsFull(ShiftDTO shift) {
-        displayTitle("Shift Details: " + shift.getDate().format(dateFormatter) + " - " +
-                shift.getShiftType());
+        String shiftTitle = "Shift Details: " + shift.getDate().format(dateFormatter) + " - " + shift.getShiftType();
+        if (shift.hasBranch()) {
+            shiftTitle += " at " + shift.getBranchAddress();
+        }
+        displayTitle(shiftTitle);
+
         displayMessage("Shift ID: " + shift.getId());
         displayMessage("Date: " + shift.getDate().format(dateFormatter));
         displayMessage("Type: " + shift.getShiftType());
         displayMessage("Start Time: " + shift.getStartTime());
         displayMessage("End Time: " + shift.getEndTime());
+
+        if (shift.hasBranch()) {
+            displayMessage("Branch: " + shift.getBranchAddress());
+        }
 
         // Display shift manager
         if (shift.hasShiftManager()) {
@@ -228,7 +235,7 @@ public class ShiftViewScreen extends BaseScreen {
     }
 
     private EmployeeDTO selectEmployee() {
-        List<EmployeeDTO> employees = employeeController.getAllEmployees().stream()
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService().getAllEmployees().stream()
                 .filter(emp -> !emp.getId().equals("admin"))
                 .collect(Collectors.toList());
 
@@ -241,7 +248,8 @@ public class ShiftViewScreen extends BaseScreen {
         String[] employeeNames = new String[employees.size()];
         for (int i = 0; i < employees.size(); i++) {
             EmployeeDTO emp = employees.get(i);
-            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")";
+            String branchInfo = emp.hasBranch() ? " [" + emp.getBranchAddress() + "]" : " [No Branch]";
+            employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")" + branchInfo;
         }
 
         int choice = displayMenu("Select Employee", employeeNames);
@@ -253,7 +261,7 @@ public class ShiftViewScreen extends BaseScreen {
     }
 
     private ShiftDTO selectShift() {
-        List<ShiftDTO> shifts = employeeController.getAllShiftsAsDTO();
+        List<ShiftDTO> shifts = navigationManager.getEmployeeService().getAllShiftsAsDTO();
 
         if (shifts.isEmpty()) {
             displayError("No shifts defined in the system");
@@ -261,17 +269,21 @@ public class ShiftViewScreen extends BaseScreen {
         }
         // Sort shifts by date
         shifts.sort((s1, s2) -> s2.getDate().compareTo(s1.getDate())); // Newest first
+
         // Build array of descriptions for display in menu
         String[] shiftDescriptions = new String[shifts.size()];
         for (int i = 0; i < shifts.size(); i++) {
             ShiftDTO shift = shifts.get(i);
+            String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
             shiftDescriptions[i] = shift.getDate().format(dateFormatter) + " - " +
-                    shift.getShiftType();
+                    shift.getShiftType() + branchInfo;
         }
+
         int choice = displayMenu("Select Shift", shiftDescriptions);
         if (choice == 0) {
             return null; // User chose to go back
         }
+
         return shifts.get(choice - 1);
     }
 
@@ -295,7 +307,7 @@ public class ShiftViewScreen extends BaseScreen {
 
     public void displayFutureShifts() {
         displayTitle("Future Shifts");
-        boolean hasShiftManager = employeeController.hasShiftManagers();
+        boolean hasShiftManager = navigationManager.getEmployeeService().hasShiftManagers();
 
         if (!hasShiftManager) {
             displayError("Can't see future shifts: No shift manager available on the system.");
@@ -305,9 +317,9 @@ public class ShiftViewScreen extends BaseScreen {
         List<ShiftDTO> futureShifts;
 
         if (loggedInEmployee.isManager()) {
-            futureShifts = shiftController.getFutureShifts();
+            futureShifts = navigationManager.getShiftService().getFutureShifts();
         } else {
-            futureShifts = shiftController.getEmployeeFutureShifts(loggedInEmployee.getId());
+            futureShifts = navigationManager.getShiftService().getEmployeeFutureShifts(loggedInEmployee.getId());
         }
 
         if (futureShifts.isEmpty()) {
@@ -318,7 +330,8 @@ public class ShiftViewScreen extends BaseScreen {
         futureShifts.sort(Comparator.comparing(ShiftDTO::getDate));
 
         for (ShiftDTO shift : futureShifts) {
-            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType());
+            String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
+            displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() + branchInfo);
             displayMessage("Start Time: " + shift.getStartTime() + ", End Time: " + shift.getEndTime());
 
             if (shift.hasShiftManager()) {

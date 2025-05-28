@@ -1,27 +1,25 @@
 package Presentation_employee;
 
-import Controller_employee.EmployeeController;
 import Service_employee.EmployeeDTO;
+import Service_employee.BranchDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
- * EmployeeManagementScreen provides the user interface for managing employees in the system.
+ * Updated EmployeeManagementScreen with branch support.
  * This screen allows HR managers to add, view, search, update, and remove employees.
  */
 public class EmployeeManagementScreen extends BaseScreen {
-    private final EmployeeController employeeController;
+    private final NavigationManager navigationManager;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
-    private final NavigationManager navigationManager;
 
     /**
-     * Constructor that takes controllers and the navigation manager.
+     * Constructor that takes the navigation manager.
      */
-    public EmployeeManagementScreen(EmployeeController employeeController, NavigationManager navigationManager) {
-        this.employeeController = employeeController;
+    public EmployeeManagementScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
         this.dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         this.loggedInEmployee = navigationManager.getLoggedInEmployee();
@@ -42,8 +40,10 @@ public class EmployeeManagementScreen extends BaseScreen {
         String[] options = {
                 "Add New Employee",
                 "View All Employees",
+                "View Employees by Branch",
                 "Search Employee by ID",
                 "Update Employee",
+                "Update Employee Branch",
                 "Remove Employee"
         };
 
@@ -59,12 +59,18 @@ public class EmployeeManagementScreen extends BaseScreen {
                     displayAllEmployees();
                     break;
                 case 3:
-                    findEmployeeById();
+                    displayEmployeesByBranch();
                     break;
                 case 4:
-                    updateEmployee();
+                    findEmployeeById();
                     break;
                 case 5:
+                    updateEmployee();
+                    break;
+                case 6:
+                    updateEmployeeBranch();
+                    break;
+                case 7:
                     removeEmployee();
                     break;
                 case 0:
@@ -75,16 +81,18 @@ public class EmployeeManagementScreen extends BaseScreen {
     }
 
     /**
-     * Displays a form for adding a new employee to the system.
+     * Displays a form for adding a new employee to the system with branch selection.
      */
     private void addNewEmployee() {
         displayTitle("Add New Employee");
+
         String id = getInput("Enter ID");
         // Check if employee already exists
-        if (employeeController.getEmployee(id) != null) {
+        if (navigationManager.getEmployeeService().getEmployeeDetails(id) != null) {
             displayError("Employee with this ID already exists");
             return;
         }
+
         String firstName = getInput("Enter First Name");
         String lastName = getInput("Enter Last Name");
         String bankAccount = getInput("Enter Bank Account Number");
@@ -114,14 +122,38 @@ public class EmployeeManagementScreen extends BaseScreen {
             }
         }
 
-        // Add a regular employee
-        boolean success = employeeController.addEmployee(
-                id, firstName, lastName, bankAccount,
-                startDate, salary, sickDays, vacationDays, pensionFundName
-        );
+        // Branch selection
+        String branchAddress = selectBranchForEmployee();
+
+        // Check if should be a manager
+        boolean isManager = getBooleanInput("Is this employee a manager?");
+        boolean success;
+
+        if (isManager) {
+            String[] roles = {"SHIFT_MANAGER", "HR_MANAGER"};
+            int roleChoice = displayMenu("Select Manager Role", roles);
+
+            if (roleChoice == 0) {
+                return; // User canceled
+            }
+
+            String role = roles[roleChoice - 1];
+            String password = getInput("Enter password for manager");
+
+            success = navigationManager.getEmployeeService().addManagerEmployee(
+                    id, firstName, lastName, bankAccount, startDate, salary,
+                    role, password, sickDays, vacationDays, pensionFundName, branchAddress
+            );
+        } else {
+            success = navigationManager.getEmployeeService().addEmployee(
+                    id, firstName, lastName, bankAccount, startDate, salary,
+                    sickDays, vacationDays, pensionFundName, branchAddress
+            );
+        }
 
         if (success) {
-            displayMessage("Employee added successfully!");
+            displayMessage("Employee added successfully!" +
+                    (branchAddress != null ? " Assigned to branch: " + branchAddress : ""));
         } else {
             displayError("Error adding employee");
         }
@@ -133,7 +165,7 @@ public class EmployeeManagementScreen extends BaseScreen {
     private void displayAllEmployees() {
         displayTitle("All Employees");
 
-        List<EmployeeDTO> employees = employeeController.getAllEmployees();
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService().getAllEmployees();
 
         if (employees.isEmpty()) {
             displayMessage("No employees in the system");
@@ -141,20 +173,144 @@ public class EmployeeManagementScreen extends BaseScreen {
         }
 
         for (EmployeeDTO employee : employees) {
-            String roleStr = "";
-            if (employee.isHRManager()) {
-                roleStr = " (HR Manager)";
-            } else if (employee.isShiftManager()) {
-                roleStr = " (Shift Manager)";
-            }
-
-            displayMessage(String.format("%s: %s %s%s (Start Date: %s)",
-                    employee.getId(),
-                    employee.getFirstName(),
-                    employee.getLastName(),
-                    roleStr,
-                    employee.getStartDate().format(dateFormatter)));
+            displayEmployeeSummary(employee);
         }
+    }
+
+    /**
+     * Displays employees filtered by branch.
+     */
+    private void displayEmployeesByBranch() {
+        displayTitle("Employees by Branch");
+
+        // Show options: specific branch or employees without branch
+        List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+
+        if (branches.isEmpty()) {
+            displayError("No branches available in the system");
+            return;
+        }
+
+        String[] options = new String[branches.size() + 1];
+        for (int i = 0; i < branches.size(); i++) {
+            options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
+        }
+        options[branches.size()] = "Employees without branch assignment";
+
+        int choice = displayMenu("Select Branch or Option", options);
+
+        if (choice == 0) {
+            return;
+        }
+
+        List<EmployeeDTO> employees;
+        String title;
+
+        if (choice <= branches.size()) {
+            // Specific branch selected
+            BranchDTO selectedBranch = branches.get(choice - 1);
+            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
+            title = "Employees at " + selectedBranch.getAddress();
+        } else {
+            // Employees without branch
+            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
+                    .filter(emp -> !emp.hasBranch())
+                    .toList();
+            title = "Employees without branch assignment";
+        }
+
+        displayTitle(title);
+
+        if (employees.isEmpty()) {
+            displayMessage("No employees found");
+        } else {
+            for (EmployeeDTO employee : employees) {
+                displayEmployeeSummary(employee);
+            }
+        }
+    }
+
+    /**
+     * Updates an employee's branch assignment.
+     */
+    private void updateEmployeeBranch() {
+        displayTitle("Update Employee Branch");
+
+        String id = getInput("Enter ID of employee to update");
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
+
+        if (employee == null) {
+            displayError("No employee found with ID " + id);
+            return;
+        }
+
+        displayEmployeeDetails(employee);
+
+        displayMessage("Current branch: " + (employee.hasBranch() ? employee.getBranchAddress() : "No branch assigned"));
+
+        String newBranch = selectBranchForEmployee();
+
+        if (getBooleanInput("Are you sure you want to update the branch assignment?")) {
+            boolean success = navigationManager.getEmployeeService().updateEmployeeBranch(id, newBranch);
+
+            if (success) {
+                displayMessage("Employee branch updated successfully to: " +
+                        (newBranch != null ? newBranch : "No branch"));
+            } else {
+                displayError("Error updating employee branch");
+            }
+        }
+    }
+
+    /**
+     * Helper method to select a branch for employee assignment.
+     */
+    private String selectBranchForEmployee() {
+        List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+
+        if (branches.isEmpty()) {
+            displayMessage("No branches available. Employee will be created without branch assignment.");
+            return null;
+        }
+
+        // Add option for no branch assignment
+        String[] options = new String[branches.size() + 1];
+        for (int i = 0; i < branches.size(); i++) {
+            options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
+        }
+        options[branches.size()] = "No branch assignment";
+
+        int choice = displayMenu("Select Branch", options);
+
+        if (choice == 0) {
+            return null; // User canceled
+        } else if (choice <= branches.size()) {
+            return branches.get(choice - 1).getAddress();
+        } else {
+            return null; // No branch assignment
+        }
+    }
+
+    /**
+     * Helper method to display employee summary with branch info.
+     */
+    private void displayEmployeeSummary(EmployeeDTO employee) {
+        String roleStr = "";
+        if (employee.isHRManager()) {
+            roleStr = " (HR Manager)";
+        } else if (employee.isShiftManager()) {
+            roleStr = " (Shift Manager)";
+        }
+
+        String branchInfo = employee.hasBranch() ? " - Branch: " + employee.getBranchAddress() : " - No branch";
+
+        displayMessage(String.format("%s: %s %s%s (Start Date: %s)%s",
+                employee.getId(),
+                employee.getFirstName(),
+                employee.getLastName(),
+                roleStr,
+                employee.getStartDate().format(dateFormatter),
+                branchInfo));
     }
 
     /**
@@ -165,7 +321,7 @@ public class EmployeeManagementScreen extends BaseScreen {
 
         String id = getInput("Enter ID to search");
 
-        EmployeeDTO employee = employeeController.getEmployee(id);
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
 
         if (employee == null) {
             displayError("No employee found with ID " + id);
@@ -185,6 +341,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         displayMessage("Bank Account: " + employee.getBankAccount());
         displayMessage("Start Date: " + employee.getStartDate().format(dateFormatter));
         displayMessage("Hourly Salary: " + employee.getSalary());
+
         // Display role
         String roleStr = "Regular Employee";
         if (employee.isHRManager()) {
@@ -193,9 +350,14 @@ public class EmployeeManagementScreen extends BaseScreen {
             roleStr = "Shift Manager";
         }
         displayMessage("Role: " + roleStr);
+
         displayMessage("Sick Days: " + employee.getSickDays());
         displayMessage("Vacation Days: " + employee.getVacationDays());
         displayMessage("Pension Fund: " + employee.getPensionFundName());
+
+        // Display branch assignment
+        displayMessage("Branch: " + (employee.hasBranch() ? employee.getBranchAddress() : "No branch assigned"));
+
         // Display qualified positions
         if (employee.getQualifiedPositions().isEmpty()) {
             displayMessage("Qualified Positions: None");
@@ -214,28 +376,31 @@ public class EmployeeManagementScreen extends BaseScreen {
         displayTitle("Update Employee");
 
         String id = getInput("Enter ID of employee to update");
-        EmployeeDTO employee = employeeController.getEmployee(id);
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
         if (employee == null) {
             displayError("No employee found with ID " + id);
             return;
         }
+
         displayEmployeeDetails(employee);
+
         String[] options = {
                 "Update First Name",
                 "Update Last Name",
                 "Update Bank Account",
                 "Update Salary",
-                "Update Password",
                 "Update Sick Days",
                 "Update Vacation Days",
-                "Update Pension Fund"
+                "Update Pension Fund",
+                "Update Branch Assignment"
         };
+
         int choice = displayMenu("Select field to update", options);
 
         switch (choice) {
             case 1:
                 String firstName = getInput("Enter new first name");
-                if (employeeController.updateEmployeeFirstName(id, firstName)) {
+                if (navigationManager.getEmployeeService().updateEmployeeFirstName(id, firstName)) {
                     displayMessage("First name updated successfully");
                 } else {
                     displayError("Error updating first name");
@@ -243,7 +408,7 @@ public class EmployeeManagementScreen extends BaseScreen {
                 break;
             case 2:
                 String lastName = getInput("Enter new last name");
-                if (employeeController.updateEmployeeLastName(id, lastName)) {
+                if (navigationManager.getEmployeeService().updateEmployeeLastName(id, lastName)) {
                     displayMessage("Last name updated successfully");
                 } else {
                     displayError("Error updating last name");
@@ -251,7 +416,7 @@ public class EmployeeManagementScreen extends BaseScreen {
                 break;
             case 3:
                 String bankAccount = getInput("Enter new bank account");
-                if (employeeController.updateEmployeeBankAccount(id, bankAccount)) {
+                if (navigationManager.getEmployeeService().updateEmployeeBankAccount(id, bankAccount)) {
                     displayMessage("Bank account updated successfully");
                 } else {
                     displayError("Error updating bank account");
@@ -260,7 +425,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             case 4:
                 try {
                     double salary = Double.parseDouble(getInput("Enter new hourly salary"));
-                    if (employeeController.updateEmployeeSalary(id, salary)) {
+                    if (navigationManager.getEmployeeService().updateEmployeeSalary(id, salary)) {
                         displayMessage("Salary updated successfully");
                     } else {
                         displayError("Error updating salary");
@@ -270,12 +435,9 @@ public class EmployeeManagementScreen extends BaseScreen {
                 }
                 break;
             case 5:
-                updateEmployeePassword(id);
-                break;
-            case 6:
                 try {
                     int sickDays = Integer.parseInt(getInput("Enter new number of sick days"));
-                    if (employeeController.updateEmployeeSickDays(id, sickDays)) {
+                    if (navigationManager.getEmployeeService().updateEmployeeSickDays(id, sickDays)) {
                         displayMessage("Sick days updated successfully");
                     } else {
                         displayError("Error updating sick days");
@@ -284,10 +446,10 @@ public class EmployeeManagementScreen extends BaseScreen {
                     displayError("Invalid number. Update canceled");
                 }
                 break;
-            case 7:
+            case 6:
                 try {
                     int vacationDays = Integer.parseInt(getInput("Enter new number of vacation days"));
-                    if (employeeController.updateEmployeeVacationDays(id, vacationDays)) {
+                    if (navigationManager.getEmployeeService().updateEmployeeVacationDays(id, vacationDays)) {
                         displayMessage("Vacation days updated successfully");
                     } else {
                         displayError("Error updating vacation days");
@@ -296,34 +458,20 @@ public class EmployeeManagementScreen extends BaseScreen {
                     displayError("Invalid number. Update canceled");
                 }
                 break;
-            case 8:
+            case 7:
                 String fund = getInput("Enter new pension fund name");
-                if (employeeController.updateEmployeePensionFund(id, fund)) {
+                if (navigationManager.getEmployeeService().updateEmployeePensionFund(id, fund)) {
                     displayMessage("Pension fund updated successfully");
                 } else {
                     displayError("Error updating pension fund");
                 }
                 break;
+            case 8:
+                updateEmployeeBranch();
+                return; // updateEmployeeBranch handles its own flow
             case 0:
                 // Return to menu
                 break;
-        }
-    }
-
-    /**
-     * Updates the password for a specific employee.
-     */
-    private void updateEmployeePassword(String employeeId) {
-        String password = getInput("Enter new password");
-        if (password.isEmpty()) {
-            displayError("Password cannot be empty for managers");
-            return;
-        }
-
-        if (employeeController.updateEmployeePassword(employeeId, password)) {
-            displayMessage("Password updated successfully");
-        } else {
-            displayError("Error updating password");
         }
     }
 
@@ -335,7 +483,7 @@ public class EmployeeManagementScreen extends BaseScreen {
 
         String id = getInput("Enter ID of employee to remove");
 
-        EmployeeDTO employee = employeeController.getEmployee(id);
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
 
         if (employee == null) {
             displayError("No employee found with ID " + id);
@@ -345,7 +493,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         displayEmployeeDetails(employee);
 
         if (getBooleanInput("Are you sure you want to remove this employee?")) {
-            boolean success = employeeController.removeEmployee(id);
+            boolean success = navigationManager.getEmployeeService().removeEmployee(id);
 
             if (success) {
                 displayMessage("Employee successfully removed from the system");
