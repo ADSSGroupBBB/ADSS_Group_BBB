@@ -8,24 +8,12 @@ public class Supplier {
     private String supplierName;    //the name of a supplier
     private  String bankAccount;    //bank account number for transaction
     private paymentTerms payment;   //method of payment
-
-    //supplierName getter
-    public String getSupplierName() {
-        return supplierName;
-    }
-
-
     private LinkedList<String> contactNames;    //a list contact of the supplier
     private String telephone;   //the contact information of the supplier
     private LinkedList<Days> deliveryDays;  //the days delivery according to the agreement
     private Delivery deliverySending;  // repeating the order
     private LinkedList<Agreement> agreements;   //list of the agreements with the supplier
 
-    //set payment method
-    //gets paymentTerms
-    public void setPayment(paymentTerms payment) {
-        this.payment = payment;
-    }
 
     //supplier constructor
     //gets:supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending,agreements
@@ -40,6 +28,17 @@ public class Supplier {
         this.deliverySending=deliverySending;
         this.agreements=agreements;
     }
+    //supplierName getter
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    //set payment method
+    //gets paymentTerms
+    public void setPayment(paymentTerms payment) {
+        this.payment = payment;
+    }
+
 
     //set supplierName field
     //gets String
