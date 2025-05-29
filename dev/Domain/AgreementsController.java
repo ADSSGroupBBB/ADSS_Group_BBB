@@ -7,13 +7,15 @@ import java.util.Map;
 //a class for the controller of agreement (manager)
 public class AgreementsController {
     private static AgreementsController instance;
-    private Map<Integer, Agreement> allStandardAgreements;
-    private Map<Integer, PeriodAgreement> allPeriodAgreements;
+    //private Map<Integer, Agreement> allStandardAgreements;
+    //private Map<Integer, PeriodAgreement> allPeriodAgreements;
+    private StandardAgreementRepository standardAgreeRepo;
+    private PeriodAgreementRepository periodAgreeRepo;
 
 
     private AgreementsController() {
-        allStandardAgreements = new HashMap<>();
-        allPeriodAgreements=new HashMap<>();
+        standardAgreeRepo = new StandardAgreementRepositoryImpl();
+        periodAgreeRepo=new PeriodAgreementRepositoryImpl();
     }
 
     public static AgreementsController getInstance() {

@@ -1,15 +1,23 @@
 package Domain;
 
+import dto.ProductDto;
+import dto.SupplierDto;
+
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
 //a class for the manager (the controller) of Product
 public class ProductController {
     private static ProductController instance; // the single instance
-    private Map<Integer, Product> allProducts; // map of all products
+    //private Map<Integer, Product> allProducts; // map of all products
+    private ProductRepository proRepo;
+
 
     // private constructor to prevent outside instantiation
     private ProductController() {
-        allProducts = new HashMap<>();
+        proRepo =new ProductRepositoryImpl();
     }
 
     // public method to access the single instance
@@ -22,31 +30,26 @@ public class ProductController {
     //checks if a certain product exists
     //parameters:int productNumber
     //returns boolean value
-    public boolean checkPro(int productNumber){
-        return allProducts.containsKey(productNumber);
+    public boolean checkPro(int productNumber) throws SQLException {
+        return this.proRepo.getProd(productNumber).isPresent();
     }
 
-    public Product getPro(int num){
-        return allProducts.get(num);
+    public Optional<SupplierDto> getPro(int num) throws SQLException{
+        return this.proRepo.getProd(num);
     }
-    public void addNewProduct(String productName,int productNumber,String unitOfMeasure,String manufacturer){
-        unit u= StringToEnumUnit(unitOfMeasure);
-        Product pro=new Product(productName,productNumber,u,manufacturer);
-        allProducts.put(productNumber,pro);
+    public ProductDto addNewProduct(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException{
+        return this.proRepo.addPro(productName,productNumber,unitOfMeasure,manufacturer);
     }
     public Map<Integer,Product> getAllProducts(){ return allProducts;}
 
     public void setNamePro(int productNumber,String productName){
-        allProducts.get(productNumber).setProductName(productName);
+        this.proRepo.updateName(productNumber,productName);
     }
     public void setunitOfMeasurePro(int productNumber,String unitOfMeasure){
-        unit u=StringToEnumUnit(unitOfMeasure);
-        if (u!=null) {
-            allProducts.get(productNumber).setUnitOfMeasure(u);
-        }
+        this.proRepo.updateUnitOfMeasure(productNumber,unitOfMeasure);
     }
     public void setManufacturerPro(int productNumber,String manufacturer){
-        allProducts.get(productNumber).setManufacturer(manufacturer);
+    this.proRepo.updateManufacturer(productNumber,manufacturer);
     }
 
     public unit StringToEnumUnit(String unitOfMeasure){

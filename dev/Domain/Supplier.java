@@ -1,5 +1,7 @@
 package Domain;
 
+import dto.SupplierDto;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 //a class to represent the supplier
@@ -146,6 +148,43 @@ public class Supplier {
                 numbersA.add(agreement.getIDNumber());
         }
         return numbersA;
+    }
+    public SupplierDto transfer(){
+        LinkedList<Days> d = this.getDeliveryDays();
+        LinkedList<String> days =new LinkedList<>();
+        for (Days day : d) {
+            days.add(day.name());
+        }
+        LinkedList<Agreement> a=this.getAgreements();
+        LinkedList<Integer> aID= new LinkedList<>();
+        for (Agreement agreement:a){
+            aID.add(agreement.getIDNumber());
+        }
+        return new SupplierDto(this.getSupplierNumber(),this.supplierName, this.getBankAccount() ,(this.getPayment()).name(),this.getContactNames(),this.getTelephone(),days,(this.getDeliverySending()).name(),aID);
+    }
+
+    public int getSupplierNumber() {
+        return supplierNumber;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public paymentTerms getPayment() {
+        return payment;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public Delivery getDeliverySending() {
+        return deliverySending;
+    }
+
+    public LinkedList<Agreement> getAgreements() {
+        return agreements;
     }
 
     //a method to print all the products from the supplier
