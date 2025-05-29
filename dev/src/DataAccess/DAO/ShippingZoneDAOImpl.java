@@ -13,13 +13,13 @@ public class ShippingZoneDAOImpl implements ShippingZoneDAO {
 
     @Override
     public Optional<ShippingZoneDTO> findByName(String name) throws SQLException {
-        String sql = "SELECT zone_name, rank FROM shipping_zones WHERE zone_name = ?";
+        String sql = "SELECT name, rank FROM shipping_zones WHERE name = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ShippingZoneDTO zone = new ShippingZoneDTO(
-                            rs.getString("zone_name"),
+                            rs.getString("name"),
                             rs.getInt("rank")
                     );
                     return Optional.of(zone);
@@ -31,13 +31,13 @@ public class ShippingZoneDAOImpl implements ShippingZoneDAO {
 
     @Override
     public List<ShippingZoneDTO> findAll() throws SQLException {
-        String sql = "SELECT zone_name, rank FROM shipping_zones ORDER BY zone_name";
+        String sql = "SELECT name, rank FROM shipping_zones ORDER BY name";
         List<ShippingZoneDTO> zones = new ArrayList<>();
         try (Statement st = Database.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 zones.add(new ShippingZoneDTO(
-                        rs.getString("zone_name"),
+                        rs.getString("name"),
                         rs.getInt("rank")
                 ));
             }
@@ -51,7 +51,7 @@ public class ShippingZoneDAOImpl implements ShippingZoneDAO {
         Optional<ShippingZoneDTO> existing = findByName(zone.name());
         if (existing.isEmpty()) {
             // Insert new zone
-            String sql = "INSERT INTO shipping_zones (zone_name, rank) VALUES (?, ?)";
+            String sql = "INSERT INTO shipping_zones (name, rank) VALUES (?, ?)";
             try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
                 ps.setString(1, zone.name());
                 ps.setInt(2, zone.num());
@@ -60,7 +60,7 @@ public class ShippingZoneDAOImpl implements ShippingZoneDAO {
             }
         } else {
             // Update existing zone
-            String sql = "UPDATE shipping_zones SET rank = ? WHERE zone_name = ?";
+            String sql = "UPDATE shipping_zones SET rank = ? WHERE name = ?";
             try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
                 ps.setString(1, zone.name());
                 ps.setInt(2, zone.num());

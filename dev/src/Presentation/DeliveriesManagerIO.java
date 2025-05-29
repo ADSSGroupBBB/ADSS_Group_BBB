@@ -4,13 +4,14 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import Domain.DeliveriesController;
+import Presentation_employee.NavigationManager;
 import Service.*;
 
 
 public class DeliveriesManagerIO {
 
     // Method to present the main menu to the user
-    public static void presentingMenu() throws SQLException {
+    public static void presentingDeliveriesMenu() throws SQLException {
         Scanner scanner = new Scanner(System.in);
         final int PASSWORD = 1; // Hardcoded password value
         int attempts = 0; // Counter for password attempts
@@ -75,6 +76,8 @@ public class DeliveriesManagerIO {
             System.out.println("10. Add location");
             System.out.println("11. Delete location");
             System.out.println("12. End delivery");
+            System.out.println("13. Add item to location's required list");
+            System.out.println("14. Move to employee menu");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
 
@@ -123,6 +126,13 @@ public class DeliveriesManagerIO {
                     break;
                 case 12:
                     deliverysMenu.endDelivery();
+                    break;
+                case 13:
+                    locationsMenu.addItemToLocation();
+                    break;
+                case 14:
+                    NavigationManager navigationManager = new NavigationManager();
+                    navigationManager.start();
                     break;
                 case 0:
                     System.out.println("Exiting the system."); // Exit message

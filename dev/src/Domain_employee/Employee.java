@@ -53,7 +53,9 @@ public class Employee{
     public enum UserRole {
         REGULAR_EMPLOYEE,
         SHIFT_MANAGER,
-        HR_MANAGER
+        HR_MANAGER,
+        DRIVER,
+        STOREKEEPER
     }
     public String getId() {
         return id;

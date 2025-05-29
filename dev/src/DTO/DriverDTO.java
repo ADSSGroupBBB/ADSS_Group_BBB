@@ -1,4 +1,4 @@
 package DTO;
 
-public record DriverDTO(Integer id, String name, String licenceNumber) {}
+public record DriverDTO(String id, int license, int on_drive) {}
 

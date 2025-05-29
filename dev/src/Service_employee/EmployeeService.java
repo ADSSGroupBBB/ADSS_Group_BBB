@@ -33,6 +33,13 @@ public class EmployeeService {
                 startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
+    public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
+                             LocalDate startDate, double salary, int sickDays, int vacationDays,
+                             String pensionFundName, int[] licenseList){
+        return employeeController.addDriver(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, licenseList);
+    }
+
     public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
                                       LocalDate startDate, double salary, String role, String password,
                                       int sickDays, int vacationDays, String pensionFundName) {

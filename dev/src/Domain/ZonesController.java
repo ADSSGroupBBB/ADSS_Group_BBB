@@ -2,11 +2,11 @@ package Domain;
 
 import DTO.ShippingZoneDTO;
 import DTO.TruckDTO;
-import DataAccess.DAO.ShipmentItemDAOImpl;
 import DataAccess.DAO.ShippingZoneDAOImpl;
 import DataAccess.Interface.ShippingZoneDAO;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,5 +64,24 @@ public class ZonesController extends DeliveriesController {
             zone.setNum(rank); // Update zone rank
             return "Zone rank updated to " + rank; // Return confirmation message
         }
+    }
+
+    public String printZones() throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        List<ShippingZoneDTO> list = shippingZoneDAO.findAll();
+        for (ShippingZoneDTO dto : list){
+            if (!zoneMap.containsKey(dto.name())){
+                Shipping_Zone newZone = new Shipping_Zone(dto.num(), dto.name());
+                zoneMap.put(dto.name(), newZone);
+            }
+        }
+        for (String key : zoneMap.keySet()) {
+            sb.append("Zone: ").append(key).append("\n"); // Append truck to result
+        }
+        // Remove the last newline character if the StringBuilder is not empty
+        if (!sb.isEmpty()) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString(); // Return formatted string of addresses
     }
 }

@@ -1,7 +1,9 @@
 package Domain_employee;
 
+import DTO.DriverDTO;
 import DataAccess.EmployeeInterface.*;
 import DataAccess.EmployeeDAO.*;
+import Domain.Driver;
 import Service_employee.*;
 import Domain_employee.Employee.UserRole;
 
@@ -54,6 +56,33 @@ public class EmployeeController {
 
             // Set default availability
             availabilityDAO.setDefaultAvailability(id);
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error adding employee: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
+                             LocalDate startDate, double salary, int sickDays, int vacationDays,
+                             String pensionFundName, int[] licenseList){
+        try {
+
+
+            EmployeeDTO employee = new EmployeeDTO(id, firstName, lastName, bankAccount,
+                    startDate, salary, new ArrayList<>(), UserRole.DRIVER,
+                    sickDays, vacationDays, pensionFundName, "without");
+
+            employeeDAO.save(employee);
+
+            // Set default availability
+            availabilityDAO.setDefaultAvailability(id);
+            for (int i = 0; i< licenseList.length; i ++){
+                employeeDAO.saveDriver(new DriverDTO(id, licenseList[i], 0));
+            }
+
+
 
             return true;
         } catch (Exception e) {

@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.BranchDAO;
-import util.EmployeeDatabase;
+import util.WrapperDatabase;
 import Service_employee.BranchDTO;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class BranchDAOImpl implements BranchDAO {
         List<BranchDTO> branches = new ArrayList<>();
         String sql = "SELECT DISTINCT address, contact_name, contact_num, zone_name FROM locations ORDER BY address";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -37,7 +37,7 @@ public class BranchDAOImpl implements BranchDAO {
     public Optional<BranchDTO> findBranchByAddress(String address) throws SQLException {
         String sql = "SELECT DISTINCT address, contact_name, contact_num, zone_name FROM locations WHERE address = ?";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, address);
@@ -60,7 +60,7 @@ public class BranchDAOImpl implements BranchDAO {
     public boolean branchExists(String address) throws SQLException {
         String sql = "SELECT COUNT(*) FROM locations WHERE address = ?";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, address);

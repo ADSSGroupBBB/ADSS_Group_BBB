@@ -2,7 +2,9 @@ package Domain;
 
 import DTO.*;
 import DataAccess.DAO.DocumentDAOImpl;
+import DataAccess.DAO.ShipmentItemDAOImpl;
 import DataAccess.Interface.DocumentDAO;
+import DataAccess.Interface.ShipmentItemDAO;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -18,7 +20,7 @@ public class DeliveriesController {
     protected static Map<String, Location> locationsMap = new HashMap<>();
     protected static Map<String, Document> documentsMap = new HashMap<>();
     private static final DocumentDAO documentDAO = new DocumentDAOImpl();
-
+    private static final ShipmentItemDAO itemDAO = new ShipmentItemDAOImpl();
     // Initialize base data for drivers, trucks, zones, locations, etc.
     public static void initBaseData() {
 
@@ -60,7 +62,7 @@ public class DeliveriesController {
         }
         if (!list.contains(new_dest)) {
             list.add(new_dest); // Add destination to list
-            return "Location added successfully."; // Return success message
+            return "Location added successfully to route."; // Return success message
         }
         return "Location already in route."; // Destination already in list
     }
@@ -349,5 +351,29 @@ public class DeliveriesController {
         document.setEventMessage("Delivery finished."); // Set event message
 
         return "Delivery ended successfully.\nDriver is now available for another delivery.\nTruck is now available for another delivery."; // Return success message
+    }
+
+    // Prints all items in the system
+    public String printItems() throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        List<ShipmentItemDTO> list = itemDAO.findAll(); // You'll need to add this line at the top with other DAOs
+
+        for (ShipmentItemDTO dto : list) {
+            if (!totalItemsMap.containsKey(dto.name())) {
+                totalItemsMap.put(dto.name(), dto.weight()); // Add item to map if not already present
+            }
+        }
+
+        for (String itemName : totalItemsMap.keySet()) {
+            sb.append("Item: ").append(itemName)
+                    .append(", Weight: ").append(totalItemsMap.get(itemName))
+                    .append("\n"); // Append item details to result
+        }
+
+        // Remove the last newline character if the StringBuilder is not empty
+        if (!sb.isEmpty()) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString(); // Return formatted string of items
     }
 }

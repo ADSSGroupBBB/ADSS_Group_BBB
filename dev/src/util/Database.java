@@ -1,88 +1,322 @@
 package util;
 
 import java.sql.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.util.List;
+import java.util.ArrayList;
 
+/**
+ * Unified Database class for both Employee and Delivery modules
+ */
 public final class Database {
-    private static final String DB_URL = "jdbc:sqlite:deliveries.db";
-    private static Connection conn;
+    private static final String DB_URL = "jdbc:sqlite:company_system.db";
+    private static boolean initializeWithSampleData = true; // Control sample data insertion
 
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(DB_URL);
+            initializeDatabase();
+        } catch (Exception e) {
+            System.err.println("Error in connecting to database: " + e.getMessage());
+            e.printStackTrace();
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
-            try (Statement st = conn.createStatement()) {
-                // Only one correct definition of locations
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS shipping_zones (
-                        name TEXT PRIMARY KEY,
-                        rank INTEGER NOT NULL
-                    );
-                """);
+    private Database() {}
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS trucks(
-                        truck_id     TEXT PRIMARY KEY,
-                        type         INTEGER NOT NULL,
-                        truck_weight INTEGER NOT NULL,
-                        curr_weight  INTEGER NOT NULL,
-                        max_weight   INTEGER NOT NULL,
-                        on_drive     INTEGER NOT NULL
-                    );
-                """);
+    /**
+     * Call this method BEFORE first database access to start with empty tables
+     */
+    public static void initializeEmptyDatabase() {
+        initializeWithSampleData = false;
+        try {
+            // Delete existing database file to start fresh
+            deleteDatabase();
+            // Force re-initialization without sample data
+            initializeDatabase();
+        } catch (SQLException e) {
+            System.err.println("Error initializing empty database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS documents (
-                        id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                        doc_id        TEXT NOT NULL,
-                        date          TEXT NOT NULL,
-                        truck_id      TEXT NOT NULL,
-                        dep_hour      TEXT NOT NULL,
-                        driver_id     TEXT NOT NULL,
-                        dep_from      TEXT NOT NULL,
-                        event_message TEXT NOT NULL,
-                        FOREIGN KEY(truck_id) REFERENCES trucks(truck_id)
-                    );
-                """);
+    /**
+     * Call this method to reset database with sample data
+     */
+    public static void resetWithSampleData() {
+        initializeWithSampleData = true;
+        try {
+            deleteDatabase();
+            initializeDatabase();
+        } catch (SQLException e) {
+            System.err.println("Error resetting database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS shipment_items (
-                        name         TEXT PRIMARY KEY,
-                        weight       INTEGER NOT NULL,
-                    );
-                """);
+    /**
+     * Delete all data from tables (keep structure)
+     */
+    public static void clearAllData() throws SQLException {
+        try (Connection conn = getConnection();
+             Statement st = conn.createStatement()) {
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS doc_items (
-                        document_id  TEXT PRIMARY KEY,
-                        name         TEXT NOT NULL,
-                        weight       INTEGER NOT NULL,
-                        amount       INTEGER NOT NULL,
-                        FOREIGN KEY(name) REFERENCES shipment_items(name)
-                    );
-                """);
+            // Disable foreign keys temporarily
+            st.execute("PRAGMA foreign_keys = OFF");
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS locations (
-                        address       TEXT PRIMARY KEY,9
-                        contact_name  TEXT NOT NULL,
-                        contact_num   TEXT NOT NULL,
-                        zone_name     TEXT NOT NULL,
-                        zone_rank     TEXT NOT NULL,
-                        FOREIGN KEY(zone_name) REFERENCES shipping_zones(name)
-                    );
-                """);
+            // Delete data from all tables (order matters due to foreign keys)
+            String[] tablesToClear = {
+                    "shift_assignments", "employee_availability", "employee_qualifications",
+                    "required_positions", "shifts", "employees", "positions",
+                    "doc_locations", "doc_items", "documents", "locations",
+                    "shipment_items", "trucks", "shipping_zones"
+            };
 
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS doc_locations (
-                        document_id   TEXT PRIMARY KEY,
-                        address       TEXT PRIMARY KEY,
-                        FOREIGN KEY(address) REFERENCES locations(address)
-                    );
-                """);
+            for (String table : tablesToClear) {
+                st.executeUpdate("DELETE FROM " + table);
             }
 
+            // Re-enable foreign keys
+            st.execute("PRAGMA foreign_keys = ON");
+
+            System.out.println("All data cleared from database tables.");
+        }
+    }
+
+    private static void deleteDatabase() {
+        try {
+            java.io.File dbFile = new java.io.File("company_system.db");
+            if (dbFile.exists()) {
+                dbFile.delete();
+            }
+        } catch (Exception e) {
+            System.err.println("Could not delete database file: " + e.getMessage());
+        }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        Connection conn = DriverManager.getConnection(DB_URL);
+        // Enable foreign keys for this connection
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA foreign_keys = ON");
+        }
+        return conn;
+    }
+
+    private static void initializeDatabase() throws SQLException {
+        try (Connection conn = getConnection();
+             Statement st = conn.createStatement()) {
+
+            // Enable foreign keys
+            st.execute("PRAGMA foreign_keys = ON");
+
+            // Create all tables
+            createDeliveryTables(st);
+            createEmployeeTables(st);
+        }
+
+        // Only insert sample data if flag is true AND data doesn't already exist
+        if (initializeWithSampleData && !dataExists()) {
+            insertDeliveryData();
+            insertEmployeeData();
+            System.out.println("Database initialized with sample data.");
+        } else if (!initializeWithSampleData) {
+            System.out.println("Database initialized with empty tables.");
+        }
+    }
+
+    /**
+     * Check if sample data already exists to prevent duplicates
+     */
+    private static boolean dataExists() {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM trucks")) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // If trucks table has data, assume all sample data exists
+            }
+        } catch (SQLException e) {
+            // If table doesn't exist or error, assume no data
+            return false;
+        }
+        return false;
+    }
+
+    private static void createDeliveryTables(Statement st) throws SQLException {
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS shipping_zones (
+                    name TEXT PRIMARY KEY,
+                    rank INTEGER NOT NULL
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS trucks(
+                    truck_id     TEXT PRIMARY KEY,
+                    type         INTEGER NOT NULL,
+                    truck_weight INTEGER NOT NULL,
+                    curr_weight  INTEGER NOT NULL,
+                    max_weight   INTEGER NOT NULL,
+                    on_drive     INTEGER NOT NULL
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS documents (
+                    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                    doc_id        TEXT NOT NULL,
+                    date          TEXT NOT NULL,
+                    truck_id      TEXT NOT NULL,
+                    dep_hour      TEXT NOT NULL,
+                    driver_id     TEXT NOT NULL,
+                    dep_from      TEXT NOT NULL,
+                    event_message TEXT NOT NULL,
+                    FOREIGN KEY(truck_id) REFERENCES trucks(truck_id)
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS shipment_items (
+                    name         TEXT PRIMARY KEY,
+                    weight       INTEGER NOT NULL
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS doc_items (
+                    doc_id       TEXT PRIMARY KEY,
+                    name         TEXT NOT NULL,
+                    weight       INTEGER NOT NULL,
+                    amount       INTEGER NOT NULL,
+                    FOREIGN KEY(name) REFERENCES shipment_items(name)
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS locations (
+                    address       TEXT PRIMARY KEY,
+                    contact_name  TEXT NOT NULL,
+                    contact_num   TEXT NOT NULL,
+                    zone_name     TEXT NOT NULL,
+                    zone_rank     TEXT NOT NULL,
+                    FOREIGN KEY(zone_name) REFERENCES shipping_zones(name)
+                );
+            """);
+
+        st.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS doc_locations (
+                    doc_id   TEXT PRIMARY KEY,
+                    address       TEXT NOT NULL,
+                    FOREIGN KEY(address) REFERENCES locations(address)
+                );
+            """);
+    }
+
+    private static void createEmployeeTables(Statement st) throws SQLException {
+        // Create employees table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS employees (
+                id TEXT PRIMARY KEY,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                bank_account TEXT NOT NULL,
+                start_date TEXT NOT NULL,
+                salary REAL NOT NULL,
+                role TEXT NOT NULL,
+                password TEXT NOT NULL,
+                sick_days INTEGER NOT NULL,
+                vacation_days INTEGER NOT NULL,
+                pension_fund_name TEXT NOT NULL,
+                branch_address TEXT,
+                FOREIGN KEY(branch_address) REFERENCES locations(address)
+            );
+        """);
+
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS drivers (
+                id TEXT PRIMARY KEY,
+                license INTEGER NOT NULL,
+                on_drive INTEGER NOT NULL,
+                FOREIGN KEY(id) REFERENCES employees(id)
+            );
+        """);
+
+        // Create positions table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS positions (
+                name TEXT PRIMARY KEY,
+                requires_shift_manager INTEGER NOT NULL
+            );
+        """);
+
+        // Create employee qualifications table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS employee_qualifications (
+                employee_id TEXT NOT NULL,
+                position_name TEXT NOT NULL,
+                PRIMARY KEY (employee_id, position_name),
+                FOREIGN KEY(employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+                FOREIGN KEY(position_name) REFERENCES positions(name) ON DELETE CASCADE
+            );
+        """);
+
+        // Create employee availability table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS employee_availability (
+                employee_id TEXT NOT NULL,
+                day_of_week TEXT NOT NULL,
+                morning_available INTEGER NOT NULL,
+                evening_available INTEGER NOT NULL,
+                PRIMARY KEY (employee_id, day_of_week),
+                FOREIGN KEY(employee_id) REFERENCES employees(id) ON DELETE CASCADE
+            );
+        """);
+
+        // Create shifts table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS shifts (
+                id TEXT PRIMARY KEY,
+                date TEXT NOT NULL,
+                shift_type TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
+                branch_address TEXT,
+                FOREIGN KEY(branch_address) REFERENCES locations(address)
+            );
+        """);
+
+        // Create shift assignments table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS shift_assignments (
+                shift_id TEXT NOT NULL,
+                employee_id TEXT NOT NULL,
+                position_name TEXT NOT NULL,
+                is_shift_manager INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (shift_id, position_name),
+                FOREIGN KEY(shift_id) REFERENCES shifts(id) ON DELETE CASCADE,
+                FOREIGN KEY(employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+                FOREIGN KEY(position_name) REFERENCES positions(name) ON DELETE CASCADE
+            );
+        """);
+
+        // Create required positions table
+        st.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS required_positions (
+                shift_type TEXT NOT NULL,
+                position_name TEXT NOT NULL,
+                required_count INTEGER NOT NULL,
+                PRIMARY KEY (shift_type, position_name),
+                FOREIGN KEY(position_name) REFERENCES positions(name) ON DELETE CASCADE
+            );
+        """);
+    }
+
+    // Keep all your existing insert methods unchanged...
+    private static void insertDeliveryData() throws SQLException {
+        try (Connection conn = getConnection()) {
             // Insert shipping zones
             try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO shipping_zones (name, rank) VALUES (?, ?)");) {
                 String[] names = {"Downtown", "Airport", "Suburbs", "Industrial Park", "Shopping District"};
@@ -111,62 +345,263 @@ public final class Database {
 
             // Insert one document (for simplicity)
             try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO documents (doc_id, date, truck_id, dep_hour, driver_id, dep_from, event_message) VALUES (?, ?, ?, ?, ?, ?, ?)");) {
-                ps.setInt(1, 1);
+                ps.setString(1, "DOC-001");
                 ps.setString(2, "2025-05-26");
                 ps.setString(3, "T1");
                 ps.setString(4, "08:00");
                 ps.setString(5, "D1");
-                ps.setString(6, "HQ");
+                ps.setString(6, "Headquarters");
                 ps.setString(7, "Delivery finished.");
                 ps.executeUpdate();
             }
 
             // Insert shipment items
-            try (PreparedStatement ps = conn.prepareStatement("INSERT INTO shipment_items (document_id, name, weight, amount) VALUES (?, ?, ?, ?)");) {
+            try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO shipment_items (name, weight) VALUES (?, ?)");) {
                 Object[][] items = {
-                        {"Milk", 10, 1},
-                        {"Bread", 5, 1},
-                        {"Juice", 20, 1},
-                        {"Eggs", 2, 1},
-                        {"Meat", 15, 1},
+                        {"Milk", 10},
+                        {"Bread", 5},
+                        {"Juice", 20},
+                        {"Eggs", 2},
+                        {"Meat", 15},
                 };
                 for (Object[] item : items) {
-                    ps.setInt(1, 1);
-                    ps.setString(2, (String) item[0]);
-                    ps.setInt(3, (int) item[1]);
-                    ps.setInt(4, (int) item[2]);
+                    ps.setString(1, (String) item[0]);
+                    ps.setInt(2, (int) item[1]);
                     ps.executeUpdate();
                 }
             }
 
-            // Insert locations
-            try (PreparedStatement ps = conn.prepareStatement("INSERT INTO locations (document_id, address, contact_name, contact_num, zone_name) VALUES (?, ?, ?, ?, ?)");) {
-                Object[][] locs = {
-                        {"Rager", "Omer", "555-1234", "Downtown, 1"},
-                        {"Hazaz", "Ben", "555-5678", "Airport, 2"},
-                        {"Metzada", "Lior", "555-9012", "Suburbs, 3"},
-                        {"Bialik", "Meir", "555-3456", "Industrial Park, 4"},
-                        {"Bengurion", "Ariel", "555-7890", "Shopping District, 5"},
-                        {"Headquarters", "Noam", "123-456", "Downtown, 1"},
+            // Insert locations - SAMPLE DATA for first run
+            try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO locations (address, contact_name, contact_num, zone_name, zone_rank) VALUES (?, ?, ?, ?, ?)")) {
+                Object[][] locations = {
+                        {"Headquarters", "Noam", "123-456-7890", "Downtown", 1},
+                        {"Main Branch", "Sarah", "555-1111", "Downtown", 1},
+                        {"Hazaz Street", "Ben", "555-5678", "Airport", 2},
+                        {"Metzada Avenue", "Lior", "555-9012", "Suburbs", 3},
+                        {"Bialik Boulevard", "Meir", "555-3456", "Industrial Park", 4},
+                        {"Ben Gurion Road", "Ariel", "555-7890", "Shopping District", 5}
                 };
-                for (Object[] loc : locs) {
-                    ps.setInt(1, 1);
-                    ps.setString(2, (String) loc[0]);
-                    ps.setString(3, (String) loc[1]);
-                    ps.setString(4, (String) loc[2]);
-                    ps.setString(5, (String) loc[3]);
+
+                for (Object[] loc : locations) {
+                    ps.setString(1, (String) loc[0]);
+                    ps.setString(2, (String) loc[1]);
+                    ps.setString(3, (String) loc[2]);
+                    ps.setString(4, (String) loc[3]);
+                    ps.setInt(5, (Integer) loc[4]);
                     ps.executeUpdate();
                 }
             }
-
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
         }
     }
 
-    private Database() {}
+    // Keep all other insert methods exactly as they were...
+    private static void insertEmployeeData() throws SQLException {
+        try (Connection conn = getConnection()) {
+            // Get available branches DYNAMICALLY from locations table
+            List<String> branches = getAvailableBranches(conn);
 
-    public static Connection getConnection() throws SQLException {
-        return conn;
+            // Insert positions
+            try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO positions (name, requires_shift_manager) VALUES (?, ?)")) {
+                String[][] positions = {
+                        {"Cashier", "0"},
+                        {"Stocker", "0"},
+                        {"Security", "0"},
+                        {"Customer Service", "0"},
+                        {"Floor Manager", "1"},
+                        {"Driver", "0"},
+                        {"Warehouse Manager", "0"}
+                };
+
+                for (String[] pos : positions) {
+                    ps.setString(1, pos[0]);
+                    ps.setInt(2, Integer.parseInt(pos[1]));
+                    ps.executeUpdate();
+                }
+            }
+
+            // Insert required positions
+            try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO required_positions (shift_type, position_name, required_count) VALUES (?, ?, ?)")) {
+                String[][] requirements = {
+                        {"MORNING", "Cashier", "2"}, {"MORNING", "Stocker", "1"}, {"MORNING", "Security", "1"},
+                        {"MORNING", "Floor Manager", "1"}, {"MORNING", "Customer Service", "1"}, {"MORNING", "Warehouse Manager", "1"},
+                        {"EVENING", "Cashier", "3"}, {"EVENING", "Stocker", "2"}, {"EVENING", "Security", "1"},
+                        {"EVENING", "Floor Manager", "1"}, {"EVENING", "Customer Service", "2"}, {"EVENING", "Warehouse Manager", "1"}
+                };
+
+                for (String[] req : requirements) {
+                    ps.setString(1, req[0]);
+                    ps.setString(2, req[1]);
+                    ps.setInt(3, Integer.parseInt(req[2]));
+                    ps.executeUpdate();
+                }
+            }
+
+            // Insert employees with DYNAMIC branch assignment
+            LocalDate today = LocalDate.now();
+            try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO employees (id, first_name, last_name, bank_account, start_date, salary, role, password, sick_days, vacation_days, pension_fund_name, branch_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+
+                // Admin user - assign to first available branch
+                String adminBranch = branches.isEmpty() ? null : branches.get(0);
+                ps.setString(1, "admin");
+                ps.setString(2, "Admin");
+                ps.setString(3, "User");
+                ps.setString(4, "123456");
+                ps.setString(5, today.toString());
+                ps.setDouble(6, 100.0);
+                ps.setString(7, "HR_MANAGER");
+                ps.setString(8, "admin123");
+                ps.setInt(9, 50);
+                ps.setInt(10, 50);
+                ps.setString(11, "Migdal");
+                ps.setString(12, adminBranch);
+                ps.executeUpdate();
+
+                // Regular employees
+                Object[][] employees = {
+                        {"111", "Yossi", "Cohen", "12345", 40.0, "REGULAR_EMPLOYEE", "111", 10, 20, "Menora"},
+                        {"222", "Sara", "Levi", "23456", 42.0, "REGULAR_EMPLOYEE", "222", 12, 15, "Harel"},
+                        {"333", "David", "Israeli", "34567", 38.0, "REGULAR_EMPLOYEE", "333", 8, 10, "Migdal"},
+                        {"444", "Noa", "Golan", "45678", 45.0, "REGULAR_EMPLOYEE", "444", 14, 18, "Phoenix"},
+                        {"555", "Moshe", "Peretz", "56789", 40.0, "REGULAR_EMPLOYEE", "555", 7, 12, "Clal"},
+                        {"666", "Rachel", "Mizrahi", "67890", 55.0, "SHIFT_MANAGER", "666", 15, 20, "Menora"}
+                };
+
+                for (int i = 0; i < employees.length; i++) {
+                    Object[] emp = employees[i];
+                    String assignedBranch = branches.isEmpty() ? null : branches.get(i % branches.size());
+
+                    ps.setString(1, (String) emp[0]);
+                    ps.setString(2, (String) emp[1]);
+                    ps.setString(3, (String) emp[2]);
+                    ps.setString(4, (String) emp[3]);
+                    ps.setString(5, today.minusYears(2).toString());
+                    ps.setDouble(6, (Double) emp[4]);
+                    ps.setString(7, (String) emp[5]);
+                    ps.setString(8, (String) emp[6]);
+                    ps.setInt(9, (Integer) emp[7]);
+                    ps.setInt(10, (Integer) emp[8]);
+                    ps.setString(11, (String) emp[9]);
+                    ps.setString(12, assignedBranch);
+                    ps.executeUpdate();
+                }
+            }
+
+            // Insert qualifications, availability, and shifts
+            insertQualifications(conn);
+            insertAvailability(conn);
+            insertSampleShifts(conn, branches);
+        }
+    }
+
+    private static List<String> getAvailableBranches(Connection conn) {
+        List<String> branches = new ArrayList<>();
+        try {
+            String sql = "SELECT DISTINCT address FROM locations ORDER BY address";
+            try (PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    branches.add(rs.getString("address"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading branches: " + e.getMessage());
+        }
+        return branches;
+    }
+
+    private static void insertQualifications(Connection conn) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO employee_qualifications (employee_id, position_name) VALUES (?, ?)")) {
+            String[][] qualifications = {
+                    {"111", "Cashier"}, {"111", "Customer Service"},
+                    {"222", "Cashier"}, {"222", "Stocker"},
+                    {"333", "Security"}, {"333", "Driver"},
+                    {"444", "Customer Service"}, {"444", "Cashier"},
+                    {"555", "Stocker"}, {"555", "Warehouse Manager"},
+                    {"666", "Floor Manager"}
+            };
+
+            for (String[] qual : qualifications) {
+                ps.setString(1, qual[0]);
+                ps.setString(2, qual[1]);
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    private static void insertAvailability(Connection conn) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO employee_availability (employee_id, day_of_week, morning_available, evening_available) VALUES (?, ?, ?, ?)")) {
+            String[] employees = {"admin", "111", "222", "333", "444", "555", "666"};
+            String[] days = {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
+
+            for (String empId : employees) {
+                for (String day : days) {
+                    ps.setString(1, empId);
+                    ps.setString(2, day);
+                    ps.setInt(3, 1);
+                    ps.setInt(4, 1);
+                    ps.executeUpdate();
+                }
+            }
+        }
+    }
+
+    private static void insertSampleShifts(Connection conn, List<String> branches) throws SQLException {
+        if (branches.isEmpty()) return;
+
+        String sampleBranch = branches.get(0);
+        createShiftsForWeek(conn, LocalDate.now().minusWeeks(1), sampleBranch, true);
+        createShiftsForWeek(conn, LocalDate.now().plusWeeks(1), sampleBranch, false);
+    }
+
+    private static void createShiftsForWeek(Connection conn, LocalDate startDate, String branchAddress, boolean assignEmployees) throws SQLException {
+        while (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            startDate = startDate.minusDays(1);
+        }
+
+        String shiftSql = "INSERT OR IGNORE INTO shifts (id, date, shift_type, start_time, end_time, branch_address) VALUES (?, ?, ?, ?, ?, ?)";
+        String assignmentSql = "INSERT OR IGNORE INTO shift_assignments (shift_id, employee_id, position_name, is_shift_manager) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement shiftPs = conn.prepareStatement(shiftSql);
+             PreparedStatement assignPs = conn.prepareStatement(assignmentSql)) {
+
+            LocalDate currentDate = startDate;
+            for (int i = 0; i < 7; i++) {
+                String branchSuffix = branchAddress != null ? "_" + branchAddress.replaceAll("\\s+", "") : "";
+
+                String morningShiftId = currentDate.toString() + "_morning" + branchSuffix;
+                shiftPs.setString(1, morningShiftId);
+                shiftPs.setString(2, currentDate.toString());
+                shiftPs.setString(3, "MORNING");
+                shiftPs.setString(4, LocalTime.of(7, 0).toString());
+                shiftPs.setString(5, LocalTime.of(14, 0).toString());
+                shiftPs.setString(6, branchAddress);
+                shiftPs.executeUpdate();
+
+                String eveningShiftId = currentDate.toString() + "_evening" + branchSuffix;
+                shiftPs.setString(1, eveningShiftId);
+                shiftPs.setString(2, currentDate.toString());
+                shiftPs.setString(3, "EVENING");
+                shiftPs.setString(4, LocalTime.of(14, 0).toString());
+                shiftPs.setString(5, LocalTime.of(21, 0).toString());
+                shiftPs.setString(6, branchAddress);
+                shiftPs.executeUpdate();
+
+                if (assignEmployees) {
+                    assignPs.setString(1, morningShiftId);
+                    assignPs.setString(2, "666");
+                    assignPs.setString(3, "Floor Manager");
+                    assignPs.setInt(4, 1);
+                    assignPs.executeUpdate();
+
+                    assignPs.setString(1, eveningShiftId);
+                    assignPs.setString(2, "666");
+                    assignPs.setString(3, "Floor Manager");
+                    assignPs.setInt(4, 1);
+                    assignPs.executeUpdate();
+                }
+
+                currentDate = currentDate.plusDays(1);
+            }
+        }
     }
 }

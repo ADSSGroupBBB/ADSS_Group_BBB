@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.PositionDAO;
-import util.EmployeeDatabase;
+import util.WrapperDatabase;
 import Service_employee.PositionDTO;
 
 import java.sql.*;
@@ -15,7 +15,7 @@ public class PositionDAOImpl implements PositionDAO {
     public Optional<PositionDTO> findByName(String name) throws SQLException {
         String sql = "SELECT name, requires_shift_manager FROM positions WHERE name = ?";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, name);
@@ -37,7 +37,7 @@ public class PositionDAOImpl implements PositionDAO {
         List<PositionDTO> positions = new ArrayList<>();
         String sql = "SELECT name, requires_shift_manager FROM positions ORDER BY name";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -56,7 +56,7 @@ public class PositionDAOImpl implements PositionDAO {
     public PositionDTO save(PositionDTO position) throws SQLException {
         String sql = "INSERT OR REPLACE INTO positions (name, requires_shift_manager) VALUES (?, ?)";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, position.getName());
@@ -71,7 +71,7 @@ public class PositionDAOImpl implements PositionDAO {
     public boolean deleteByName(String name) throws SQLException {
         // First check if position is used by any employees
         String checkSql = "SELECT COUNT(*) FROM employee_qualifications WHERE position_name = ?";
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
 
             checkPs.setString(1, name);
@@ -84,7 +84,7 @@ public class PositionDAOImpl implements PositionDAO {
 
         // Check if position is required for shifts
         String checkRequiredSql = "SELECT COUNT(*) FROM required_positions WHERE position_name = ?";
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement checkPs = conn.prepareStatement(checkRequiredSql)) {
 
             checkPs.setString(1, name);
@@ -97,7 +97,7 @@ public class PositionDAOImpl implements PositionDAO {
 
         // Delete position
         String sql = "DELETE FROM positions WHERE name = ?";
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, name);

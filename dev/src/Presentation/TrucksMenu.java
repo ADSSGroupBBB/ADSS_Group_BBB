@@ -12,7 +12,8 @@ public class TrucksMenu {
     public void addTruck() throws SQLException {
         System.out.println("Add Truck selected.");
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("List of current trucks in the system: ");
+        System.out.println(ta.printTrucks());  // Print list of available trucks
         // Prompting user to enter the Truck ID
         System.out.print("Enter Truck ID: ");
         String truckId = scanner.nextLine().trim();
@@ -37,12 +38,16 @@ public class TrucksMenu {
     public void deleteTruck() throws SQLException {
         System.out.println("Delete Truck selected.");
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("List of current trucks in the system: ");
+        System.out.println(ta.printTrucks());  // Print list of available trucks
         // Prompting user to enter the Truck ID to delete
         System.out.print("Enter Truck ID: ");
         String truckId = scanner.nextLine().trim();
-
-        // Calling the method in the UserApplication to delete the truck and printing the result
-        System.out.println(ta.deleteTruck(truckId));
+        try {
+            // Calling the method in the UserApplication to delete the truck and printing the result
+            System.out.println(ta.deleteTruck(truckId));
+        } catch (SQLException e){
+        System.out.println("Cant delete this truck because it is part of an existing delivery.");
+    }
     }
 }

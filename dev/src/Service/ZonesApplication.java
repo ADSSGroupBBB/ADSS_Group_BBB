@@ -20,4 +20,8 @@ public class ZonesApplication {
     public String updateRank(String name, int rank) throws SQLException {
         return zc.updateRank(name, rank); // Delegate to UserController to update the rank
     }
+
+    public String printZones() throws SQLException {
+        return zc.printZones();
+    }
 }
