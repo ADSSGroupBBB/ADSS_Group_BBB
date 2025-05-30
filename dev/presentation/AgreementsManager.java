@@ -243,10 +243,6 @@ public class AgreementsManager {
                             return;
                         }
                         case 3: {
-                            double price;
-                            int catalogNumber;
-                            int amountToDiscount;
-                            int discount;
                             int productNumber;
                             while (true) {
                                 System.out.println("Enter the product number whose details you want to edit");

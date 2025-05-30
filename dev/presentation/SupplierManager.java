@@ -168,8 +168,9 @@ public class SupplierManager {
         }
     }
 
-    private LinkedList<String> enterDeliveryDays() {
+    private LinkedList<String> enterDeliveryDays(int num) {
         Scanner scanner = new Scanner(System.in);
+        SupplierApplication ua = new SupplierApplication();
         LinkedList<String> deliveryDays = new LinkedList<>();
         int choice = 0;
         int i = 0;
@@ -191,27 +192,57 @@ public class SupplierManager {
                 if ((choice >= 1 && choice <= 6) || (i == 0 && choice == 7)) {
                     switch (choice) {
                         case 1: {
-                            deliveryDays.add("Sunday");
+                            if(deliveryDays.contains("Sunday")||(ua.existSupplier(num)&&ua.existDays(num,"Sunday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else{
+                                deliveryDays.add("Sunday");
+                            }
                             break;
                         }
                         case 2: {
-                            deliveryDays.add("Monday");
+                            if(deliveryDays.contains("Monday")||(ua.existSupplier(num)&&ua.existDays(num,"Monday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else{
+                                deliveryDays.add("Monday");
+                            }
                             break;
                         }
                         case 3: {
-                            deliveryDays.add("Tuesday");
+                            if(deliveryDays.contains("Tuesday")||(ua.existSupplier(num)&&ua.existDays(num,"Tuesday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else{
+                                deliveryDays.add("Tuesday");
+                            }
                             break;
                         }
                         case 4: {
-                            deliveryDays.add("Wednesday");
+                            if(deliveryDays.contains("Wednesday")||(ua.existSupplier(num)&&ua.existDays(num,"Wednesday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else{
+                                deliveryDays.add("Wednesday");
+                            }
                             break;
                         }
                         case 5: {
-                            deliveryDays.add("Thursday");
+                            if(deliveryDays.contains("Thursday")||(ua.existSupplier(num)&&ua.existDays(num,"Thursday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else {
+                                deliveryDays.add("Thursday");
+                            }
                             break;
                         }
                         case 6: {
-                            deliveryDays.add("Friday");
+                            if(deliveryDays.contains("Friday")||(ua.existSupplier(num)&&ua.existDays(num,"Friday"))){
+                                System.out.println("The day is already exists in supplier");
+                            }
+                            else {
+                                deliveryDays.add("Friday");
+                            }
                             break;
                         }
                         case 7: {
@@ -347,7 +378,7 @@ public class SupplierManager {
             }
         }
         if (choice == 1) {
-            LinkedList<String> days = enterDeliveryDays();
+            LinkedList<String> days = enterDeliveryDays(numSupplier);
             ua.addDeliveryDays(numSupplier, days);
         } else {
 
@@ -395,7 +426,7 @@ public class SupplierManager {
         payment = enterPayment();
         contactNames = enterContactNames();
         telephone=enterTelephone();
-        deliveryDays=enterDeliveryDays();
+        deliveryDays=enterDeliveryDays(numSupplier);
         deliverySending=enterDeliverySending();
 
         sa.addSup(numSupplier, nameSupplier, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending);

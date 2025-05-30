@@ -1,16 +1,20 @@
 package Domain;
 
+import dto.SupplierDto;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 //a class for the manager (the controller) of supplier
 public class SupplierController {
     private static SupplierController instance; // single instance
-    private Map<Integer, Supplier> allSupplier; // map of all suppliers
+    //private Map<Integer, Supplier> allSupplier; // map of all suppliers
+    private SupplierRepository supRepo;
 
     // private constructor to prevent direct instantiation
     private SupplierController() {
-        allSupplier = new HashMap<>();
+        this.supRepo = new SupplierRepositoryImpl();
     }
 
     // public method to access the single instance
@@ -25,141 +29,117 @@ public class SupplierController {
     //parameters:int supplierNumber
     //returns a boolean value . if it exists it returns true ,and false otherwise
     public boolean checkSup(int supplierNumber){
-        if(allSupplier.containsKey(supplierNumber)){
-            return true;
-        }
-        return false;
+        return this.supRepo.getSupplier(supplierNumber).isPresent();
     }
     //check if supplier has a certain name in its contact list
     //returns a boolean value
     public boolean checkContactName(int supplierNumber,String name){
-        if(allSupplier.get(supplierNumber).getContactNames().contains(name)){
+        if(this.supRepo.existsContactName(supplierNumber,name)){
             return true;
         }
         return false;
     }
     //get amount of contact list
     public int numContactNameSup(int supplierNumber){
-        return allSupplier.get(supplierNumber).getContactNames().size();
+        return this.supRepo.numContactName(supplierNumber);
     }
     //check if supplier comes in certain days or only if ordered
     //returns a boolean value
     public boolean checkdaysSup(int supplierNumber,String day){
-        Days d=StringToEnumDays(day);
-        if (d!=null) {
-            if (allSupplier.get(supplierNumber).getDeliveryDays().contains(d)) {
-                return true;
-            }
-        }
-        return false;
+        return this.supRepo.existsDay(supplierNumber,day);
     }
     //NameSup setter
     public void setNameSup(int numSupplier,String nameSupplier){
-        allSupplier.get(numSupplier).setSupplierName(nameSupplier);
+        this.supRepo.updateName(numSupplier,nameSupplier);
     }
     //BankAccountSup setter
     public void setBankAccountSup(int numSupplier,String bankAccount){
-        allSupplier.get(numSupplier).setBankAccount(bankAccount);
+        this.supRepo.updateBankAccount(numSupplier,bankAccount);
     }
     //PaymentSup setter
     public void setPaymentSup(int numSupplier,String payment){
-        paymentTerms p=StringToEnumPaymentTerms(payment);
-        if (p!=null) {
-            allSupplier.get(numSupplier).setPayment(p);
-        }
+        this.supRepo.updatePayment(numSupplier,payment);
     }
     //add contact name to supplier
     //parameters :int numSupplier,LinkedList<String> contactNames
     public void addContactNamesSup(int numSupplier,LinkedList<String> contactNames){
-        allSupplier.get(numSupplier).addContactNames(contactNames);
+        this.supRepo.addContactNames(numSupplier,contactNames);
     }
     //delete contact name from supplier
     //parameters :int numSupplier,String contactName
     public void deleteContactNamesSup(int numSupplier,String contactName){
-        allSupplier.get(numSupplier).deleteContactNames(contactName);
+        this.supRepo.removeContactNames(numSupplier,contactName);
     }
     //TelephoneSup setter
     public void setTelephoneSup(int numSupplier,String telephone){
-        allSupplier.get(numSupplier).setTelephone(telephone);
+        this.supRepo.updateTelephone(numSupplier,telephone);
     }
     //add delivery days to supplier
     //parameters:int numSupplier,LinkedList<String> days
     public void addDeliveryDaysSup(int numSupplier,LinkedList<String> days){
-        LinkedList<Days> days_delivery=new LinkedList<>();
-        for (String day:days){
-            days_delivery.add(StringToEnumDays(day));
-        }
-        allSupplier.get(numSupplier).addDeliveryDays(days_delivery);
+        this.supRepo.addDeliveryDays(numSupplier,days);
     }
     //removes delivery days from supplier
     //parameters:int numSupplier,String day
     public void deleteDeliveryDaysSup(int numSupplier,String day){
-        Days d= StringToEnumDays(day);
-        allSupplier.get(numSupplier).deleteDeliveryDays(d);
+        this.supRepo.removeDeliveryDays(numSupplier,day);
     }
     //DeliverySending setter
     public void setDeliverySending(int numSupplier,String deliverySending){
-        Delivery d= StringToEnumDelivery(deliverySending);
-        allSupplier.get(numSupplier).setDeliverySending(d);
+       this.supRepo.updateDeliverySending(numSupplier,deliverySending);
     }
     //add agreement to supplier
     //parameters:int supplierNumber,Agreement agree
     public void addAgreement(int supplierNumber,Agreement agree){
-        allSupplier.get(supplierNumber).addAgreements(agree);
+        this.supRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
     }
 
     //deletes agreement from supplier
     //parameters:int supplierNumber,Agreement agree
     public void deleteAgreement(int supplierNumber,Agreement agree){
-        allSupplier.get(supplierNumber).removeAgreements(agree);
+        this.supRepo.removeAgreementToSup(supplierNumber,agree.getIDNumber());
     }
     //name getter
     public String getName(int num){
-        return allSupplier.get(num).getSupplierName();
+        Optional<SupplierDto> supDto=this.supRepo.getSupplier(num);
+        if (supDto.isPresent()) {
+            return supDto.get().supplierName();
+        }
+        return "";
     }
 
     //adds a new supplier
     //parameters:int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending
     public void addNewSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending){
-        paymentTerms pay;
-        Delivery del;
-        LinkedList<Days> days_delivery=new LinkedList<>();
-        pay=StringToEnumPaymentTerms(payment);
-        for (String day:deliveryDays){
-            days_delivery.add(StringToEnumDays(day));
-            }
-
-        if (deliverySending.equals("constant")){
-            del=Delivery.constant;
-        }
-        else if(deliverySending.equals("invitation")){
-            del=Delivery.invitation;
-        }
-        else {
-            del=Delivery.selfCollection;
-        }
-
-        Supplier sup=new Supplier(supplierNumber,supplierName,bankAccount,pay,contactNames,telephone,days_delivery,del,new LinkedList<Agreement>());
-        allSupplier.put(supplierNumber,sup);
+        this.supRepo.addSupplier(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending);
     }
     //delete supplier
     //parameter:int numSupplier
     public void deleteSup(int numSupplier){
         AgreementsController ac=AgreementsController.getInstance();
-        Supplier s=allSupplier.get(numSupplier);
-        for (int numAgree: s.listNumAgree()){
-            ac.deleteAgree(numSupplier,numAgree);
+        Optional<SupplierDto> supDto=this.supRepo.getSupplier(numSupplier);
+        if (supDto.isPresent()) {
+            LinkedList<Integer> agrees= supDto.get().agreementsId();
+            for (int numAgree: agrees){
+                if (ac.existConstantAgreement(numSupplier,numAgree)){
+                    ac.deleteStandardAgree(numSupplier,numAgree);
+                }
+                else {
+                    ac.deletePeriodAgree(numSupplier,numAgree);
+                }
+            }
         }
-        allSupplier.remove(numSupplier);
+        this.supRepo.removeSupplier(numSupplier);
     }
     public boolean isConstantSup(int numSupplier){
-        if(allSupplier.get(numSupplier).getDeliveryDays()!=null){
-            return true;
-        }
-        return false;
+        return this.supRepo.isConstantSup(numSupplier);
     }
-    public LinkedList<Days> getDays(int numSupplier){
-        return allSupplier.get(numSupplier).getDeliveryDays();
+    public LinkedList<String> getDays(int numSupplier){
+        Optional<SupplierDto> supDto=this.supRepo.getSupplier(numSupplier);
+        if (supDto.isPresent()) {
+            return supDto.get().deliveryDays();
+        }
+        return new LinkedList<>();
     }
     //turns a String to Days type
     //parameter:String day
