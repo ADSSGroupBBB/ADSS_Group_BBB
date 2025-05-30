@@ -9,8 +9,7 @@ import java.util.Optional;
 
 public interface SupplierDao {
     SupplierDto saveSup(SupplierDto sup) throws SQLException;
-     boolean findContactName(int supplierNumber, String contactName) throws SQLException;
-     int getNumContactNameById(int supplierNumber) throws SQLException;
+ String getContactNameById(int supplierNumber) throws SQLException;
      boolean findDayById(int supplierNumber, String day) throws SQLException;
      void updateNameSupById(int numSupplier,String nameSupplier) throws SQLException;
      void updateBankAccountSupById(int numSupplier,String bankAccount) throws SQLException;
@@ -18,7 +17,6 @@ public interface SupplierDao {
      void updateTelephoneSupById(int numSupplier,String telephone) throws SQLException;
      void updateDeliverySendingSupById(int numSupplier,String deliverySending) throws SQLException;
      void saveContactNamesSupById(int numSupplier, LinkedList<String> contactNames) throws SQLException;
-     void removeContactById(int numSupplier, String contactName) throws SQLException;
      void saveDeliveryDaysSupById(int numSupplier, LinkedList<String> days) throws SQLException;
      void removeDaysById(int numSupplier,String day) throws SQLException;
      void saveAgreeById(int supplierNumber,int agree_id) throws SQLException;

@@ -1,6 +1,6 @@
 package dto;
 
-public record PeriodOrderItemDto (
+public record PeriodAgreementItemDto(
         QuantityAgreementDto productAgreement,
          int amountToOrder
 ){
