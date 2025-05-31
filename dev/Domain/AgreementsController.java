@@ -201,17 +201,5 @@ public class AgreementsController {
         }
         return false;
     }
-    public Agreement cheapest_agreement_Standard (){
-        Map<Agreement, List<PairInt>> map = new HashMap<>();
-        for (Agreement agree: allStandardAgreements.values()){
-            List<PairInt> products = new ArrayList<>();
-            for (Integer proID : OrderApplication.getOutOfStock()){
-                if(existProStandardAgre(proID,agree.IDNumber)){
-                    PairInt pi = new PairInt(proID, );
-                    products.add();
-                    map.put(agree,products );
-                }
-            }
-        }
-    }
+
 }

@@ -2,6 +2,8 @@ package Domain;
 
 import dto.AgreementDto;
 
+import java.util.List;
+
 public interface   StandardAgreementRepository {
     AgreementDto saveStandardAgreement (int supplierNumber,String date);
     void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount);
@@ -18,4 +20,5 @@ public interface   StandardAgreementRepository {
      void setAmountToDiscountStandardAgreement(int productNumber,int numAgree,int amountToDiscount);
      void setDiscountStandardAgreement(int productNumber,int numAgree,int discount);
      boolean existProByStandardSup(int numS,int numP );
-    }
+     boolean existProStandardAgreementByName(String nameP,int numA);
+     }
