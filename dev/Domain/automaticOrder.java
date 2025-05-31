@@ -9,11 +9,10 @@ import java.util.Map;
 public class automaticOrder {
     static List<String> outOfStock = new ArrayList<>();
 
-    public Map<Integer,QuantityAgreement> automatic_order() {
-        StandardAgreementRepositoryImpl sari = new StandardAgreementRepositoryImpl();
+    public Map<Integer,QuantityAgreement> automatic_order_StandardList() {
+        StandardAgreementRepository sari =AgreementsController.getInstance().getStandardAgreeRepo();
         ProductRepositoryImpl pri = new ProductRepositoryImpl();
         Stock st = Stock.getInstance();
-
 
         Map<Integer,QuantityAgreement> toOrder= new HashMap<>();
         for (String p : outOfStock) {
@@ -60,7 +59,7 @@ public class automaticOrder {
     public int standardAutoOrder(int numAgree ,int numSupplier, String address, String date, String contactPhone, String statusOrder){
         OrderController oc = OrderController.getInstance();
         int orderNum = oc.addNewOrder( numAgree , numSupplier, address,  date,  contactPhone,statusOrder);
-        Map<Integer,QuantityAgreement> toOrder = automatic_order();
+        Map<Integer,QuantityAgreement> toOrder = automatic_order_StandardList();
         for (QuantityAgreement pro : toOrder.values()){
             int pID = pro.getNumberProAgreement();
             String pName = pro.getNameAgreement();
@@ -72,7 +71,7 @@ public class automaticOrder {
         return orderNum;
     }
 
-    public int periodAutoOrder(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount,int amountToOrder){
+    public int periodAutoOrder(int numAgree ,int numSupplier, String address, String date, String contactPhone, String statusOrder){
 
 
     }

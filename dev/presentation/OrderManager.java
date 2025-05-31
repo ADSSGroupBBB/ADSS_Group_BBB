@@ -4,9 +4,12 @@ import Domain.Status;
 import Service.OrderApplication;
 import Service.StockApplication;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.sql.Time;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class OrderManager {
     public  void OrderManagerPresentation(){
@@ -122,8 +125,16 @@ public class OrderManager {
             while (true) {
                 System.out.println("Enter the booking date");
                 date = scanner.nextLine().trim();
+                LocalDate today = LocalDate.now();
+                LocalDate tomorrow = today.plusDays(1);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                String strTomorrow = tomorrow.format(formatter);
+                String strToday = today.format(formatter);
                 if (date.isEmpty()) {
                     System.out.println("The date cannot be empty, please enter again");
+                }else if(date.equals(strToday)) {
+                    System.out.println("The supplier won't be able to prepare your order on such short notice,");
+                    System.out.println( "please choose the date "+strTomorrow+" and forward");
                 } else {
                     break;
                 }
