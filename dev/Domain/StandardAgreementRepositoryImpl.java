@@ -28,4 +28,5 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
     public Map<Integer, Agreement> getAllStandardAgreements() {
         return allStandardAgreements;
     }
+    public QuantityAgreement productFromAgreementByName(int numAgree,String nameP{}
 }

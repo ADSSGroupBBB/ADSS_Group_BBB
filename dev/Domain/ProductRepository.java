@@ -12,6 +12,5 @@ public interface ProductRepository {
     ProductDto addPro(String productName,int productNumber,String unitOfMeasure,String manufacturer);
     void updateName(int productNumber,String productName);
     void updateUnitOfMeasure(int productNumber,String unitOfMeasure);
-     void updateManufacturer(int productNumber,String manufacturer);
-
+    void updateManufacturer(int productNumber,String manufacturer);
     }

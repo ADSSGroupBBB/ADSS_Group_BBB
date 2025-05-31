@@ -1,10 +1,7 @@
 package presentation;
 
 
-import Service.AgreementsApplication;
-import Service.OrderApplication;
-import Service.ProductApplication;
-import Service.SupplierApplication;
+import Service.*;
 
 import java.util.*;
 
@@ -183,7 +180,8 @@ public class UserPresentation {
                     scanner.nextLine();
                 }
             }
-            oa.automatic_order(soldPro);
+            StockApplication stockApp = new StockApplication();
+            stockApp.selling(soldPro);
         }
     }
 }

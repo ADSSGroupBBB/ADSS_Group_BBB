@@ -21,4 +21,5 @@ public interface   StandardAgreementRepository {
      void setDiscountStandardAgreement(int productNumber,int numAgree,int discount);
      boolean existProByStandardSup(int numS,int numP );
      boolean existProStandardAgreementByName(String nameP,int numA);
+     QuantityAgreement productFromAgreementByName(int numAgree,String nameP);
      }

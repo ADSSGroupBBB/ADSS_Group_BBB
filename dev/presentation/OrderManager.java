@@ -264,7 +264,7 @@ public class OrderManager {
             if (choiceType==1){
 
             }else{
-                List<Integer> oos=OrderApplication.getOutOfStock();
+
 
             }
 

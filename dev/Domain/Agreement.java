@@ -8,16 +8,14 @@ public class Agreement {
     protected int supplierNumber; //the supplier this agreement belongs to
     protected LinkedList<QuantityAgreement> productsList; //the list of products for this agreement
     protected String date;    //the date the agreement was made
-    protected String productName;
 
     //the agreement constructor
     //gets supplierNumber, date
-    public Agreement(int supplierNumber,String date, String Name){
+    public Agreement(int supplierNumber,String date){
         this.IDNumber=counterID++;
         this.supplierNumber=supplierNumber;
         this.productsList=new LinkedList<QuantityAgreement>();
         this.date=date;
-        this.productName = Name;
 
     }
     //a method to add product to an agreement
@@ -126,10 +124,6 @@ public class Agreement {
     //supplierNumber getter
     public int getSupplierNumber() {
         return supplierNumber;
-    }
-
-    public String getProductName() {
-        return productName;
     }
 
     //method to print all product in agreement

@@ -1,7 +1,12 @@
 package Service;
 
+import Domain.ProductRepositoryImpl;
 import Domain.Stock;
 import Domain.PairInt;
+
+import java.util.Map;
+import java.util.Objects;
+
 public class StockApplication {
     Stock st = Stock.getInstance();
     PairInt pi;
@@ -11,5 +16,9 @@ public class StockApplication {
 
     public PairInt getPi() {
         return pi;
+    }
+
+    public void selling(Map<Integer,Integer> soldPro){
+        st.sell(soldPro);
     }
 }
