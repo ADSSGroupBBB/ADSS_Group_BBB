@@ -39,8 +39,9 @@ public class QuantityAgreement {
         return this.prod.getManufacturer();
     }
 
-
-
+    public Product getProd() {
+        return prod;
+    }
 
     public double getPriceAgreement() {
         return price;

@@ -22,6 +22,9 @@ public class OrderController {
         }
         return instance;
     }
+    public Order orderBYnum(int orderID){
+        return allOrder.get(orderID);
+    }
     //add order to supplier
     //parameters:int orderNumber,int numSupplier,String address,String date,String contactPhone,String statusOrder
     public int addNewOrder(int numAgree,int numSupplier,String address,String date,String contactPhone,String statusOrder){
@@ -49,6 +52,9 @@ public class OrderController {
             return true;
         }
         return false;
+    }
+    public Status StatusByID (int orderId){
+        return allOrder.get(orderId).getStatusOrder();
     }
     //prints all the products from a certain agreement
     //parameters:int numAgreement

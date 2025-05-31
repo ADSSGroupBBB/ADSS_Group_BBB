@@ -57,7 +57,7 @@ public class automaticOrder {
         return bestOp;
     }
 
-    public boolean standardAutoOrder(int numAgree ,int numSupplier, String address, String date, String contactPhone, String statusOrder){
+    public int standardAutoOrder(int numAgree ,int numSupplier, String address, String date, String contactPhone, String statusOrder){
         OrderController oc = OrderController.getInstance();
         int orderNum = oc.addNewOrder( numAgree , numSupplier, address,  date,  contactPhone,statusOrder);
         Map<Integer,QuantityAgreement> toOrder = automatic_order();
@@ -67,11 +67,15 @@ public class automaticOrder {
             Stock st = Stock.getInstance();
             int amount = st.getProductStock().get(pName).second;
             if (oc.addItemOrder(orderNum, pID, amount)) continue;
-            else return false;
+            else return -1;
         }
-        return true;
+        return orderNum;
     }
 
+    public int periodAutoOrder(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount,int amountToOrder){
+
+
+    }
 
     public static List<String> getOutOfStock() {
         return outOfStock;

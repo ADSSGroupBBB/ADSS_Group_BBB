@@ -1,6 +1,8 @@
 package presentation;
 
+import Domain.Status;
 import Service.OrderApplication;
+import Service.StockApplication;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +63,7 @@ public class OrderManager {
         }
     }
     public void addOrder() {
+        StockApplication sa = new StockApplication();
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
         int numSupplier;
@@ -89,7 +92,7 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        if (a == 1){
+
             while (true) {
                 System.out.println("Enter the number of the supplier you would like to order from");
                 if (scanner.hasNextInt()) {
@@ -179,6 +182,7 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
+        if (a == 1){
             int orderNumber= oa.addOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
             int numP = 0;
             LinkedList<Integer> numProducts=new LinkedList<Integer>();
@@ -262,16 +266,18 @@ public class OrderManager {
                 }
             }
             if (choiceType==1){
-
+                int orderID = oa
             }else{
-
-
+                int orderID =oa.addStandardAutoOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
+                if (orderID!=-1){
+                    System.out.println("automatic order created successfully!");
+                }else{
+                    System.out.println("failed to create automatic order");
+                }
             }
-
-
         }
-
     }
+
     public void cancalOrder(){
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
@@ -294,9 +300,11 @@ public class OrderManager {
         oa.deleteOrder(orderNumber);
     }
     public void searchOrder(){
+        StockApplication sa = new StockApplication();
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
         int orderNumber;
+        int choiceType;
         while (true) {
             System.out.println("Enter the order number");
             if (scanner.hasNextInt()) {
@@ -312,7 +320,29 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        System.out.println(oa.printOrder(orderNumber));
+        while (true) {
+            System.out.println("What would you like to do to the order?");
+            System.out.println("1. print");
+            System.out.println("2. update status");
+            if (scanner.hasNextInt()) {
+                choiceType = scanner.nextInt();
+                scanner.nextLine();
+                if (choiceType >= 1 && choiceType <= 2) {
+                    break;
+                } else {
+                    System.out.println("The number is invalid, please select again");
+                    scanner.nextLine();
+                }
+            } else {
+                System.out.println("This is not a number, please enter it again");
+                scanner.nextLine();
+            }
+        }
+        if (choiceType ==1) {
+            System.out.println(oa.printOrder(orderNumber));
+        }else {
+            sa.upStock(orderNumber);
+        }
     }
 
 }

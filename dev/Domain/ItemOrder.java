@@ -43,6 +43,10 @@ public class ItemOrder {
     }
 
 
+    public QuantityAgreement getItem() {
+        return item;
+    }
+
     //get price item
     public double getPriceItem() {
         return this.item.getPriceAgreement();

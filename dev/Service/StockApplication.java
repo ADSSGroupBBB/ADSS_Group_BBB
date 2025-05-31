@@ -21,4 +21,7 @@ public class StockApplication {
     public void selling(Map<Integer,Integer> soldPro){
         st.sell(soldPro);
     }
+    public void upStock(int numId){
+        st.updateStock(numId);
+    }
 }

@@ -9,7 +9,10 @@ public class OrderApplication {
     OrderController oc=OrderController.getInstance();
     automaticOrder autoO = new automaticOrder();
 
-    public boolean addStandardAutoOrder(int numAgree , int numSupplier, String address, String date, String contactPhone, String statusOrder){
+    public Status findStatusByID (int orderID){
+        return oc.StatusByID(orderID);
+    }
+    public int addStandardAutoOrder(int numAgree , int numSupplier, String address, String date, String contactPhone, String statusOrder){
         return autoO.standardAutoOrder(numAgree,numSupplier,address,date,contactPhone,statusOrder);
     }
 

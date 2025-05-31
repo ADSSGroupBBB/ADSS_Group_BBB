@@ -58,6 +58,16 @@ public class Stock {
             }
         }
     }
+    public void updateStock(int orderId){
+        OrderController oc = OrderController.getInstance();
+        Order o = oc.orderBYnum(orderId);
+        for (ItemOrder io: o.getItems()){
+            int proAmountOrdered =io.getAmountOrder();
+            PairInt pi =productStock.get(io.getItem().getProd().getProductName());
+            int temp =pi.first;
+            pi.first=temp+ proAmountOrdered;
+        }
+    }
 
 
 

@@ -42,6 +42,9 @@ public class Order {
         return true;
     }
 
+    public LinkedList<ItemOrder> getItems() {
+        return items;
+    }
 
     //supplierName setter
     public void setSupplierName(String supplierName) {
