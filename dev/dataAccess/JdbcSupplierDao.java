@@ -12,6 +12,8 @@ import java.util.*;
 public class JdbcSupplierDao implements SupplierDao{
     @Override
     public SupplierDto saveSup(SupplierDto sup) throws SQLException {
+        try {
+            Database.getConnection().setAutoCommit(false);
         String sql= """
                 INSERT INTO suppliers(supplierNumber, supplierName, bankAccount, payment, contactNames, telephone, deliverySending) VALUES (?,?,?,?,?,?,?,?,?)
                 """;
@@ -43,6 +45,11 @@ public class JdbcSupplierDao implements SupplierDao{
                 }
             }
         }
+            Database.getConnection().commit();
+        } catch (SQLException e) {
+            Database.getConnection().rollback();
+            throw e;
+        }
         return sup;
     }
 
@@ -65,7 +72,7 @@ public class JdbcSupplierDao implements SupplierDao{
                     String sql_day= "SELECT day FROM Supplier_Days WHERE supplierNumber = ?";
                     try(PreparedStatement ps_days=Database.getConnection().prepareStatement(sql_day)) {
                         ps_days.setInt(1,id);
-                        try(ResultSet day_sup=psSupplier.executeQuery()) {
+                        try(ResultSet day_sup=ps_days.executeQuery()) {
                             while (day_sup.next()){
                                 days.add(day_sup.getString("day"));
                             }
@@ -81,47 +88,25 @@ public class JdbcSupplierDao implements SupplierDao{
                             }
                         }
                     }
-                    Optional.of(new SupplierDto(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,days,deliverySending,agreementsId)) ;
+                    return Optional.of(new SupplierDto(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,days,deliverySending,agreementsId)) ;
                 }
             }
 
         }
         return Optional.empty();
     }
-    public boolean findContactName(int supplierNumber, String contactName) throws SQLException{
+
+    public String getContactNameById(int supplierNumber) throws SQLException{
         String sql= "SELECT contactNames FROM suppliers WHERE supplierNumber = ?";
         try (PreparedStatement psSupplier=Database.getConnection().prepareStatement(sql)){
             psSupplier.setInt(1,supplierNumber);
             try (ResultSet contactNames=psSupplier.executeQuery()){
                 if(contactNames.next()){
-                    String contact=contactNames.getString("contactNames");
-                    LinkedList<String> contactNamesList = new LinkedList<>(Arrays.asList(contact.split(",")));
-                    for (String con:contactNamesList){
-                        if(con.equals(contactName)){
-                            return true;
-                        }
+                     return contactNames.getString("contactNames");
                     }
                 }
             }
-        }
-        return false;
-    }
-    public int getNumContactNameById(int supplierNumber) throws SQLException{
-        String sql= "SELECT contactNames FROM suppliers WHERE supplierNumber = ?";
-        int count=0;
-        try (PreparedStatement psSupplier=Database.getConnection().prepareStatement(sql)){
-            psSupplier.setInt(1,supplierNumber);
-            try (ResultSet contactNames=psSupplier.executeQuery()){
-                if(contactNames.next()){
-                    String contact=contactNames.getString("contactNames");
-                    LinkedList<String> contactNamesList = new LinkedList<>(Arrays.asList(contact.split(",")));
-                    for (String con:contactNamesList){
-                        count++;
-                        }
-                    }
-                }
-            }
-        return count;
+        return null;
     }
 
     public boolean findDayById(int supplierNumber, String day) throws SQLException {
@@ -177,7 +162,7 @@ public class JdbcSupplierDao implements SupplierDao{
         }
     }
     public void saveContactNamesSupById(int numSupplier, LinkedList<String> contactNames) throws SQLException{
-            String sql = "UPDATE suppliers SET contactNames = contactNames || ',' || ? WHERE supplierNumber = ?";
+            String sql = "UPDATE suppliers SET contactNames =  ? WHERE supplierNumber = ?";
             String contacts = String.join(",", contactNames.stream().map(String::valueOf).toList());
             try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
             ps.setString(1, contacts);
@@ -185,25 +170,7 @@ public class JdbcSupplierDao implements SupplierDao{
                 ps.executeUpdate();
             }
     }
-    public void removeContactById(int numSupplier, String contactName) throws SQLException{
-        String sql = "SELECT contactNames FROM suppliers WHERE supplierNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
-            ps.setInt(1, numSupplier);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                String contactsStr = rs.getString("contactNames");
-                List<String> contacts = new ArrayList<>(List.of(contactsStr.split(",")));
-                contacts.remove(contactName);
-                String updatedContacts = String.join(",", contacts);
-                String updateSql = "UPDATE suppliers SET contactNames = ? WHERE supplierNumber = ?";
-                try (PreparedStatement pu = (Database.getConnection().prepareStatement(updateSql))) {
-                    pu.setString(1, updatedContacts);
-                    pu.setInt(2, numSupplier);
-                    pu.executeUpdate();
-                }
-            }
-        }
-    }
+
     public void saveDeliveryDaysSupById(int numSupplier, LinkedList<String> days) throws SQLException{
         String sqlDay = "INSERT INTO Supplier_Days(supplierNumber, day) VALUES (?,?)";
         try (PreparedStatement psDay = Database.getConnection().prepareStatement(sqlDay)) {
@@ -246,11 +213,30 @@ public class JdbcSupplierDao implements SupplierDao{
             return rs.next();
         }
     }
-    public void removeSupById(int id) throws SQLException{
-        String sql = "DELETE FROM suppliers WHERE supplierNumber = ?";
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+    public void removeSupById(int id) throws SQLException {
+        try {
+            Database.getConnection().setAutoCommit(false);
+
+            String deleteAgreementsSql = "DELETE FROM Supplier_Agreements WHERE supplierNumber = ?";
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(deleteAgreementsSql)) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
+
+            String deleteDaysSql = "DELETE FROM Supplier_Days WHERE supplierNumber = ?";
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(deleteDaysSql)) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
+            String sql = "DELETE FROM suppliers WHERE supplierNumber = ?";
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
+            Database.getConnection().commit();
+        } catch (SQLException e) {
+            Database.getConnection().rollback();
+            throw e;
         }
     }
 }

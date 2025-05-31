@@ -163,6 +163,34 @@ public class Supplier {
         return new SupplierDto(this.getSupplierNumber(),this.supplierName, this.getBankAccount() ,(this.getPayment()).name(),this.getContactNames(),this.getTelephone(),days,(this.getDeliverySending()).name(),aID);
     }
 
+    public void setContactNames(LinkedList<String> contactNames) {
+        this.contactNames = contactNames;
+    }
+
+    public void setDeliveryDays(LinkedList<Days> deliveryDays) {
+        this.deliveryDays = deliveryDays;
+    }
+
+    public void setAgreements(LinkedList<Agreement> agreements) {
+        this.agreements = agreements;
+    }
+
+    public  Supplier(SupplierDto sup){
+        this.supplierNumber=sup.supplierNumber();
+        this.supplierName=sup.supplierName();
+        this.bankAccount=sup.bankAccount();
+        this.payment=StringToEnumPaymentTerms(sup.payment());
+        this.contactNames=sup.contactNames();
+        this.telephone=sup.telephone();
+        LinkedList<Days> d=new LinkedList<>();
+        for (String day:sup.deliveryDays()){
+            d.add(StringToEnumDays(day));
+        }
+        this.deliveryDays=d;
+        this.deliverySending=StringToEnumDelivery(sup.deliverySending());
+        this.agreements=new LinkedList<>();
+        }
+
     public int getSupplierNumber() {
         return supplierNumber;
     }
@@ -203,5 +231,58 @@ public class Supplier {
         }
         return printAll;
     }
+//turns a String to Days type
+//parameter:String day
+//returns type Days
+private Days StringToEnumDays(String day){
+    if(day.equals("Sunday")){
+        return Days.Sunday;
+    }
+    else if(day.equals("Monday")){
+        return Days.Monday;
+    }
+    else if(day.equals("Tuesday")){
+        return Days.Tuesday;
+    }
+    else if(day.equals("Wednesday")){
+        return Days.Wednesday;
+    }
+    else if(day.equals("Thursday")){
+        return Days.Thursday;
+    }
+    else if(day.equals("Friday")){
+        return Days.Friday;
+    }
+    else {
+        return null;
+    }
+}
+//turns String to PaymentTerms
+//parameters:String pay
+//returns type paymentTerms
+private paymentTerms StringToEnumPaymentTerms(String pay){
+    if(pay.equals("Cash")){
+        return paymentTerms.Cash;
+    }
+    else if(pay.equals("Credit")) {
+        return paymentTerms.credit;
+    }
+    return null;
+}
+//turns String to Delivery
+//parameters:String delivery
+//returns type Delivery
+private Delivery StringToEnumDelivery(String delivery){
+    if (delivery.equals("constant")){
+        return Delivery.constant;
+    }
+    else if(delivery.equals("invitation")){
+        return Delivery.invitation;
+    }
+    else if(delivery.equals("selfCollection")){
+        return Delivery.selfCollection;
+    }
+    return null;
+}
     }
 
