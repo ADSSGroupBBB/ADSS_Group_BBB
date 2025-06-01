@@ -25,7 +25,7 @@ public class SupplierRepositoryImpl implements SupplierRepository{
         }
         Supplier sup= new Supplier(supplierNumber, supplierName,  bankAccount,  pay, contactNames,  telephone,  d,  del, new LinkedList<Agreement>());
         supList.put(supplierNumber,sup);
-        return this.supDao.saveSup(new SupplierDto(supplierNumber, supplierName,  bankAccount,  payment, contactNames,  telephone,  deliveryDays,  deliverySending, new LinkedList<Integer>());
+        return this.supDao.saveSup(new SupplierDto(supplierNumber, supplierName,  bankAccount,  payment, contactNames,  telephone,  deliveryDays,  deliverySending, new LinkedList<Integer>()));
     }
     public void removeSupplier(int supplierNumber) throws SQLException{
         if(supList.containsKey(supplierNumber)){

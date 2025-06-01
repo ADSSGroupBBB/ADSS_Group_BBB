@@ -2,15 +2,22 @@ package Domain;
 
 import dto.AgreementDto;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.LinkedList;
 import java.util.Map;
 
 public class StandardAgreementRepositoryImpl implements StandardAgreementRepository{
     private Map<Integer, Agreement> allStandardAgreements;
 
-    public AgreementDto saveStandardAgreement (int supplierNumber, String date){}
-    public void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount){}
+    public AgreementDto saveStandardAgreement (int supplierNumber, String date){
+        Agreement agree=new Agreement(supplierNumber,date);
+        SupplierController s=SupplierController.getInstance();
+        s.addAgreement(supplierNumber,agree);
+        allStandardAgreements.put(agree.getIDNumber(),agree);
+    }
+    public void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount){
+
+    }
     public void deleteProductStandardAgree(int numAgree,int productNumber){}
     public void setDateStandardAgreement(int numAgreement,String date){}
     public void deleteStandardAgreement(int numSup,int numAgree){}

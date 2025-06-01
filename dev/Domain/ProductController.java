@@ -34,21 +34,21 @@ public class ProductController {
         return this.proRepo.getProd(productNumber).isPresent();
     }
 
-    public Optional<SupplierDto> getPro(int num) throws SQLException{
+    public Optional<ProductDto> getPro(int num) throws SQLException{
         return this.proRepo.getProd(num);
     }
-    public ProductDto addNewProduct(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException{
-        return this.proRepo.addPro(productName,productNumber,unitOfMeasure,manufacturer);
+    public void addNewProduct(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException{
+         this.proRepo.addPro(productName,productNumber,unitOfMeasure,manufacturer);
     }
     public Map<Integer,Product> getAllProducts(){ return allProducts;}
 
-    public void setNamePro(int productNumber,String productName){
+    public void setNamePro(int productNumber,String productName) throws SQLException {
         this.proRepo.updateName(productNumber,productName);
     }
-    public void setunitOfMeasurePro(int productNumber,String unitOfMeasure){
+    public void setunitOfMeasurePro(int productNumber,String unitOfMeasure) throws SQLException{
         this.proRepo.updateUnitOfMeasure(productNumber,unitOfMeasure);
     }
-    public void setManufacturerPro(int productNumber,String manufacturer){
+    public void setManufacturerPro(int productNumber,String manufacturer) throws SQLException{
     this.proRepo.updateManufacturer(productNumber,manufacturer);
     }
 

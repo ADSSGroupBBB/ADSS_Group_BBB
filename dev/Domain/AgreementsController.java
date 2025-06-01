@@ -37,19 +37,10 @@ public class AgreementsController {
     //parameters:int supplierNumber,String date
     //returns an int
     public int addNewStandardAgreement(int supplierNumber,String date){
-        Agreement agree=new Agreement(supplierNumber,date);
-        SupplierController s=SupplierController.getInstance();
-        s.addAgreement(supplierNumber,agree);
-        allStandardAgreements.put(agree.getIDNumber(),agree);
-        return agree.getIDNumber();
+        return (this.standardAgreeRepo.saveStandardAgreement(supplierNumber,date)).IDNumber();
     }
     public int addNewPeriodAgreement(int supplierNumber,String date,String address,String contactPhone){
-        SupplierController s=SupplierController.getInstance();
-        LinkedList<Days> days=s.getDays(supplierNumber);
-        PeriodAgreement agree=new PeriodAgreement(supplierNumber,date,days,address,contactPhone);
-        s.addAgreement(supplierNumber,agree);
-        allPeriodAgreements.put(agree.getIDNumber(),agree);
-        return agree.getIDNumber();
+        return (this.periodAgreeRepo.savePeriodAgreement(supplierNumber,date)).agreement().IDNumber();
     }
     //add product to agreemennt
     //parameters:int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount

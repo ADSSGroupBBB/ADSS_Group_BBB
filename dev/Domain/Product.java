@@ -1,4 +1,7 @@
 package Domain;
+
+import dto.ProductDto;
+
 //a class to represent a product
 public class Product {
     private String productName; //name of product
@@ -13,6 +16,16 @@ public class Product {
         this.unitOfMeasure=unitOfMeasure;
         this.manufacturer=manufacturer;
 
+    }
+
+    public Product(ProductDto pro){
+        this.productName=pro.productName();
+        this.productNumber=pro.productNumber();
+        this.unitOfMeasure=StringToEnumUnit(pro.unitOfMeasure());
+        this.manufacturer=pro.manufacturer();
+    }
+    public ProductDto transfer(){
+        return new ProductDto(this.productName,this.productNumber,(this.unitOfMeasure).name(),this.manufacturer);
     }
 
 
@@ -49,5 +62,19 @@ public class Product {
     //manufacturer getter
     public String getManufacturer() {
         return manufacturer;
+    }
+    public unit StringToEnumUnit(String unitOfMeasure){
+        if (unitOfMeasure.equals("kg")) {
+            return unit.kg;
+        }else if (unitOfMeasure.equals("g")) {
+            return unit.g;
+        }else if (unitOfMeasure.equals("ml")) {
+            return unit.ml;
+        }else if (unitOfMeasure.equals("liter")) {
+            return unit.liter;
+        }
+        else {
+            return null;
+        }
     }
 }
