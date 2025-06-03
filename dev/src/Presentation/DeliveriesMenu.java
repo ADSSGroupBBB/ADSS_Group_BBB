@@ -16,7 +16,7 @@ import java.util.Scanner;
 
 public class DeliveriesMenu {
 
-    private static DeliveriesApplication da = new DeliveriesApplication();  // UserApplication object to handle business logic
+    private static DeliveriesApplication da = new DeliveriesApplication();
     private static LocationApplication la = new LocationApplication();
 
     // Method to add a new delivery to the system
@@ -31,10 +31,11 @@ public class DeliveriesMenu {
         System.out.print("Enter delivery hour (format: HH:mm): ");
         String deliveryTime = scanner.nextLine();  // User enters the delivery time
         System.out.print("Enter wanted truck's id: ");
+        System.out.println(ta.printTrucks());
         String truckID = scanner.nextLine();
         while (!truckID.equals("-1") && !ta.isAvailableTruck(truckID)) {
             System.out.println("Truck unavailable. Please choose another one.");
-            System.out.println(ta.printTrucks());  // Print list of available trucks
+            System.out.println(ta.printTrucks());  // Print list of trucks
             System.out.print("Enter wanted truck's id (or -1 to cancel): ");
             truckID = scanner.nextLine();
         }
@@ -189,6 +190,9 @@ public class DeliveriesMenu {
         List<Location> route = new ArrayList<>();  // List of locations for the delivery route
         boolean added_succesfully = false;
         String itemName = "";
+
+        System.out.println("Items known to our store:");
+        System.out.println(da.printItems());
         System.out.println("Enter the name of the item that ran out");
 
         while (!added_succesfully) {  // Keep asking for the item name until valid
@@ -207,7 +211,7 @@ public class DeliveriesMenu {
         String address;
         String res = "";
         while (true) {  // Keep asking for destination addresses
-            while (!res.equals("Location added successfully.")) {  // Keep asking until destination is added successfully
+            while (!res.equals("Location added successfully to route.")) {  // Keep asking until destination is added successfully
                 System.out.print("Enter destination address: ");
                 address = scanner.nextLine().trim();
                 res = da.addDestination(address, route);

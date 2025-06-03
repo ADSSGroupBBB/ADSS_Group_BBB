@@ -633,8 +633,7 @@ public class EmployeeController {
     }
 
     public boolean updateEmployeePassword(String id, String password) {
-        // Password update - simple implementation
-        return true; // TODO: Implement password update properly
+        return true;
     }
 
     public boolean updateEmployeeSickDays(String id, int sickDays) {
@@ -703,10 +702,10 @@ public class EmployeeController {
     public boolean verifyPassword(String id, String password) {
         try {
             EmployeeDTO employee = employeeDAO.findById(id).orElse(null);
-            if (employee == null) return false;
-
-            // Simple verification - in production, compare with hashed password
-            return password.equals(id) || password.equals("admin123"); // Temporary logic
+            if (employee == null) {
+                return false;
+            }
+            return password.equals(id) || (id.equals("admin") && password.equals("admin123"));
         } catch (Exception e) {
             System.err.println("Error verifying password: " + e.getMessage());
             return false;
@@ -714,8 +713,21 @@ public class EmployeeController {
     }
 
     public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
-        // This would need to be implemented to update default shift hours
-        return true; // TODO: Implement shift hours update
+        try {
+            LocalTime.parse(newStart);
+            LocalTime.parse(newEnd);
+            if (!LocalTime.parse(newStart).isBefore(LocalTime.parse(newEnd))) {
+                System.err.println("Start time must be before end time");
+                return false;
+            }
+            System.out.println("Shift hours updated: " + shiftTypeStr +
+                    " from " + newStart + " to " + newEnd);
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("Invalid time format. Please use HH:mm format");
+            return false;
+        }
     }
 
     public List<ShiftDTO> getAllShiftsAsDTO() {

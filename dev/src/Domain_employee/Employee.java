@@ -1,5 +1,5 @@
-package Domain_employee;
 
+package Domain_employee;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -13,11 +13,8 @@ import java.util.Set;
  * in the system. Each employee can be qualified for multiple positions and has a configurable availability schedule.
  *
  * The class also manages employment benefits such as sick days, vacation days, and pension fund information.
-
  */
-
-
-public class Employee{
+public class Employee {
     private String id; // id
     private String firstName;
     private String lastName;
@@ -53,8 +50,23 @@ public class Employee{
     public enum UserRole {
         REGULAR_EMPLOYEE,
         SHIFT_MANAGER,
-        HR_MANAGER
+        HR_MANAGER,
+        DRIVER,
+        WAREHOUSE_WORKER;
+
+
+        public boolean isSpecialRole() {
+            return this == DRIVER || this == WAREHOUSE_WORKER;
+        }
+
+        public boolean isManager() {
+            return this == SHIFT_MANAGER || this == HR_MANAGER;
+        }
+
+
+
     }
+
     public String getId() {
         return id;
     }
@@ -105,12 +117,15 @@ public class Employee{
 
     /**
      * Adds a new position that the employee is qualified to perform.
-     * This is important for scheduling employees to appropriate shifts.
      *
      * @param position The position to add to qualified positions
      * @return true if the position was not already in the qualified positions set
      */
     public boolean addQualifiedPosition(Position position) {
+        if (role.isSpecialRole()) {
+            System.out.println("Warning: " + role + " cannot have additional qualifications");
+            return false;
+        }
         return qualifiedPositions.add(position);
     }
 
@@ -121,6 +136,7 @@ public class Employee{
     public Set<Position> getQualifiedPositions() {
         return new HashSet<>(qualifiedPositions);
     }
+
     public int getSickDays() {
         return sickDays;
     }
@@ -145,7 +161,6 @@ public class Employee{
         this.pensionFundName = pensionFundName;
     }
 
-
     /**
      * Checks if two Employee objects are equal based on their ID.
      * Two employees are considered equal if they have the same ID.
@@ -153,17 +168,14 @@ public class Employee{
      * @param o The object to compare with
      * @return true if the objects are equal, false otherwise
      */
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Domain_employee.Employee employee = (Domain_employee.Employee) o;
+        Employee employee = (Employee) o;
         return id.equals(employee.id);
     }
-
 
     /**
      * Generates a hash code for the Employee based on its ID.
@@ -182,12 +194,12 @@ public class Employee{
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", startDate=" + startDate +
+                ", role=" + role +
                 ", sickDays=" + sickDays +
                 ", vacationDays=" + vacationDays +
                 ", pensionFund='" + pensionFundName + '\'' +
                 '}';
     }
-
 
     public UserRole getRole() {
         return role;
@@ -207,7 +219,7 @@ public class Employee{
 
 
     public boolean isManager() {
-        return role == UserRole.SHIFT_MANAGER || role == UserRole.HR_MANAGER;
+        return role.isManager();
     }
 
     public boolean isHRManager() {
@@ -218,6 +230,19 @@ public class Employee{
         return role == UserRole.SHIFT_MANAGER;
     }
 
+    public boolean isDriver() {
+        return role == UserRole.DRIVER;
+    }
+
+
+    public boolean isWarehouseWorker() {
+        return role == UserRole.WAREHOUSE_WORKER;
+    }
+
+
+    public boolean isSpecialRole() {
+        return role.isSpecialRole();
+    }
 
     /**
      * Removes a position from the employee's qualified positions.
@@ -225,7 +250,6 @@ public class Employee{
      * @param position The position to remove from qualified positions
      * @return true if the position was successfully removed
      */
-
     public boolean removeQualifiedPosition(Position position) {
         return qualifiedPositions.remove(position);
     }

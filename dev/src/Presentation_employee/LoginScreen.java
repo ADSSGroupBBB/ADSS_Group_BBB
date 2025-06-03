@@ -2,10 +2,6 @@ package Presentation_employee;
 
 import Service_employee.EmployeeDTO;
 
-
-
-import Service_employee.EmployeeDTO;
-
 /**
  * Updated LoginScreen with the new service architecture.
  * Screen for system login with branch information display.
@@ -24,10 +20,11 @@ public class LoginScreen extends BaseScreen {
         displayTitle("Employee Management System - Super-Li");
         displayMessage("Welcome to the Employee Management System");
 
+
         String[] options = {
-                "Login",
-                "Exit"
+                "Login"
         };
+
         int choice;
         do {
             choice = displayMenu("Login Menu", options);
@@ -37,7 +34,7 @@ public class LoginScreen extends BaseScreen {
                     login();
                     break;
                 case 0:
-                    displayMessage("Exiting system...");
+                    displayMessage("Returning to main menu...");
                     break;
             }
         } while (choice != 0 && loggedInEmployee == null);

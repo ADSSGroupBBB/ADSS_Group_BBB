@@ -1,4 +1,4 @@
-package Test_employee;
+package JUnit.Test_employee;
 /**
  * Comprehensive test suite for core domain classes in the employee and shift management system.
  *
@@ -44,7 +44,6 @@ public class DomainTest {
 
     @BeforeEach
     void setUp() {
-        // השתמש ב-EmployeeManagerFactory במקום להשתמש ב-getInstance
         employeeManager = EmployeeManagerFactory.getEmployeeManager();
 
         // Clear any existing data
@@ -59,7 +58,7 @@ public class DomainTest {
         employeeManager.addPosition(managerPosition);
         employeeManager.addPosition(cashierPosition);
 
-        // Create test employees - הוספת פרמטרים של תפקיד וסיסמה
+
         employee1 = new Employee("123456789", "Sapir", "aa", "IL12-1234-1234-1234",
                 LocalDate.of(2023, 1, 1), 35.0, UserRole.SHIFT_MANAGER, "password1",
                 5, 10, "Menorah");
@@ -393,7 +392,6 @@ class ShiftTest {
 
     @BeforeEach
     void setUp() {
-        // השתמש ב-EmployeeManagerFactory במקום להשתמש ב-getInstance
         employeeManager = EmployeeManagerFactory.getEmployeeManager();
 
         testDate = LocalDate.of(2025, 4, 15); // A fixed test date
@@ -404,7 +402,6 @@ class ShiftTest {
         managerPosition = new Position("Shift Manager", true);
         cashierPosition = new Position("Cashier", false);
 
-        // עדכון הקונסטרקטורים
         employee1 = new Employee("123456789", "John", "Doe", "IL12-1234-1234-1234",
                 LocalDate.of(2023, 1, 1), 35.0, Employee.UserRole.SHIFT_MANAGER, "pass1", 5, 12, "Harel");
         employee2 = new Employee("987654321", "Jane", "Smith", "IL12-5678-5678-5678",
@@ -424,18 +421,17 @@ class ShiftTest {
 
     @Test
     void testShiftCreation() {
-        // קבלת שעות משמרת דינמיות מהמנהל - שים לב לשימוש ב-employeeManager במקום ב-getInstance
         String[] morningHours = employeeManager.getShiftHours(ShiftType.MORNING);
         String[] eveningHours = employeeManager.getShiftHours(ShiftType.EVENING);
 
-        // בדיקות עבור משמרת בוקר
+
         assertEquals("2025-04-15_morning", morningShift.getId());
         assertEquals(testDate, morningShift.getDate());
         assertEquals(ShiftType.MORNING, morningShift.getShiftType());
         assertEquals(java.time.LocalTime.parse(morningHours[0]), morningShift.getStartTime());
         assertEquals(java.time.LocalTime.parse(morningHours[1]), morningShift.getEndTime());
 
-        // בדיקות עבור משמרת ערב
+
         assertEquals("2025-04-15_evening", eveningShift.getId());
         assertEquals(ShiftType.EVENING, eveningShift.getShiftType());
         assertEquals(java.time.LocalTime.parse(eveningHours[0]), eveningShift.getStartTime());

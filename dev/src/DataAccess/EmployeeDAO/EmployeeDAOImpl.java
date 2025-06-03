@@ -2,7 +2,7 @@ package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.EmployeeDAO;
 import DataAccess.EmployeeInterface.QualificationDAO;
-import util.EmployeeDatabase;
+import util.WrapperDatabase;
 import Service_employee.EmployeeDTO;
 import Domain_employee.Employee.UserRole;
 
@@ -27,7 +27,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE id = ?
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
@@ -66,7 +66,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees ORDER BY id
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -103,7 +103,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE branch_address = ? ORDER BY id
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, branchAddress);
@@ -142,7 +142,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE role = ? ORDER BY id
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, role);
@@ -181,7 +181,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employee.getId());
@@ -213,7 +213,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             WHERE id = ?
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employee.getFirstName());
@@ -241,7 +241,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             WHERE sa.employee_id = ? AND s.date > date('now')
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement checkPs = conn.prepareStatement(checkShifts)) {
 
             checkPs.setString(1, id);
@@ -254,7 +254,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 
         // Delete employee (qualifications and availability will be deleted by CASCADE)
         String sql = "DELETE FROM employees WHERE id = ?";
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);

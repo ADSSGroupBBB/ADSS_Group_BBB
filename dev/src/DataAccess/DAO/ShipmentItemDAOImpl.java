@@ -12,7 +12,7 @@ public class ShipmentItemDAOImpl implements ShipmentItemDAO {
 
     @Override
     public Optional<ShipmentItemDTO> findByName(String name) throws SQLException {
-        String sql = "SELECT name, weight, amount FROM shipment_items WHERE name = ?";
+        String sql = "SELECT name, weight FROM shipment_items WHERE name = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
@@ -20,7 +20,7 @@ public class ShipmentItemDAOImpl implements ShipmentItemDAO {
                     ShipmentItemDTO item = new ShipmentItemDTO(
                             rs.getString("name"),
                             rs.getInt("weight"),
-                            rs.getInt("amount")
+                            1
                     );
                     return Optional.of(item);
                 }
@@ -31,7 +31,7 @@ public class ShipmentItemDAOImpl implements ShipmentItemDAO {
 
     @Override
     public List<ShipmentItemDTO> findAll() throws SQLException {
-        String sql = "SELECT name, weight, amount FROM shipment_items ORDER BY name";
+        String sql = "SELECT name, weight FROM shipment_items ORDER BY name";
         List<ShipmentItemDTO> items = new ArrayList<>();
         try (Statement st = Database.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -39,47 +39,10 @@ public class ShipmentItemDAOImpl implements ShipmentItemDAO {
                 items.add(new ShipmentItemDTO(
                         rs.getString("name"),
                         rs.getInt("weight"),
-                        rs.getInt("amount")
+                        1
                 ));
             }
         }
         return items;
-    }
-
-    @Override
-    public ShipmentItemDTO save(ShipmentItemDTO item) throws SQLException {
-        if (item.name() == null) {
-            String sql = "INSERT INTO shipment_items (name, quantity) VALUES (?, ?)";
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(2, item.weight());
-                ps.setInt(3, item.amount());
-                ps.executeUpdate();
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        return new ShipmentItemDTO(keys.getString(1), item.weight(), item.amount());
-                    } else {
-                        throw new SQLException("Creating item failed, no ID obtained.");
-                    }
-                }
-            }
-        } else {
-            String sql = "UPDATE shipment_items SET weight = ?, amount = ? WHERE name = ?";
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-                ps.setString(1, item.name());
-                ps.setInt(2, item.weight());
-                ps.setInt(3, item.amount());
-                ps.executeUpdate();
-                return item;
-            }
-        }
-    }
-
-    public boolean deleteByName(String name) throws SQLException {
-        String sql = "DELETE FROM shipment_items WHERE name = ?";
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setString(1, name);
-            int affected = ps.executeUpdate();
-            return affected > 0;
-        }
     }
 }

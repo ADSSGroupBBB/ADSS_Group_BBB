@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.QualificationDAO;
-import util.EmployeeDatabase;
+import util.WrapperDatabase;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class QualificationDAOImpl implements QualificationDAO {
     public boolean addQualification(String employeeId, String positionName) throws SQLException {
         String sql = "INSERT OR IGNORE INTO employee_qualifications (employee_id, position_name) VALUES (?, ?)";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -27,7 +27,7 @@ public class QualificationDAOImpl implements QualificationDAO {
     public boolean removeQualification(String employeeId, String positionName) throws SQLException {
         String sql = "DELETE FROM employee_qualifications WHERE employee_id = ? AND position_name = ?";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -42,7 +42,7 @@ public class QualificationDAOImpl implements QualificationDAO {
         List<String> qualifications = new ArrayList<>();
         String sql = "SELECT position_name FROM employee_qualifications WHERE employee_id = ? ORDER BY position_name";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -66,7 +66,7 @@ public class QualificationDAOImpl implements QualificationDAO {
             ORDER BY e.first_name, e.last_name
         """;
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, positionName);
@@ -83,7 +83,7 @@ public class QualificationDAOImpl implements QualificationDAO {
     public boolean hasQualification(String employeeId, String positionName) throws SQLException {
         String sql = "SELECT COUNT(*) FROM employee_qualifications WHERE employee_id = ? AND position_name = ?";
 
-        try (Connection conn = EmployeeDatabase.getConnection();
+        try (Connection conn = WrapperDatabase.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);

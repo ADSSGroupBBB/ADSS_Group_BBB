@@ -14,7 +14,8 @@ public class ZonesMenu {
         System.out.println("Add Shipment Zone selected.");
         Scanner scanner = new Scanner(System.in);
         String name = "";
-
+        System.out.println("List of current zones in the system: ");
+        System.out.println(za.printZones());
         // Loop to ensure the name is not empty
         while (true) {
             System.out.print("Enter Shipment zone name: ");
@@ -37,6 +38,8 @@ public class ZonesMenu {
     // Method to update or delete an existing shipping zone
     public void updateOrDeleteShipmentZone() throws SQLException {
         System.out.println("Update/Delete Shipment Zone selected.");
+        System.out.println("List of current zones in the system: ");
+        System.out.println(za.printZones());
         Scanner scanner = new Scanner(System.in);
         String zoneName = "";
 
@@ -61,8 +64,12 @@ public class ZonesMenu {
         int choice = scanner.nextInt(); // Read user's choice
 
         if (choice == 1) {
-            // If user chose to delete the zone
-            System.out.println(za.deleteZone(zoneName)); // Call to service layer to delete the zone
+            try {
+                // If user chose to delete the zone
+                System.out.println(za.deleteZone(zoneName)); // Call to service layer to delete the zone
+            } catch (SQLException e){
+                System.out.println("Cant delete this zone because it is part of another location.");
+            }
         }
         else if(choice == 2) {
             // If user chose to change the rank of the zone

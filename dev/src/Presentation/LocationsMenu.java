@@ -1,16 +1,23 @@
 package Presentation;
 
+import Service.DeliveriesApplication;
 import Service.LocationApplication;
+import Service.ZonesApplication;
 
 import java.sql.SQLException;
 import java.util.Scanner;
 
+
 public class LocationsMenu {
-    private static LocationApplication ua = new LocationApplication();
+    private static LocationApplication la = new LocationApplication();
+    private static ZonesApplication za = new ZonesApplication();
+    private static DeliveriesApplication da = new DeliveriesApplication();
+
     // Method to add a new location
     public void addLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("Current locations in the system: (address must be unique)");
+        System.out.println(la.printLocations());
         // Prompt for Contact Name
         System.out.print("Enter Contact Name: ");
         String contactName = scanner.nextLine().trim();
@@ -29,6 +36,8 @@ public class LocationsMenu {
         }
 
         // Prompt for Shipping Zone, handling invalid zone input
+        System.out.println("List of current zones in the system: ");
+        System.out.println(za.printZones());
         String zone = null;
         while (zone == null) {
             System.out.print("Enter Shipping Zone: ");
@@ -40,28 +49,35 @@ public class LocationsMenu {
         }
 
         // Call the service method to insert the new location
-        System.out.println(ua.insertLocation(contactName, contactNum, address, zone));
+        System.out.println(la.insertLocation(contactName, contactNum, address, zone));
     }
 
     // Method to delete an existing location
     public void deleteLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("Current locations in the system:");
+        System.out.println(la.printLocations());
         // Prompt for the address of the location to delete
         System.out.print("Enter Address of location to delete: ");
         String address = scanner.nextLine().trim();
-
-        // Call the service method to delete the location
-        System.out.println(ua.deleteLocation(address));
+        try {
+            // Call the service method to delete the location
+            System.out.println(la.deleteLocation(address));
+        } catch (SQLException e){
+            System.out.println("Cant delete this location because it is part of a delivery.");
+        }
     }
     public void addItemToLocation() throws SQLException {
         Scanner scanner = new Scanner(System.in);
-
+        System.out.println("Current locations in the system:");
+        System.out.println(la.printLocations());
         // Prompt for the location address
         System.out.print("Enter Location Address: ");
         String address = scanner.nextLine().trim();
 
-        // Prompt for the item name
+        System.out.println("Items known to our store:");
+        System.out.println(da.printItems());
+
         System.out.print("Enter Item Name: ");
         String itemName = scanner.nextLine().trim();
 
@@ -80,7 +96,7 @@ public class LocationsMenu {
         }
 
         // Call the service layer without weight parameter
-        String result = ua.addItemToLocation(address, itemName, quantity);
+        String result = la.addItemToLocation(address, itemName, quantity);
         System.out.println(result);
     }
 }

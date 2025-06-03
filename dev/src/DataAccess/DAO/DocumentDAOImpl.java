@@ -2,6 +2,7 @@ package DataAccess.DAO;
 
 import DTO.*;
 import DataAccess.Interface.DocumentDAO;
+import DataAccess.Interface.LocationDAO;
 import util.Database;
 
 import java.sql.*;
@@ -13,16 +14,16 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     public Optional<DocumentDTO> findById(String documentId) throws SQLException {
-        String sql = "SELECT document_id, date, truck_id, dep_hour, driver_id, dep_from, event_message FROM documents WHERE document_id = ?";
+        String sql = "SELECT doc_id, date, truck_id, dep_hour, driver_id, dep_from, event_message FROM documents WHERE doc_id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, documentId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    List<ShipmentItemDTO> items = findItemsByDocumentId(documentId);
                     List<LocationDTO> destinations = findDestinationsByDocumentId(documentId);
+                    List<ShipmentItemDTO> items = findItemsByDocumentId(documentId);
 
                     DocumentDTO doc = new DocumentDTO(
-                            rs.getString("documentId"),
+                            rs.getString("doc_id"),
                             items,
                             rs.getString("date"),
                             rs.getString("truck_id"),
@@ -42,11 +43,11 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Override
     public List<DocumentDTO> findAll() throws SQLException {
         List<DocumentDTO> documents = new ArrayList<>();
-        String sql = "SELECT document_id FROM documents ORDER BY document_id";
+        String sql = "SELECT doc_id FROM documents";
         try (Statement st = Database.getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                String docId = rs.getString("document_id");
+                String docId = rs.getString("doc_id");
                 findById(docId).ifPresent(documents::add);
             }
         }
@@ -55,7 +56,7 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     public DocumentDTO save(DocumentDTO doc) throws SQLException {
-        String sql = "INSERT INTO documents (document_id, date, truck_id, dep_hour, driver_id, dep_from, event_message) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO documents (doc_id, date, truck_id, dep_hour, driver_id, dep_from, event_message) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, doc.docID());
             ps.setString(2, doc.date());
@@ -90,10 +91,10 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     public int getId(String document_id) throws SQLException{
-        String sql = "SELECT id FROM documents WHERE document_id = ?";
-        try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT id FROM documents WHERE doc_id = ?";
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)){
+            ps.setString(1, document_id);
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
                 return rs.wasNull() ? -1 : id; // null if table is empty
@@ -105,7 +106,7 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     private List<ShipmentItemDTO> findItemsByDocumentId(String docId) throws SQLException {
         List<ShipmentItemDTO> items = new ArrayList<>();
-        String sql = "SELECT name, weight, amount FROM shipment_items WHERE document_id = ?";
+        String sql = "SELECT name, weight, amount FROM doc_items WHERE doc_id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, docId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -124,25 +125,15 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     private List<LocationDTO> findDestinationsByDocumentId(String docId) throws SQLException {
         List<LocationDTO> destinations = new ArrayList<>();
-        String sql = "SELECT address, contact_name, phone, zoneName, zoneRank FROM document_destinations WHERE document_id = ?";
+        String sql = "SELECT address FROM doc_locations WHERE doc_id = ?";
 
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, docId);
+            LocationDAO lDao = new LocationDAOImpl();
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    ShippingZoneDTO zone = new ShippingZoneDTO(
-                            rs.getString("zoneName"),
-                            rs.getInt("zoneRank")
-                    );
-
-                    LocationDTO loc = new LocationDTO(
-                            rs.getString("address"),
-                            rs.getString("contact_name"),
-                            rs.getString("phone"),
-                            zone
-                    );
-
-                    destinations.add(loc);
+                    Optional<LocationDTO> loc = lDao.findByAddress(rs.getString("address"));
+                    loc.ifPresent(destinations::add);
                 }
             }
         }
@@ -151,7 +142,7 @@ public class DocumentDAOImpl implements DocumentDAO {
     }
 
     private void saveItems(String docId, List<ShipmentItemDTO> items) throws SQLException {
-        String sql = "INSERT INTO shipment_items (document_id, name, weight, amount) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO doc_items (doc_id, name, weight, amount) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             for (ShipmentItemDTO item : items) {
                 ps.setString(1, docId);
@@ -165,13 +156,11 @@ public class DocumentDAOImpl implements DocumentDAO {
     }
 
     private void saveDestinations(String docId, List<LocationDTO> destinations) throws SQLException {
-        String sql = "INSERT INTO doc_locations (document_id, address, contact_name, phone) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO doc_locations (doc_id, address) VALUES (?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             for (LocationDTO loc : destinations) {
                 ps.setString(1, docId);
                 ps.setString(2, loc.address());
-                ps.setString(3, loc.contact_name());
-                ps.setString(4, loc.contact_num());
                 ps.addBatch();
             }
             ps.executeBatch();

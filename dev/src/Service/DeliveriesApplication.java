@@ -77,4 +77,8 @@ public class DeliveriesApplication {
     public String endDelivery(String doc_id) throws SQLException {
         return dc.endDelivery(doc_id); // Delegate to UserController to end the delivery and finalize the document
     }
+
+    public String printItems() throws SQLException{
+        return dc.printItems();
+    }
 }

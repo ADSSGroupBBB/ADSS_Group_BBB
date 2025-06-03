@@ -83,6 +83,8 @@ public class EmployeeManagementScreen extends BaseScreen {
     /**
      * Displays a form for adding a new employee to the system with branch selection.
      */
+
+
     private void addNewEmployee() {
         displayTitle("Add New Employee");
 
@@ -122,8 +124,12 @@ public class EmployeeManagementScreen extends BaseScreen {
             }
         }
 
-        // Branch selection
+
         String branchAddress = selectBranchForEmployee();
+        if (branchAddress == null) {
+            displayError("Employee creation canceled - branch assignment is required");
+            return;
+        }
 
         // Check if should be a manager
         boolean isManager = getBooleanInput("Is this employee a manager?");
@@ -152,8 +158,7 @@ public class EmployeeManagementScreen extends BaseScreen {
         }
 
         if (success) {
-            displayMessage("Employee added successfully!" +
-                    (branchAddress != null ? " Assigned to branch: " + branchAddress : ""));
+            displayMessage("Employee added successfully! Assigned to branch: " + branchAddress);
         } else {
             displayError("Error adding employee");
         }
@@ -180,10 +185,11 @@ public class EmployeeManagementScreen extends BaseScreen {
     /**
      * Displays employees filtered by branch.
      */
+
+
     private void displayEmployeesByBranch() {
         displayTitle("Employees by Branch");
 
-        // Show options: specific branch or employees without branch
         List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
@@ -191,44 +197,35 @@ public class EmployeeManagementScreen extends BaseScreen {
             return;
         }
 
-        String[] options = new String[branches.size() + 1];
+
+        String[] options = new String[branches.size()];
         for (int i = 0; i < branches.size(); i++) {
             options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
         }
-        options[branches.size()] = "Employees without branch assignment";
 
-        int choice = displayMenu("Select Branch or Option", options);
+        int choice = displayMenu("Select Branch", options);
 
         if (choice == 0) {
             return;
         }
 
-        List<EmployeeDTO> employees;
-        String title;
+        BranchDTO selectedBranch = branches.get(choice - 1);
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService()
+                .getEmployeesByBranch(selectedBranch.getAddress());
 
-        if (choice <= branches.size()) {
-            // Specific branch selected
-            BranchDTO selectedBranch = branches.get(choice - 1);
-            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
-            title = "Employees at " + selectedBranch.getAddress();
-        } else {
-            // Employees without branch
-            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
-                    .filter(emp -> !emp.hasBranch())
-                    .toList();
-            title = "Employees without branch assignment";
-        }
+        String title = "Employees at " + selectedBranch.getAddress();
 
         displayTitle(title);
-
         if (employees.isEmpty()) {
-            displayMessage("No employees found");
+            displayMessage("No employees found at this branch");
         } else {
             for (EmployeeDTO employee : employees) {
                 displayEmployeeSummary(employee);
             }
         }
     }
+
+
 
     /**
      * Updates an employee's branch assignment.
@@ -265,35 +262,39 @@ public class EmployeeManagementScreen extends BaseScreen {
     /**
      * Helper method to select a branch for employee assignment.
      */
+
+
     private String selectBranchForEmployee() {
         List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
-            displayMessage("No branches available. Employee will be created without branch assignment.");
+            displayError("Cannot create employee: No branches available in the system.");
+            displayError("Please ensure branches exist in the delivery module first.");
             return null;
         }
 
-        // Add option for no branch assignment
-        String[] options = new String[branches.size() + 1];
-        for (int i = 0; i < branches.size(); i++) {
-            options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
-        }
-        options[branches.size()] = "No branch assignment";
 
-        int choice = displayMenu("Select Branch", options);
+        String[] options = new String[branches.size()];
+        for (int i = 0; i < branches.size(); i++) {
+            BranchDTO branch = branches.get(i);
+            options[i] = branch.getAddress() + " (" + branch.getZoneName() + ")";
+        }
+
+        int choice = displayMenu("Select Branch (Required)", options);
 
         if (choice == 0) {
             return null; // User canceled
-        } else if (choice <= branches.size()) {
-            return branches.get(choice - 1).getAddress();
         } else {
-            return null; // No branch assignment
+            return branches.get(choice - 1).getAddress();
         }
     }
+
 
     /**
      * Helper method to display employee summary with branch info.
      */
+
+
     private void displayEmployeeSummary(EmployeeDTO employee) {
         String roleStr = "";
         if (employee.isHRManager()) {
@@ -302,7 +303,7 @@ public class EmployeeManagementScreen extends BaseScreen {
             roleStr = " (Shift Manager)";
         }
 
-        String branchInfo = employee.hasBranch() ? " - Branch: " + employee.getBranchAddress() : " - No branch";
+        String branchInfo = " - Branch: " + employee.getBranchAddress();
 
         displayMessage(String.format("%s: %s %s%s (Start Date: %s)%s",
                 employee.getId(),

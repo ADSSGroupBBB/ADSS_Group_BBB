@@ -114,10 +114,10 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
         displayEmployeeAvailabilityInfo(employee);
     }
 
+
     private void displayAvailabilityByBranch() {
         displayTitle("Employee Availability by Branch");
 
-        // Option to view specific branch or employees without branch
         List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
@@ -125,38 +125,26 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             return;
         }
 
-        String[] options = new String[branches.size() + 1];
+        String[] options = new String[branches.size()];
         for (int i = 0; i < branches.size(); i++) {
             options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
         }
-        options[branches.size()] = "Employees without branch assignment";
 
-        int choice = displayMenu("Select Branch or Option", options);
+        int choice = displayMenu("Select Branch", options);
 
         if (choice == 0) {
             return;
         }
 
-        List<EmployeeDTO> employees;
-        String title;
-
-        if (choice <= branches.size()) {
-            // Specific branch selected
-            Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
-            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
-            title = "Availability at " + selectedBranch.getAddress();
-        } else {
-            // Employees without branch
-            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
-                    .filter(emp -> !emp.hasBranch())
-                    .collect(Collectors.toList());
-            title = "Availability - Employees without branch";
-        }
+        Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService()
+                .getEmployeesByBranch(selectedBranch.getAddress());
+        String title = "Availability at " + selectedBranch.getAddress();
 
         displayTitle(title);
 
         if (employees.isEmpty()) {
-            displayMessage("No employees found");
+            displayMessage("No employees found at this branch");
             return;
         }
 
@@ -292,7 +280,6 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void generateBranchAvailabilityReport() {
         displayTitle("Branch Availability Report");
 
-        // Select branch
         List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
@@ -300,11 +287,11 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             return;
         }
 
-        String[] options = new String[branches.size() + 1];
+        // הסרנו את האפשרות "Employees without branch assignment"
+        String[] options = new String[branches.size()];
         for (int i = 0; i < branches.size(); i++) {
             options[i] = branches.get(i).getAddress() + " (" + branches.get(i).getZoneName() + ")";
         }
-        options[branches.size()] = "Employees without branch assignment";
 
         int choice = displayMenu("Select Branch for Report", options);
 
@@ -312,24 +299,15 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             return;
         }
 
-        List<EmployeeDTO> employees;
-        String title;
-
-        if (choice <= branches.size()) {
-            Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
-            employees = navigationManager.getEmployeeService().getEmployeesByBranch(selectedBranch.getAddress());
-            title = "Availability Report - " + selectedBranch.getAddress();
-        } else {
-            employees = navigationManager.getEmployeeService().getAllEmployees().stream()
-                    .filter(emp -> !emp.hasBranch())
-                    .collect(Collectors.toList());
-            title = "Availability Report - Employees without branch";
-        }
+        Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+        List<EmployeeDTO> employees = navigationManager.getEmployeeService()
+                .getEmployeesByBranch(selectedBranch.getAddress());
+        String title = "Availability Report - " + selectedBranch.getAddress();
 
         displayTitle(title);
 
         if (employees.isEmpty()) {
-            displayMessage("No employees found");
+            displayMessage("No employees found at this branch");
             return;
         }
 

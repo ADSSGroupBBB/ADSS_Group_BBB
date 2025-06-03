@@ -11,17 +11,27 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for the EmployeeService class with updated DAO architecture.
+ * Unit tests for the EmployeeService class with updated DAO architecture and mandatory branch assignment.
  */
 public class EmployeeServiceTest {
 
     private EmployeeService employeeService;
     private PositionService positionService;
+    private BranchService branchService;
+    private String testBranchAddress;
 
     @BeforeEach
     void setUp() {
         employeeService = new EmployeeService();
         positionService = new PositionService();
+        branchService = new BranchService();
+
+        // Get first available branch for testing
+        List<BranchDTO> branches = branchService.getAllBranches();
+        if (branches.isEmpty()) {
+            fail("No branches available for testing. Ensure database has branch data.");
+        }
+        testBranchAddress = branches.get(0).getAddress();
 
         // Clear existing data before each test (keep admin)
         List<EmployeeDTO> existingEmployees = employeeService.getAllEmployees();
@@ -35,15 +45,17 @@ public class EmployeeServiceTest {
         positionService.addPosition("Shift Manager", true);
         positionService.addPosition("Cashier", false);
 
-        // Add employees
+        // Add employees - ALL WITH MANDATORY BRANCH ASSIGNMENT
         employeeService.addManagerEmployee("1001", "John", "Smith", "IL123456",
-                LocalDate.of(2023, 1, 1), 35.0, "HR_MANAGER", "hr123", 5, 10, "Fund1");
+                LocalDate.of(2023, 1, 1), 35.0, "HR_MANAGER", "hr123",
+                5, 10, "Fund1", testBranchAddress);
 
         employeeService.addManagerEmployee("1002", "Jane", "Doe", "IL654321",
-                LocalDate.of(2023, 2, 1), 30.0, "SHIFT_MANAGER", "sm123", 6, 12, "Fund2");
+                LocalDate.of(2023, 2, 1), 30.0, "SHIFT_MANAGER", "sm123",
+                6, 12, "Fund2", testBranchAddress);
 
         employeeService.addEmployee("1003", "Bob", "Brown", "IL111222",
-                LocalDate.of(2023, 3, 1), 25.0, 4, 8, "Fund3");
+                LocalDate.of(2023, 3, 1), 25.0, 4, 8, "Fund3", testBranchAddress);
 
         // Add qualifications
         positionService.addQualificationToEmployee("1001", "Shift Manager");
@@ -70,6 +82,15 @@ public class EmployeeServiceTest {
         assertEquals("John Smith", hrManager.getFullName());
         assertEquals("Jane Doe", shiftManager.getFullName());
         assertEquals("Bob Brown", regular.getFullName());
+
+        // Verify all employees have branch assignments
+        assertTrue(hrManager.hasBranch(), "HR Manager should have branch assignment");
+        assertTrue(shiftManager.hasBranch(), "Shift Manager should have branch assignment");
+        assertTrue(regular.hasBranch(), "Regular employee should have branch assignment");
+
+        assertEquals(testBranchAddress, hrManager.getBranchAddress(), "HR Manager should be in test branch");
+        assertEquals(testBranchAddress, shiftManager.getBranchAddress(), "Shift Manager should be in test branch");
+        assertEquals(testBranchAddress, regular.getBranchAddress(), "Regular employee should be in test branch");
     }
 
     @Test
@@ -121,9 +142,9 @@ public class EmployeeServiceTest {
 
     @Test
     void testAddNewEmployeeWithRole() {
-        // Add employee with Shift Manager role
+        // Add employee with Shift Manager role - WITH BRANCH
         boolean addResult = employeeService.addManagerEmployee("1004", "Test", "Manager", "IL999888",
-                LocalDate.now(), 40.0, "SHIFT_MANAGER", "pass123", 0, 0, "TestFund");
+                LocalDate.now(), 40.0, "SHIFT_MANAGER", "pass123", 0, 0, "TestFund", testBranchAddress);
         assertTrue(addResult, "Should successfully add new manager employee");
 
         // Verify employee added correctly
@@ -131,15 +152,43 @@ public class EmployeeServiceTest {
         assertNotNull(newEmployee, "New employee should exist");
         assertEquals("Test Manager", newEmployee.getFullName());
         assertTrue(newEmployee.isShiftManager(), "New employee should be Shift Manager");
+        assertTrue(newEmployee.hasBranch(), "New employee should have branch assignment");
+        assertEquals(testBranchAddress, newEmployee.getBranchAddress(), "New employee should be in test branch");
 
-        // Add regular employee
+        // Add regular employee - WITH BRANCH
         boolean addRegularResult = employeeService.addEmployee("1005", "Regular", "Employee", "IL777666",
-                LocalDate.now(), 35.0, 0, 0, "TestFund");
+                LocalDate.now(), 35.0, 0, 0, "TestFund", testBranchAddress);
         assertTrue(addRegularResult, "Should successfully add regular employee");
 
         EmployeeDTO regularEmployee = employeeService.getEmployeeDetails("1005");
         assertNotNull(regularEmployee, "Regular employee should exist");
         assertFalse(regularEmployee.isManager(), "Regular employee should not be manager");
+        assertTrue(regularEmployee.hasBranch(), "Regular employee should have branch assignment");
+        assertEquals(testBranchAddress, regularEmployee.getBranchAddress(), "Regular employee should be in test branch");
+    }
+
+    @Test
+    void testAddEmployeeWithoutBranchFails() {
+        // Test that adding employees without branch fails
+        // Note: The old methods without branch are removed/deprecated
+        // This test verifies the system enforces branch requirement
+
+        // Get all employees before attempt
+        int employeeCountBefore = employeeService.getAllEmployees().size();
+
+        // Try to create employee with null branch - should fail
+        boolean addResult = employeeService.addEmployee("1007", "Test", "Employee", "IL888999",
+                LocalDate.now(), 30.0, 5, 10, "TestFund", null);
+        assertFalse(addResult, "Should fail to add employee without branch");
+
+        // Try to create employee with empty branch - should fail
+        boolean addResult2 = employeeService.addEmployee("1008", "Test2", "Employee2", "IL777888",
+                LocalDate.now(), 30.0, 5, 10, "TestFund", "");
+        assertFalse(addResult2, "Should fail to add employee with empty branch");
+
+        // Verify no employees were actually added
+        int employeeCountAfter = employeeService.getAllEmployees().size();
+        assertEquals(employeeCountBefore, employeeCountAfter, "No employees should have been added");
     }
 
     @Test
@@ -157,6 +206,14 @@ public class EmployeeServiceTest {
         assertTrue(foundHR, "Should find HR Manager");
         assertTrue(foundSM, "Should find Shift Manager");
         assertTrue(foundRegular, "Should find Regular Employee");
+
+        // Verify all employees (except possibly admin) have branches
+        for (EmployeeDTO employee : allEmployees) {
+            if (!employee.getId().equals("admin")) {
+                assertTrue(employee.hasBranch(),
+                        "Employee " + employee.getId() + " should have branch assignment");
+            }
+        }
     }
 
     @Test
@@ -238,25 +295,74 @@ public class EmployeeServiceTest {
     @Test
     void testBranchFunctionality() {
         // Test branch service integration
-        BranchService branchService = new BranchService();
         List<BranchDTO> branches = branchService.getAllBranches();
 
         assertNotNull(branches, "Branches list should not be null");
+        assertFalse(branches.isEmpty(), "Should have at least one branch");
 
-        // If branches exist, test branch assignment
-        if (!branches.isEmpty()) {
-            String branchAddress = branches.get(0).getAddress();
+        // Test branch assignment
+        String branchAddress = branches.get(0).getAddress();
 
-            // Add employee with branch assignment
-            boolean addResult = employeeService.addEmployee("1006", "Branch", "Employee", "IL123789",
-                    LocalDate.now(), 30.0, 5, 10, "TestFund", branchAddress);
-            assertTrue(addResult, "Should successfully add employee with branch");
+        // Add employee with branch assignment
+        boolean addResult = employeeService.addEmployee("1006", "Branch", "Employee", "IL123789",
+                LocalDate.now(), 30.0, 5, 10, "TestFund", branchAddress);
+        assertTrue(addResult, "Should successfully add employee with branch");
 
-            EmployeeDTO branchEmployee = employeeService.getEmployeeDetails("1006");
-            assertNotNull(branchEmployee, "Branch employee should exist");
-            assertEquals(branchAddress, branchEmployee.getBranchAddress(),
-                    "Employee should be assigned to correct branch");
+        EmployeeDTO branchEmployee = employeeService.getEmployeeDetails("1006");
+        assertNotNull(branchEmployee, "Branch employee should exist");
+        assertEquals(branchAddress, branchEmployee.getBranchAddress(),
+                "Employee should be assigned to correct branch");
+        assertTrue(branchEmployee.hasBranch(), "Employee should have branch assignment");
+
+        // Test getting employees by branch
+        List<EmployeeDTO> branchEmployees = employeeService.getEmployeesByBranch(branchAddress);
+        assertNotNull(branchEmployees, "Branch employees list should not be null");
+        assertTrue(branchEmployees.size() >= 4, "Should have at least 4 employees in test branch");
+
+        // Verify all returned employees are from the correct branch
+        for (EmployeeDTO emp : branchEmployees) {
+            assertEquals(branchAddress, emp.getBranchAddress(),
+                    "All employees should be from the specified branch");
         }
+    }
+
+    @Test
+    void testBranchService() {
+        // Test getting all branches
+        List<BranchDTO> branches = branchService.getAllBranches();
+        assertNotNull(branches, "Branches list should not be null");
+        assertFalse(branches.isEmpty(), "Should have at least one branch");
+
+        // Test getting specific branch
+        String testAddress = branches.get(0).getAddress();
+        BranchDTO specificBranch = branchService.getBranchByAddress(testAddress);
+        assertNotNull(specificBranch, "Should find the specific branch");
+        assertEquals(testAddress, specificBranch.getAddress(), "Branch address should match");
+
+        // Test branch existence check
+        assertTrue(branchService.branchExists(testAddress), "Branch should exist");
+        assertFalse(branchService.branchExists("NonExistentBranch"), "Non-existent branch should not exist");
+    }
+
+    @Test
+    void testEmployeeBranchUpdate() {
+        // Get another branch for testing
+        List<BranchDTO> branches = branchService.getAllBranches();
+        if (branches.size() < 2) {
+            // Skip test if only one branch available
+            return;
+        }
+
+        String newBranchAddress = branches.get(1).getAddress();
+
+        // Update employee branch
+        boolean updateResult = employeeService.updateEmployeeBranch("1003", newBranchAddress);
+        assertTrue(updateResult, "Should successfully update employee branch");
+
+        // Verify branch updated
+        EmployeeDTO updatedEmployee = employeeService.getEmployeeDetails("1003");
+        assertEquals(newBranchAddress, updatedEmployee.getBranchAddress(),
+                "Employee should be assigned to new branch");
     }
 
     @Test
@@ -272,5 +378,40 @@ public class EmployeeServiceTest {
         // Test removing non-existent employee
         boolean removeNonExistentResult = employeeService.removeEmployee("9999");
         assertFalse(removeNonExistentResult, "Should not remove non-existent employee");
+    }
+
+    @Test
+    void testUpdateEmployeeDetails() {
+        String employeeId = "1003";
+
+        // Test updating first name
+        assertTrue(employeeService.updateEmployeeFirstName(employeeId, "Robert"),
+                "Should update first name");
+        EmployeeDTO updated = employeeService.getEmployeeDetails(employeeId);
+        assertEquals("Robert", updated.getFirstName(), "First name should be updated");
+
+        // Test updating last name
+        assertTrue(employeeService.updateEmployeeLastName(employeeId, "Smith"),
+                "Should update last name");
+        updated = employeeService.getEmployeeDetails(employeeId);
+        assertEquals("Smith", updated.getLastName(), "Last name should be updated");
+
+        // Test updating salary
+        assertTrue(employeeService.updateEmployeeSalary(employeeId, 35.0),
+                "Should update salary");
+        updated = employeeService.getEmployeeDetails(employeeId);
+        assertEquals(35.0, updated.getSalary(), "Salary should be updated");
+
+        // Test updating sick days
+        assertTrue(employeeService.updateEmployeeSickDays(employeeId, 10),
+                "Should update sick days");
+        updated = employeeService.getEmployeeDetails(employeeId);
+        assertEquals(10, updated.getSickDays(), "Sick days should be updated");
+
+        // Test updating vacation days
+        assertTrue(employeeService.updateEmployeeVacationDays(employeeId, 15),
+                "Should update vacation days");
+        updated = employeeService.getEmployeeDetails(employeeId);
+        assertEquals(15, updated.getVacationDays(), "Vacation days should be updated");
     }
 }
