@@ -58,7 +58,7 @@ public class TrucksController  extends DeliveriesController{
             if (optionalTruck.isPresent()) {
                 TruckDTO truck = optionalTruck.get();
                 Truck newTruck = new Truck(truck.truck_id(), truck.type(), truck.truck_weight(), truck.max_weight());
-                newTruck.setOnDrive(true);
+                newTruck.setOnDrive(truck.onDrive());
                 trucksMap.put(truck.truck_id(), newTruck);
                 if (truck.onDrive()){
                     newTruck.setOnDrive(true);

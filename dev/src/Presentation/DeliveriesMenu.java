@@ -26,12 +26,13 @@ public class DeliveriesMenu {
         DriversApplication dra = new DriversApplication();
 
         System.out.println("Add Delivery selected.");
+        /////////////////////////////////////////////////////////print shifts?
         System.out.println("Enter Delivery date (format: dd/MM/yyyy):");
         String dateInput = scanner.nextLine();  // User enters the delivery date
         System.out.print("Enter delivery hour (format: HH:mm): ");
         String deliveryTime = scanner.nextLine();  // User enters the delivery time
         System.out.print("Enter wanted truck's id: ");
-        System.out.println(ta.printTrucks());
+        System.out.println(ta.printTrucks());////////////////////////////////
         String truckID = scanner.nextLine();
         while (!truckID.equals("-1") && !ta.isAvailableTruck(truckID)) {
             System.out.println("Truck unavailable. Please choose another one.");
@@ -44,7 +45,7 @@ public class DeliveriesMenu {
             System.out.println("Operation cancelled.");
             return;  // Exit or handle cancellation appropriately
         }
-        System.out.print("Enter wanted driver's id: ");
+        System.out.print("Enter wanted driver's id: ");/////////////////////////////////print drivers
         String driverID = scanner.nextLine();
         String res = dra.isAvailableDriver(driverID, truckID);
         System.out.println(res);
@@ -66,7 +67,7 @@ public class DeliveriesMenu {
         if (route == null) {  // If the route is not provided, prompt the user to choose locations
             route = new ArrayList<>();
             System.out.println("Choose origin from known locations: ");
-            System.out.println(la.printLocations());
+            System.out.println(la.printLocations());////////////////////////////////////////
 
             boolean added_succesfully = false;
             while (!res.equals("Location added successfully.")) {  // Keep asking for origin until added successfully
