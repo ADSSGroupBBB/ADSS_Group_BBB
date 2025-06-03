@@ -5,18 +5,18 @@ import java.util.List;
 public class DriverController extends DeliveriesController {
     // Method to insert a new driver
     /**
-    public String insertDriver(String id, String name, List<Integer> licenseList) {
-        Driver new_d = new Driver(id, name, licenseList);
+     public String insertDriver(String id, String name, List<Integer> licenseList) {
+     Driver new_d = new Driver(id, name, licenseList);
 
-        // Check if the driver already exists
-        if (!driversMap.containsKey(id)) {
-            driversMap.put(id, new_d);
-            return "New driver added: " + new_d.toString();
-        } else {
-            return "Driver with the same ID already exist.";
-        }
-    }
-*/
+     // Check if the driver already exists
+     if (!driversMap.containsKey(id)) {
+     driversMap.put(id, new_d);
+     return "New driver added: " + new_d.toString();
+     } else {
+     return "Driver with the same ID already exist.";
+     }
+     }
+     */
     // Method to delete a driver
     public String deleteDriver(String id) {
         if (driversMap.containsKey(id)) {

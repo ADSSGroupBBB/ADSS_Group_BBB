@@ -18,38 +18,31 @@ public class EmployeeService {
         this.employeeController = new EmployeeController();
     }
 
-    // Employee Management
-    public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
-                               LocalDate startDate, double salary, int sickDays, int vacationDays,
-                               String pensionFundName) {
-        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
-                startDate, salary, sickDays, vacationDays, pensionFundName, null);
+public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
+                           LocalDate startDate, double salary, int sickDays, int vacationDays,
+                           String pensionFundName, String branchAddress) {
+
+
+    if (branchAddress == null || branchAddress.trim().isEmpty()) {
+        System.err.println("Error: Branch address is required for all employees");
+        return false;
     }
 
-    public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
-                               LocalDate startDate, double salary, int sickDays, int vacationDays,
-                               String pensionFundName, String branchAddress) {
-        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
-                startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
-    }
+    return employeeController.addEmployee(id, firstName, lastName, bankAccount,
+            startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
+}
 
-    public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
-                             LocalDate startDate, double salary, int sickDays, int vacationDays,
-                             String pensionFundName, int[] licenseList){
-        return employeeController.addDriver(id, firstName, lastName, bankAccount,
-                startDate, salary, sickDays, vacationDays, pensionFundName, licenseList);
-    }
-
-    public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
-                                      LocalDate startDate, double salary, String role, String password,
-                                      int sickDays, int vacationDays, String pensionFundName) {
-        return employeeController.addManagerEmployee(id, firstName, lastName, bankAccount,
-                startDate, salary, role, password, sickDays, vacationDays, pensionFundName, null);
-    }
 
     public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
                                       LocalDate startDate, double salary, String role, String password,
                                       int sickDays, int vacationDays, String pensionFundName, String branchAddress) {
+
+
+        if (branchAddress == null || branchAddress.trim().isEmpty()) {
+            System.err.println("Error: Branch address is required for all employees");
+            return false;
+        }
+
         return employeeController.addManagerEmployee(id, firstName, lastName, bankAccount,
                 startDate, salary, role, password, sickDays, vacationDays, pensionFundName, branchAddress);
     }
@@ -248,4 +241,12 @@ public class EmployeeService {
     public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
         return employeeController.updateShiftHours(shiftTypeStr, newStart, newEnd);
     }
+
+    public List<EmployeeDTO> getEmployeesWithoutBranch() {
+        return employeeController.getAllEmployees().stream()
+                .filter(emp -> !emp.hasBranch())
+                .toList();
+    }
 }
+
+

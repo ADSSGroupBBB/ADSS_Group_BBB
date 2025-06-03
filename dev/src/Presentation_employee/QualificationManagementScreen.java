@@ -66,7 +66,6 @@ public class QualificationManagementScreen extends BaseScreen {
                     updateRequiredPositions();
                     break;
                 case 0:
-                    // Return to previous menu
                     break;
             }
         } while (choice != 0);

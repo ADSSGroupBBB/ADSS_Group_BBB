@@ -14,6 +14,7 @@ public class BranchDAOImpl implements BranchDAO {
     @Override
     public List<BranchDTO> findAllBranches() throws SQLException {
         List<BranchDTO> branches = new ArrayList<>();
+        // CORRECTED: Only query fields that actually exist in delivery module's locations table
         String sql = "SELECT DISTINCT address, contact_name, contact_num, zone_name FROM locations ORDER BY address";
 
         try (Connection conn = WrapperDatabase.getConnection();
@@ -25,10 +26,12 @@ public class BranchDAOImpl implements BranchDAO {
                         rs.getString("address"),
                         rs.getString("contact_name"),
                         rs.getString("contact_num"),
-                        rs.getString("zone_name")
+                        rs.getString("zone_name")  // Only zone_name exists, not zone_rank
                 );
                 branches.add(branch);
             }
+        } catch (SQLException e) {
+            System.out.println("Could not read branches from delivery module: " + e.getMessage());
         }
         return branches;
     }
@@ -52,6 +55,8 @@ public class BranchDAOImpl implements BranchDAO {
                     return Optional.of(branch);
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("Could not read branch from delivery module: " + e.getMessage());
         }
         return Optional.empty();
     }
@@ -67,6 +72,9 @@ public class BranchDAOImpl implements BranchDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
+        } catch (SQLException e) {
+            System.out.println("Could not check branch existence: " + e.getMessage());
+            return false;
         }
     }
 }

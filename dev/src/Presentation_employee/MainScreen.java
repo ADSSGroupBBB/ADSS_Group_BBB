@@ -1,16 +1,17 @@
 package Presentation_employee;
 
-import Domain_employee.DataInitializationController;
 import Service_employee.EmployeeDTO;
+import java.sql.SQLException;
+import static Presentation.DeliveriesManagerIO.presentingDeliveriesMenu;
 
 /**
- * Updated MainScreen with branch management support.
+ * Updated MainScreen with branch management support and deliveries integration.
  * Serves as the primary navigation hub of the application.
+ * Sample data initialization option removed - using permanent database data.
  */
 public class MainScreen extends BaseScreen {
     private final NavigationManager navigationManager;
     private final EmployeeDTO loggedInEmployee;
-    private final DataInitializationController dataInitializationController;
 
     /**
      * Constructs a MainScreen with the specified navigation manager.
@@ -19,7 +20,6 @@ public class MainScreen extends BaseScreen {
     public MainScreen(NavigationManager navigationManager) {
         this.navigationManager = navigationManager;
         this.loggedInEmployee = navigationManager.getLoggedInEmployee();
-        this.dataInitializationController = new DataInitializationController();
     }
 
     /**
@@ -47,7 +47,7 @@ public class MainScreen extends BaseScreen {
 
         // Different menu options based on user role
         if (loggedInEmployee.isHRManager()) {
-            // HR Managers have access to all features including branch management
+            // HR Managers have access to all features including branch management and deliveries
             options = new String[]{
                     "Employee Management",
                     "Employee Availability",
@@ -56,7 +56,7 @@ public class MainScreen extends BaseScreen {
                     "Shift History",
                     "View Future Shifts",
                     "Branch Management",
-                    "Initialize Sample Data",
+                    "Deliveries Management",
                     "Logout"
             };
         } else if (loggedInEmployee.isShiftManager()) {
@@ -67,7 +67,7 @@ public class MainScreen extends BaseScreen {
                     "Shift Scheduling",
                     "Shift History",
                     "View Future Shifts",
-                    "Initialize Sample Data",
+                    "Deliveries Management",
                     "Logout"
             };
         } else {
@@ -108,7 +108,12 @@ public class MainScreen extends BaseScreen {
                         navigationManager.showBranchManagement();
                         break;
                     case 8:
-                        initializeSampleData();
+
+                        try {
+                            presentingDeliveriesMenu();
+                        } catch (SQLException e) {
+                            displayError("Database error: " + e.getMessage());
+                        }
                         break;
                     case 9:
                         navigationManager.logout();
@@ -136,7 +141,12 @@ public class MainScreen extends BaseScreen {
                         navigationManager.showFutureShifts();
                         break;
                     case 6:
-                        initializeSampleData();
+
+                        try {
+                            presentingDeliveriesMenu();
+                        } catch (SQLException e) {
+                            displayError("Database error: " + e.getMessage());
+                        }
                         break;
                     case 7:
                         navigationManager.logout();
@@ -147,7 +157,6 @@ public class MainScreen extends BaseScreen {
                         return;
                 }
             } else {
-                // Regular employee menu
                 switch (choice) {
                     case 1:
                         navigationManager.showEmployeeAvailability();
@@ -168,26 +177,5 @@ public class MainScreen extends BaseScreen {
                 }
             }
         } while (choice != 0);
-    }
-
-    /**
-     * Initializes the system with sample data.
-     * This option is only available to managers.
-     */
-    private void initializeSampleData() {
-        displayTitle("Initialize Sample Data");
-
-        if (getBooleanInput("Are you sure you want to add sample data to the system?")) {
-            boolean success = dataInitializationController.initializeWithSampleData();
-
-            if (success) {
-                displayMessage("Sample data successfully loaded into the system.");
-                displayMessage("Added employees, positions, shifts, and branch assignments.");
-                displayMessage("Note: Sample data includes employees assigned to available branches.");
-                displayMessage("You can now test the system with this sample data.");
-            } else {
-                displayError("Failed to initialize sample data. Please check the logs for details.");
-            }
-        }
     }
 }

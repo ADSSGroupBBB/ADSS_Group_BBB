@@ -1,14 +1,11 @@
+
+
 package Main;
 
-import Service_employee.EmployeeService;
 import Presentation_employee.NavigationManager;
-import util.Database;
-
 import static Presentation.DeliveriesManagerIO.presentingDeliveriesMenu;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -23,15 +20,6 @@ public class Main {
         System.out.println("===========================================");
         Scanner scanner = new Scanner(System.in);
         int choice;
-        System.out.println("If you want to start with empty database enter 'empty'.");
-        String empty = scanner.nextLine();  // User enters the delivery date
-        if (empty.equals("empty")){
-            System.out.println("Sure? the data will be deleted? (yes/no)");
-            empty = scanner.nextLine();
-            if (Objects.equals(empty, "yes")){
-                Database.initializeEmptyDatabase();
-            }
-        }
 
         System.out.println("Enter your choice: ");
         System.out.println("1. Deliveries menu");
@@ -66,29 +54,6 @@ public class Main {
 
         System.out.println("System shutdown complete.");
     }
-/**
-    private static void initializeFirstUser() {
-        try {
-            EmployeeService employeeController = new EmployeeService();
 
-            // check if there is employee in the system
-            if (employeeController.getAllEmployees().isEmpty()) {
-                System.out.println("No employees found. Creating initial admin user...");
-                // creating the first HR manager
-                boolean success = employeeController.addManagerEmployee("admin", "Admin", "User", "123456",
-                        LocalDate.now(), 100.0, "HR_MANAGER", "admin123",
-                        50, 50, "Migdal");
 
-                if (success) {
-                    System.out.println("Initial admin user created successfully");
-                } else {
-                    System.out.println("Failed to create initial admin user");
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error initializing first user: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
- */
 }

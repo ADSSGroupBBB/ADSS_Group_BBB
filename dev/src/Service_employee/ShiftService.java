@@ -18,12 +18,15 @@ public class ShiftService {
         this.employeeController = new EmployeeController();
     }
 
-    // Shift Creation and Management
-    public List<ShiftDTO> createShiftsForWeek(LocalDate startDate) {
-        return createShiftsForWeek(startDate, null);
-    }
+
 
     public List<ShiftDTO> createShiftsForWeek(LocalDate startDate, String branchAddress) {
+
+        if (branchAddress == null || branchAddress.trim().isEmpty()) {
+            System.out.println("Error: Branch address is required for creating shifts.");
+            return new ArrayList<>();
+        }
+
         List<ShiftDTO> createdShifts = new ArrayList<>();
         LocalDate currentDate = startDate;
 
@@ -37,7 +40,6 @@ public class ShiftService {
             return createdShifts;
         }
 
-        // Create shifts for 7 days (a week)
         for (int i = 0; i < 7; i++) {
             DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 
@@ -48,8 +50,8 @@ public class ShiftService {
                 if (managerAssigned) {
                     createdShifts.add(morningShift);
                 } else {
-                    // Delete shift if no manager could be assigned
-                    System.out.println("No available shift manager for morning shift on " + currentDate + ". Shift not created.");
+                    System.out.println("No available shift manager for morning shift on " + currentDate +
+                            " at " + branchAddress + ". Shift not created.");
                 }
             }
 
@@ -60,8 +62,8 @@ public class ShiftService {
                 if (managerAssigned) {
                     createdShifts.add(eveningShift);
                 } else {
-                    // Delete shift if no manager could be assigned
-                    System.out.println("No available shift manager for evening shift on " + currentDate + ". Shift not created.");
+                    System.out.println("No available shift manager for evening shift on " + currentDate +
+                            " at " + branchAddress + ". Shift not created.");
                 }
             }
 
@@ -103,26 +105,33 @@ public class ShiftService {
         return employeeController.getHistoricalShifts();
     }
 
+
+
     public List<ShiftDTO> getEmployeeShiftHistory(String employeeId) {
-        // Get all historical shifts and filter by employee
-        return employeeController.getHistoricalShifts().stream()
-                .filter(shift -> shift.getAssignments().values().stream()
-                        .anyMatch(employeeName -> {
-                            EmployeeDTO employee = employeeController.getEmployee(employeeId);
-                            return employee != null && employee.getFullName().equals(employeeName);
-                        }))
-                .toList();
+        List<ShiftDTO> historicalShifts = employeeController.getHistoricalShifts();
+        List<ShiftDTO> employeeShifts = new ArrayList<>();
+        for (ShiftDTO shift : historicalShifts) {
+            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {EmployeeDTO employee = employeeController.getEmployee(employeeId);return employee != null && employee.getFullName().equals(employeeName);});
+            if (employeeInShift) {
+                employeeShifts.add(shift);
+            }
+        }
+        return employeeShifts;
     }
 
+
+
+
     public List<ShiftDTO> getEmployeeFutureShifts(String employeeId) {
-        // Get all future shifts and filter by employee
-        return employeeController.getFutureShifts().stream()
-                .filter(shift -> shift.getAssignments().values().stream()
-                        .anyMatch(employeeName -> {
-                            EmployeeDTO employee = employeeController.getEmployee(employeeId);
-                            return employee != null && employee.getFullName().equals(employeeName);
-                        }))
-                .toList();
+        List<ShiftDTO> futureShifts = employeeController.getFutureShifts();
+        List<ShiftDTO> employeeFutureShifts = new ArrayList<>();
+        for (ShiftDTO shift : futureShifts) {
+            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {EmployeeDTO employee = employeeController.getEmployee(employeeId);return employee != null && employee.getFullName().equals(employeeName);});
+            if (employeeInShift) {
+                employeeFutureShifts.add(shift);
+            }
+        }
+        return employeeFutureShifts;
     }
 
     public List<PositionDTO> getMissingPositionsForShift(String shiftId) {
@@ -136,26 +145,41 @@ public class ShiftService {
                 .orElse(null);
     }
 
-    public boolean deleteShift(String shiftId) {
-        return employeeController.removeAssignmentFromShift(shiftId, null); // TODO: Implement proper shift deletion
-    }
 
     // Branch-specific shift operations
     public List<ShiftDTO> getShiftsByBranch(String branchAddress) {
         return employeeController.getShiftsByBranch(branchAddress);
     }
 
+
     public List<ShiftDTO> getFutureShiftsByBranch(String branchAddress) {
-        return employeeController.getShiftsByBranch(branchAddress).stream()
-                .filter(shift -> !shift.getDate().isBefore(LocalDate.now()))
-                .toList();
+        List<ShiftDTO> branchShifts = employeeController.getShiftsByBranch(branchAddress);
+        List<ShiftDTO> futureShifts = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (ShiftDTO shift : branchShifts) {
+            if (!shift.getDate().isBefore(today)) {
+                futureShifts.add(shift);
+            }
+        }
+
+        return futureShifts;
     }
 
+
     public List<ShiftDTO> getHistoricalShiftsByBranch(String branchAddress) {
-        return employeeController.getShiftsByBranch(branchAddress).stream()
-                .filter(shift -> shift.getDate().isBefore(LocalDate.now()))
-                .toList();
+        List<ShiftDTO> branchShifts = employeeController.getShiftsByBranch(branchAddress);
+        List<ShiftDTO> historicalShifts = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        for (ShiftDTO shift : branchShifts) {
+            if (shift.getDate().isBefore(today)) {
+                historicalShifts.add(shift);
+            }
+        }
+
+        return historicalShifts;
     }
+
 
 
     public List<ShiftDTO> getAllShifts() {

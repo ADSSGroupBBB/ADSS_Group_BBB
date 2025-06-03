@@ -31,7 +31,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
     /**
      * Displays the shift scheduling screen if the user has appropriate permissions.
      */
-    @Override
+
     public void display() {
         // Permission check - only managers can access this screen
         if (!loggedInEmployee.isManager()) {
@@ -40,7 +40,6 @@ public class ShiftSchedulingScreen extends BaseScreen {
         }
 
         String[] options = {
-                "Create Shifts for Week",
                 "Create Shifts for Week by Branch",
                 "View Future Shifts",
                 "View Future Shifts by Branch",
@@ -55,27 +54,24 @@ public class ShiftSchedulingScreen extends BaseScreen {
             choice = displayMenu("Shift Scheduling", options);
             switch (choice) {
                 case 1:
-                    createShiftsForWeek();
-                    break;
-                case 2:
                     createShiftsForWeekByBranch();
                     break;
-                case 3:
+                case 2:
                     viewFutureShifts();
                     break;
-                case 4:
+                case 3:
                     viewFutureShiftsByBranch();
                     break;
-                case 5:
+                case 4:
                     assignEmployeeToShift();
                     break;
-                case 6:
+                case 5:
                     removeEmployeeFromShift();
                     break;
-                case 7:
+                case 6:
                     viewMissingPositions();
                     break;
-                case 8:
+                case 7:
                     manageShiftHours();
                     break;
                 case 0:
@@ -85,29 +81,6 @@ public class ShiftSchedulingScreen extends BaseScreen {
         } while (choice != 0);
     }
 
-    /**
-     * Creates shifts for an entire week starting from a specified Sunday date.
-     */
-    private void createShiftsForWeek() {
-        displayTitle("Create Shifts for Week (All Branches)");
-        LocalDate startDate = getStartDate();
-        if (startDate == null) return;
-
-        if (!validateManagerPositions()) return;
-
-        // Create shifts without specific branch assignment
-        List<ShiftDTO> createdShifts = navigationManager.getShiftService().createShiftsForWeek(startDate);
-
-        if (createdShifts.isEmpty()) {
-            displayError("No shifts were created. This may be because:");
-            displayError("1. Shifts already exist for this week");
-            displayError("2. No shift managers are available for the required shifts");
-        } else {
-            displayMessage(createdShifts.size() + " shifts were created successfully for week starting " +
-                    startDate.format(dateFormatter));
-            displayMessage("Shift managers have been automatically assigned to each shift.");
-        }
-    }
 
     /**
      * Creates shifts for a specific branch.
@@ -178,11 +151,16 @@ public class ShiftSchedulingScreen extends BaseScreen {
     /**
      * Helper method to display a list of shifts.
      */
-    private void displayShiftsList(List<ShiftDTO> shifts) {
-        // Sort shifts by date
-        shifts.sort(Comparator.comparing(ShiftDTO::getDate));
 
-        for (ShiftDTO shift : shifts) {
+    private void displayShiftsList(List<ShiftDTO> shifts) {
+        List<ShiftDTO> mutableShifts = new ArrayList<>(shifts);
+
+        // Sort shifts by date AND shift type for consistent ordering
+        mutableShifts.sort(Comparator
+                .comparing(ShiftDTO::getDate)
+                .thenComparing(ShiftDTO::getShiftType));
+
+        for (ShiftDTO shift : mutableShifts) {
             String hasManager = shift.hasShiftManager() ? "Yes" : "No";
             String branchInfo = shift.hasBranch() ? " at " + shift.getBranchAddress() : "";
             displayMessage(shift.getDate().format(dateFormatter) + " - " + shift.getShiftType() +
