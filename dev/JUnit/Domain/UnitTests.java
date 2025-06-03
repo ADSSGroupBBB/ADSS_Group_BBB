@@ -1,4 +1,4 @@
-package Domain;
+package JUnit.Domain;
 import Service.*;
 import org.junit.Before;
 import org.junit.Test;

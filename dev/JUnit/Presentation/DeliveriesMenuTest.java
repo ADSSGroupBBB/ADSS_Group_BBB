@@ -1,4 +1,4 @@
-package Presentation;
+package JUnit.Presentation;
 import Domain.Location;
 import Domain.Shipment_item;
 import Domain.Shipping_Zone;
