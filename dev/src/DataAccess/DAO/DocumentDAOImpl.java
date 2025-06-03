@@ -93,8 +93,8 @@ public class DocumentDAOImpl implements DocumentDAO {
     public int getId(String document_id) throws SQLException{
         String sql = "SELECT id FROM documents WHERE doc_id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)){
-            ps.setString(1, document_id);
-            ResultSet rs = ps.executeQuery();
+             ps.setString(1, document_id);
+             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
                 return rs.wasNull() ? -1 : id; // null if table is empty

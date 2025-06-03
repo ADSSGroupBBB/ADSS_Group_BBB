@@ -1,5 +1,6 @@
 package DataAccess.EmployeeDAO;
 
+import DTO.DriverDTO;
 import DataAccess.EmployeeInterface.EmployeeDAO;
 import DataAccess.EmployeeInterface.QualificationDAO;
 import util.WrapperDatabase;
@@ -201,6 +202,25 @@ public class EmployeeDAOImpl implements EmployeeDAO {
         }
 
         return employee;
+    }
+
+    @Override
+    public DriverDTO saveDriver(DriverDTO driver) throws SQLException {
+        String sql = """
+            INSERT INTO drivers (id, license_number, on_drive) VALUES (?, ?, ?)
+        """;
+
+        try (Connection conn = WrapperDatabase.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, driver.id());
+            ps.setInt(2, driver.license());
+            ps.setInt(3, driver.on_drive());
+
+            ps.executeUpdate();
+        }
+
+        return driver;
     }
 
     @Override

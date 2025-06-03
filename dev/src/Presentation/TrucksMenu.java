@@ -47,7 +47,7 @@ public class TrucksMenu {
             // Calling the method in the UserApplication to delete the truck and printing the result
             System.out.println(ta.deleteTruck(truckId));
         } catch (SQLException e){
-            System.out.println("Cant delete this truck because it is part of an existing delivery.");
-        }
+        System.out.println("Cant delete this truck because it is part of an existing delivery.");
+    }
     }
 }
