@@ -58,7 +58,7 @@ public class SupplierController {
     //check if supplier comes in certain days or only if ordered
     //returns a boolean value
     public boolean checkdaysSup(int supplierNumber,String day) throws SQLException{
-        return this.supRepo.existsDay(supplierNumber,day);
+        return getDays(supplierNumber).contains(day);
     }
     //NameSup setter
     public void setNameSup(int numSupplier,String nameSupplier) throws SQLException{
@@ -115,8 +115,8 @@ public class SupplierController {
 
     //deletes agreement from supplier
     //parameters:int supplierNumber,Agreement agree
-    public void deleteAgreement(int supplierNumber,Agreement agree) throws SQLException{
-        this.supRepo.removeAgreementToSup(supplierNumber,agree.getIDNumber());
+    public void deleteAgreement(int supplierNumber,int agreeId) throws SQLException{
+        this.supRepo.removeAgreementToSup(supplierNumber,agreeId);
     }
     //name getter
     public String getName(int num) throws SQLException{
@@ -151,14 +151,13 @@ public class SupplierController {
         this.supRepo.removeSupplier(numSupplier);
     }
     public boolean isConstantSup(int numSupplier) throws SQLException{
-        return this.supRepo.isConstantSup(numSupplier);
+        if(getDays(numSupplier).size()!=0) {
+            return true;
+        }
+        return false;
     }
     public LinkedList<String> getDays(int numSupplier) throws SQLException{
-        Optional<SupplierDto> supDto=this.supRepo.getSupplier(numSupplier);
-        if (supDto.isPresent()) {
-            return supDto.get().deliveryDays();
-        }
-        return new LinkedList<>();
+        return this.supRepo.getDaysById(numSupplier);
     }
     //turns a String to Days type
     //parameter:String day

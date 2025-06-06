@@ -1,6 +1,7 @@
 package dataAccess;
 
 import Domain.Supplier;
+import dto.SupplierBackDto;
 import dto.SupplierDto;
 
 import java.sql.SQLException;
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 public interface SupplierDao {
     SupplierDto saveSup(SupplierDto sup) throws SQLException;
- String getContactNameById(int supplierNumber) throws SQLException;
+    String getContactNameById(int supplierNumber) throws SQLException;
      boolean findDayById(int supplierNumber, String day) throws SQLException;
      void updateNameSupById(int numSupplier,String nameSupplier) throws SQLException;
      void updateBankAccountSupById(int numSupplier,String bankAccount) throws SQLException;
@@ -22,7 +23,7 @@ public interface SupplierDao {
      void saveAgreeById(int supplierNumber,int agree_id) throws SQLException;
      void removeAgreeById(int supplierNumber,int agree_id) throws SQLException;
      boolean isConstantById(int supplierNumber ) throws SQLException;
-     Optional<SupplierDto> findSupById(int id) throws SQLException;
+    Optional<SupplierDto> findSupById(int id) throws SQLException;
      void removeSupById(int id) throws SQLException;
 
 }

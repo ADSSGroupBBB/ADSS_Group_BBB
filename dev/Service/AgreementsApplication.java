@@ -23,12 +23,10 @@ public class AgreementsApplication {
     public void deleteProFromPeriodAgree(int numSup,int numAgree,int productNumber){
         ac.deleteProductFromPeriodAgree(numAgree,productNumber);
     }
-    public void setRegularDate(int supplierNumber,int numAgreement,String date ) {
-        ac.setDateStandardAgree(numAgreement,date);
+    public void setDate(int supplierNumber,int numAgreement,String date ) {
+        ac.setDatedAgree(numAgreement,date);
     }
-    public void setPeriodDate(int supplierNumber,int numAgreement,String date ) {
-        ac.setDatePeriodAgree(numAgreement,date);
-    }
+
     public void deleteStandardAgreement(int numSup,int numAgree){
         ac.deleteStandardAgree(numSup,numAgree);
     }
@@ -47,30 +45,20 @@ public class AgreementsApplication {
     public boolean existConstantAgree(int sup,int numAgree){
         return ac.existConstantAgreement(sup,numAgree);
     }
-    public void setRegularCatalogNumber(int productNumber,int numAgree,int catalogNumber){
-        ac.setcatalogStandardNum(productNumber,numAgree,catalogNumber);
+    public void setCatalogNumber(int productNumber,int numAgree,int catalogNumber){
+        ac.setcatalogNum(productNumber,numAgree,catalogNumber);
     }
-    public void setPeriodCatalogNumber(int productNumber,int numAgree,int catalogNumber){
-        ac.setcatalogPeriodNum(productNumber,numAgree,catalogNumber);
+    public void setPrice(int productNumber,int numAgree,double price){
+        ac.setPriceAgree(productNumber,numAgree,price);
     }
-    public void setPeriodPrice(int productNumber,int numAgree,double price){
-        ac.setPricePeriodAgree(productNumber,numAgree,price);
+    public void setAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
+        ac.setAmountToDiscountAgree(productNumber,numAgree,amountToDiscount);
     }
-    public void setRegularPrice(int productNumber,int numAgree,double price){
-        ac.setPriceStandardAgree(productNumber,numAgree,price);
+
+    public void setDiscount(int productNumber,int numAgree,int discount){
+        ac.setDiscountAgree(productNumber,numAgree,discount);
     }
-    public void setRegularAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
-        ac.setAmountToDiscountStandardAgree(productNumber,numAgree,amountToDiscount);
-    }
-    public void setPeriodAmountToDiscount(int productNumber,int numAgree,int amountToDiscount){
-        ac.setAmountToDiscountPeriodAgree(productNumber,numAgree,amountToDiscount);
-    }
-    public void setRegularDiscount(int productNumber,int numAgree,int discount){
-        ac.setDiscountStandardAgree(productNumber,numAgree,discount);
-    }
-    public void setPeriodDiscount(int productNumber,int numAgree,int discount){
-        ac.setDiscountPeriodAgree(productNumber,numAgree,discount);
-    }
+
     public boolean existPRegular(int numS,int numP ){
         return ac.existProByRegularSup(numS,numP);
     }

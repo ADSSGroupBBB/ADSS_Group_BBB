@@ -3,13 +3,11 @@ package Domain;
 import java.util.LinkedList;
 
 public class PeriodAgreement extends Agreement {
-    private LinkedList<Days> days;
     private String address; //the address for shipment
     private String contactPhone;
 
-    public PeriodAgreement(int supplierNumber, String date, LinkedList<Days> days, String address, String contactPhone) {
+    public PeriodAgreement(int supplierNumber, String date, String address, String contactPhone) {
         super(supplierNumber, date);
-        this.days = days;
         this.address=address; //the address for shipment
         this.contactPhone=contactPhone;
     }

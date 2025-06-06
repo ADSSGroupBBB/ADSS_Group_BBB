@@ -1,9 +1,11 @@
 package Domain;
 
 import dto.AgreementDto;
+import dto.SupplierDto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface   StandardAgreementRepository {
     AgreementDto saveStandardAgreement (int supplierNumber,String date);
@@ -11,16 +13,12 @@ public interface   StandardAgreementRepository {
     void deleteProductStandardAgree(int numAgree,int productNumber);
     void setDateStandardAgreement(int numAgreement,String date);
     void deleteStandardAgreement(int numSup,int numAgree);
-    boolean existProStandardAgreement(int numP,int numA);
-    boolean existRegularAgree(int sup,int numA) ;
-    QuantityAgreement productFromAgreementByIndex(int numAgree,int numP);
-    int numProductOnAgree(int numAgreement);
-    String printProductOnAgree(int num);
-    void setNumCatalogStandard(int productNumber,int numAgree,int catalogNumber);
-    void setPriceStandardAgreement(int productNumber,int numAgree,double price);
+    Optional<AgreementDto> getStandardAgreement(int numA );
+    void setNumCatalogStandard(int numAgree,int productNumber,int catalogNumber);
+    void setPriceStandardAgreement(int numAgree,int productNumber ,double price);
     void setAmountToDiscountStandardAgreement(int productNumber,int numAgree,int amountToDiscount);
     void setDiscountStandardAgreement(int productNumber,int numAgree,int discount);
-    boolean existProByStandardSup(int numS,int numP );
+    List<Optional<AgreementDto>> allAgreementsByStandardSup(int numS );
     boolean existProStandardAgreementByName(String nameP,int numA);
     QuantityAgreement productFromAgreementByName(int numAgree,String nameP);
     Map<Integer, Agreement> getAllStandardAgreements();

@@ -224,7 +224,7 @@ public class AgreementsManager {
                         case 2: {
                             ProductManager pm = new ProductManager();
                             int numPro = pm.addProduct();
-                            if (((typeAgreement!=2)&&(aa.existPRegular(numSup,numPro)))||(((typeAgreement==2))&&((aa.existPPeriod(numSup,numPro))))) {
+                            if (aa.existPRegular(numSup,numPro)||aa.existPPeriod(numSup,numPro)) {
                                 System.out.println("The product already exists in the agreement");
                             }
                             else {
@@ -302,22 +302,22 @@ public class AgreementsManager {
                     switch (choiceS) {
                         case 1: {
                             catalogNumber = enterCatalogNumber();
-                            aa.setRegularCatalogNumber(productNumber, numAgree, catalogNumber);
+                            aa.setCatalogNumber(productNumber, numAgree, catalogNumber);
                             return;
                         }
                         case 2: {
                             price = enterPrice();
-                            aa.setRegularPrice(productNumber, numAgree, price);
+                            aa.setPrice(productNumber, numAgree, price);
                             return;
                         }
                         case 3: {
                             amountToDiscount = enterAmountToDiscount();
-                            aa.setRegularAmountToDiscount(productNumber, numAgree, amountToDiscount);
+                            aa.setAmountToDiscount(productNumber, numAgree, amountToDiscount);
                             return;
                         }
                         case 4: {
                             discount = enterDiscount();
-                            aa.setRegularDiscount(productNumber, numAgree, discount);
+                            aa.setDiscount(productNumber, numAgree, discount);
                             return;
                         }
                     }
@@ -355,22 +355,22 @@ public class AgreementsManager {
                     switch (choiceS) {
                         case 1: {
                             catalogNumber = enterCatalogNumber();
-                            aa.setPeriodCatalogNumber(productNumber, numAgree, catalogNumber);
+                            aa.setCatalogNumber(productNumber, numAgree, catalogNumber);
                             return;
                         }
                         case 2: {
                             price = enterPrice();
-                            aa.setPeriodPrice(productNumber, numAgree, price);
+                            aa.setPrice(productNumber, numAgree, price);
                             return;
                         }
                         case 3: {
                             amountToDiscount = enterAmountToDiscount();
-                            aa.setPeriodAmountToDiscount(productNumber, numAgree, amountToDiscount);
+                            aa.setAmountToDiscount(productNumber, numAgree, amountToDiscount);
                             return;
                         }
                         case 4: {
                             discount = enterDiscount();
-                            aa.setPeriodDiscount(productNumber, numAgree, discount);
+                            aa.setDiscount(productNumber, numAgree, discount);
                             return;
                         }
                         case 5: {
@@ -442,7 +442,7 @@ public class AgreementsManager {
         ProductManager pm=new ProductManager();
         while (true) {
             int numPro= pm.addProduct();
-            if (((typeChoice!=2)&&(aa.existPRegular(supplierNumber,numPro)))||(((typeChoice==2))&&((aa.existPPeriod(supplierNumber,numPro))))) {
+            if (aa.existPRegular(supplierNumber,numPro)||aa.existPPeriod(supplierNumber,numPro)) {
                 System.out.println("The product already exists in the agreement");
                 continue;
             }
@@ -552,7 +552,7 @@ public class AgreementsManager {
                         switch (choice) {
                             case 1: {
                                 date = enterDate();
-                                aa.setRegularDate(supplierNumber, numAgreement, date);
+                                aa.setDate(supplierNumber, numAgreement, date);
                                 return;
                             }
                             case 2: {
@@ -586,7 +586,7 @@ public class AgreementsManager {
                         switch (choice) {
                             case 1: {
                                 date = enterDate();
-                                aa.setPeriodDate(supplierNumber, numAgreement, date);
+                                aa.setDate(supplierNumber, numAgreement, date);
                                 return;
 
                             }

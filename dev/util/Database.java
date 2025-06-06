@@ -84,8 +84,7 @@ public class Database {
                         prodId INTEGER NOT NULL,
                         amountToOrder INTEGER NOT NULL,
                         PRIMARY KEY (IDNumber, prodId),
-                        FOREIGN KEY (IDNumber) REFERENCES standardAgreements(IDNumber),
-                        FOREIGN KEY (prodId) REFERENCES products(productNumber)
+                        FOREIGN KEY (IDNumber, prodId) REFERENCES quantityAgreements(IDNumber, prodId),
                     );
                 """);
                 st.executeUpdate("""
