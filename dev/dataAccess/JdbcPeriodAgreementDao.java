@@ -1,18 +1,13 @@
 package dataAccess;
 
 import Domain.QuantityAgreement;
-import dto.AgreementDto;
-import dto.PeriodAgreementDto;
-import dto.PeriodAgreementItemDto;
-import dto.QuantityAgreementDto;
+import dto.*;
 import util.Database;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     public PeriodAgreementDto savePeriod (PeriodAgreementDto agree) throws SQLException {
@@ -41,7 +36,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
                         for (PeriodAgreementItemDto pro : agree.productsList()) {
                             psPro.setInt(1, agree.IDNumber());
-                            psPro.setInt(2, pro.productAgreement().prodId());
+                            psPro.setInt(2, pro.productAgreement().pro().productNumber());
                             psPro.setDouble(3, pro.productAgreement().price());
                             psPro.setInt(4, pro.productAgreement().catalogNumber());
                             psPro.setInt(5, pro.productAgreement().amountToDiscount());
@@ -55,7 +50,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
                         for (PeriodAgreementItemDto pro : agree.productsList()) {
                             psItem.setInt(1, agree.IDNumber());
-                            psItem.setInt(2, pro.productAgreement().prodId());
+                            psItem.setInt(2, pro.productAgreement().pro().productNumber());
                             psItem.setInt(3, pro.amountToOrder());
                             psItem.executeUpdate();
                         }
@@ -80,7 +75,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     """;
             try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, id);
-                psPro.setInt(2, pro.productAgreement().prodId());
+                psPro.setInt(2, pro.productAgreement().pro().productNumber());
                 psPro.setDouble(3, pro.productAgreement().price());
                 psPro.setInt(4, pro.productAgreement().catalogNumber());
                 psPro.setInt(5, pro.productAgreement().amountToDiscount());
@@ -92,7 +87,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                             """;
             try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
                     psItem.setInt(1, id);
-                    psItem.setInt(2, pro.productAgreement().prodId());
+                    psItem.setInt(2, pro.productAgreement().pro().productNumber());
                     psItem.setInt(3, pro.amountToOrder());
                     psItem.executeUpdate();
                 }
@@ -162,75 +157,81 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     public Optional<PeriodAgreementDto> findPeriodAgreeById(int numA) throws SQLException {
         try {
             Database.getConnection().setAutoCommit(false);
-            int idNum;
-            int supplierNumber;
-            int proId;
-            double price;
-            int catalogNumber;
-            int amountToDiscount;
-            int discount;
-            String date;
-            String type;
-            String address;
-            String contactPhone;
-            String sql = "SELECT * FROM standardAgreements WHERE IDNumber = ? AND type = ?";
-            try (PreparedStatement psAgree = Database.getConnection().prepareStatement(sql)) {
-                psAgree.setInt(1, numA);
-                psAgree.setString(2, "period");
-                try (ResultSet agree = psAgree.executeQuery()) {
-                    if (agree.next()) {
-                        idNum = agree.getInt("IDNumber");
-                        supplierNumber = agree.getInt("supplierNumber");
-                        date = agree.getString("date");
-                        type = agree.getString("type");
-                        LinkedList<PeriodAgreementItemDto> items = new LinkedList<>();
-                        String sqlPeriod = " SELECT * FROM periodAgreements WHERE IDNumber = ?";
-                        try (PreparedStatement psPeriod = Database.getConnection().prepareStatement(sqlPeriod)) {
-                            psPeriod.setInt(1, numA);
-                            try (ResultSet per = psAgree.executeQuery()) {
-                                if (per.next()) {
-                                    per.getInt("IDNumber");
-                                    address = per.getString("address");
-                                    contactPhone = per.getString("contactPhone");
-                                    String sqlP = "SELECT * FROM quantityAgreements WHERE IDNumber= ?";
-                                    try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
-                                        psPro.setInt(1, numA);
-                                        try (ResultSet pro = psPro.executeQuery()) {
-                                            while (pro.next()) {
-                                                proId = pro.getInt("prodId");
-                                                price = pro.getDouble("price");
-                                                catalogNumber = pro.getInt("catalogNumber");
-                                                amountToDiscount = pro.getInt("amountToDiscount");
-                                                discount = pro.getInt("discount");
-                                                String sqlI = "SELECT * FROM periodAgreementItems WHERE IDNumber= ? AND prodId = ?";
-                                                try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlI)) {
-                                                    psItem.setInt(1, numA);
-                                                    psItem.setInt(2, proId);
-                                                    try (ResultSet item = psItem.executeQuery()) {
-                                                        if (item.next()) {
-                                                            items.add(new PeriodAgreementItemDto(new QuantityAgreementDto(proId, price, catalogNumber, amountToDiscount, discount), item.getInt("amountToOrder")));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Database.getConnection().commit();
-                                    return Optional.of(new PeriodAgreementDto(idNum, supplierNumber, items, date, address, contactPhone));
-                                }
-                            }
+
+            String sql = """
+            SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                   pa.address, pa.contactPhone,
+                   qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                   p.productName, p.unitOfMeasure, p.manufacturer,
+                   pai.amountToOrder
+            FROM standardAgreements sa
+            LEFT JOIN periodAgreements pa ON sa.IDNumber = pa.IDNumber
+            LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+            LEFT JOIN products p ON qa.prodId = p.productNumber
+            LEFT JOIN periodAgreementItems pai ON qa.IDNumber = pai.IDNumber AND qa.prodId = pai.prodId
+            WHERE sa.IDNumber = ? AND sa.type = 'period'
+        """;
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, numA);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    int idNum = -1;
+                    int supplierNumber = -1;
+                    String date = null;
+                    String address = null;
+                    String contactPhone = null;
+
+                    LinkedList<PeriodAgreementItemDto> items = new LinkedList<>();
+
+                    while (rs.next()) {
+                        if (idNum == -1) {
+                            idNum = rs.getInt("IDNumber");
+                            supplierNumber = rs.getInt("supplierNumber");
+                            date = rs.getString("date");
+                            address = rs.getString("address");
+                            contactPhone = rs.getString("contactPhone");
                         }
 
-                                }
+                        int prodId = rs.getInt("prodId");
+                        if (!rs.wasNull()) {
+                            ProductDto product = new ProductDto(
+                                    rs.getString("productName"),
+                                    prodId,
+                                    rs.getString("unitOfMeasure"),
+                                    rs.getString("manufacturer")
+                            );
+
+                            QuantityAgreementDto quantityDto = new QuantityAgreementDto(
+                                    product,
+                                    rs.getDouble("price"),
+                                    rs.getInt("catalogNumber"),
+                                    rs.getInt("amountToDiscount"),
+                                    rs.getInt("discount")
+                            );
+
+                            int amountToOrder = rs.getInt("amountToOrder");
+
+                            items.add(new PeriodAgreementItemDto(quantityDto, amountToOrder));
+                        }
+                    }
+
+                    Database.getConnection().commit();
+
+                    if (idNum != -1) {
+                        return Optional.of(new PeriodAgreementDto(idNum, supplierNumber, items, date, address, contactPhone));
+                    }
                 }
             }
-            Database.getConnection().commit();
+
         } catch (SQLException e) {
             Database.getConnection().rollback();
             throw e;
         }
         return Optional.empty();
     }
+
+
 
     @Override
     public void updateAddressPeriodById(int numAgreement, String address) throws SQLException {
@@ -264,75 +265,81 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     }
 
     @Override
-    public List<Optional<PeriodAgreementDto>> findAllPeriodAgreeBySupId(int numS) throws SQLException {
+    public List<PeriodAgreementDto> findAllPeriodAgreeBySupId(int numS) throws SQLException {
         try {
             Database.getConnection().setAutoCommit(false);
-            int idNum;
-            int supplierNumber;
-            int proId;
-            double price;
-            int catalogNumber;
-            int amountToDiscount;
-            int discount;
-            String date;
-            String type;
-            String address="";
-            String contactPhone="";
-            List<Optional<PeriodAgreementDto>> agreements=new LinkedList<>();
-            String sql = "SELECT * FROM standardAgreements WHERE supplierNumber = ? AND type = ?";
-            try (PreparedStatement psAgree = Database.getConnection().prepareStatement(sql)) {
-                psAgree.setInt(1, numS);
-                psAgree.setString(2, "period");
-                try (ResultSet agree = psAgree.executeQuery()) {
-                    while (agree.next()) {
-                        idNum = agree.getInt("IDNumber");
-                        supplierNumber = agree.getInt("supplierNumber");
-                        date = agree.getString("date");
-                        type = agree.getString("type");
-                       LinkedList<PeriodAgreementItemDto> items = new LinkedList<>();
-                        String sqlPeriod = " SELECT * FROM periodAgreements WHERE IDNumber = ?";
-                        try (PreparedStatement psPeriod = Database.getConnection().prepareStatement(sqlPeriod)) {
-                            psPeriod.setInt(1, idNum);
-                            try (ResultSet per = psPeriod.executeQuery()) {
-                                if (per.next()) {
-                                    per.getInt("IDNumber");
-                                    address = per.getString("address");
-                                    contactPhone = per.getString("contactPhone");
-                                    String sqlP = "SELECT * FROM quantityAgreements WHERE IDNumber= ?";
-                                    try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
-                                        psPro.setInt(1, idNum);
-                                        try (ResultSet pro = psPro.executeQuery()) {
-                                            while (pro.next()) {
-                                                proId = pro.getInt("prodId");
-                                                price = pro.getDouble("price");
-                                                catalogNumber = pro.getInt("catalogNumber");
-                                                amountToDiscount = pro.getInt("amountToDiscount");
-                                                discount = pro.getInt("discount");
-                                                String sqlI = "SELECT * FROM periodAgreementItems WHERE IDNumber= ? AND prodId = ?";
-                                                try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlI)) {
-                                                    psItem.setInt(1, idNum);
-                                                    psItem.setInt(2, proId);
-                                                    try (ResultSet item = psItem.executeQuery()) {
-                                                        if (item.next()) {
-                                                            items.add(new PeriodAgreementItemDto(new QuantityAgreementDto(proId, price, catalogNumber, amountToDiscount, discount), item.getInt("amountToOrder")));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+
+            String sql = """
+            SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                   pa.address, pa.contactPhone,
+                   qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                   p.productName, p.unitOfMeasure, p.manufacturer,
+                   pai.amountToOrder
+            FROM standardAgreements sa
+            LEFT JOIN periodAgreements pa ON sa.IDNumber = pa.IDNumber
+            LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+            LEFT JOIN products p ON qa.prodId = p.productNumber
+            LEFT JOIN periodAgreementItems pai ON qa.IDNumber = pai.IDNumber AND qa.prodId = pai.prodId
+            WHERE sa.supplierNumber = ? AND sa.type = 'period'
+            ORDER BY sa.IDNumber
+        """;
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, numS);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    Map<Integer, PeriodAgreementDto> agreementsMap = new LinkedHashMap<>();
+
+                    while (rs.next()) {
+                        int idNum = rs.getInt("IDNumber");
+
+                        PeriodAgreementDto existingAgreement = agreementsMap.get(idNum);
+                        if (existingAgreement == null) {
+                            int supplierNumber = rs.getInt("supplierNumber");
+                            String date = rs.getString("date");
+                            String address = rs.getString("address");
+                            String contactPhone = rs.getString("contactPhone");
+
+                            existingAgreement = new PeriodAgreementDto(idNum, supplierNumber, new LinkedList<>(), date, address, contactPhone);
+                            agreementsMap.put(idNum, existingAgreement);
                         }
-                        agreements.add(Optional.of(new PeriodAgreementDto(idNum, supplierNumber,items, date, address, contactPhone)));
+
+                        int prodId = rs.getInt("prodId");
+                        if (!rs.wasNull()) {
+                            ProductDto product = new ProductDto(
+                                    rs.getString("productName"),
+                                    prodId,
+                                    rs.getString("unitOfMeasure"),
+                                    rs.getString("manufacturer")
+                            );
+
+                            QuantityAgreementDto quantityDto = new QuantityAgreementDto(
+                                    product,
+                                    rs.getDouble("price"),
+                                    rs.getInt("catalogNumber"),
+                                    rs.getInt("amountToDiscount"),
+                                    rs.getInt("discount")
+                            );
+
+                            int amountToOrder = rs.getInt("amountToOrder");
+
+                            PeriodAgreementItemDto item = new PeriodAgreementItemDto(quantityDto, amountToOrder);
+
+                            existingAgreement.productsList().add(item);
+                        }
                     }
+
+                    Database.getConnection().commit();
+
+                    List<PeriodAgreementDto> result = new LinkedList<>(agreementsMap.values());
+                    return result;
                 }
             }
-            Database.getConnection().commit();
-            return agreements;
+
         } catch (SQLException e) {
             Database.getConnection().rollback();
             throw e;
         }
     }
+
     }

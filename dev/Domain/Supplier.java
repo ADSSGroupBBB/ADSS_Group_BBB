@@ -149,19 +149,7 @@ public class Supplier {
         }
         return numbersA;
     }
-    public SupplierDto transfer(){
-        LinkedList<Days> d = this.getDeliveryDays();
-        LinkedList<String> days =new LinkedList<>();
-        for (Days day : d) {
-            days.add(day.name());
-        }
-        LinkedList<Agreement> a=this.getAgreements();
-        LinkedList<Integer> aID= new LinkedList<>();
-        for (Agreement agreement:a){
-            aID.add(agreement.getIDNumber());
-        }
-        return new SupplierDto(this.getSupplierNumber(),this.supplierName, this.getBankAccount() ,(this.getPayment()).name(),this.getContactNames(),this.getTelephone(),days,(this.getDeliverySending()).name(),aID);
-    }
+
 
     public void setContactNames(LinkedList<String> contactNames) {
         this.contactNames = contactNames;
@@ -175,21 +163,6 @@ public class Supplier {
         this.agreements = agreements;
     }
 
-    public  Supplier(SupplierDto sup){
-        this.supplierNumber=sup.supplierNumber();
-        this.supplierName=sup.supplierName();
-        this.bankAccount=sup.bankAccount();
-        this.payment=StringToEnumPaymentTerms(sup.payment());
-        this.contactNames=sup.contactNames();
-        this.telephone=sup.telephone();
-        LinkedList<Days> d=new LinkedList<>();
-        for (String day:sup.deliveryDays()){
-            d.add(StringToEnumDays(day));
-        }
-        this.deliveryDays=d;
-        this.deliverySending=StringToEnumDelivery(sup.deliverySending());
-        this.agreements=new LinkedList<>();
-        }
 
     public int getSupplierNumber() {
         return supplierNumber;

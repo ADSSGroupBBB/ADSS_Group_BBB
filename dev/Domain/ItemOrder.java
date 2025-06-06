@@ -6,6 +6,19 @@ public class ItemOrder {
     private double finalPrice;
     private double initialPrice;
     private int numOrder;
+
+    public double getFinalPrice() {
+        return finalPrice;
+    }
+
+    public double getInitialPrice() {
+        return initialPrice;
+    }
+
+    public int getNumOrder() {
+        return numOrder;
+    }
+
     //class constructor
     public ItemOrder(QuantityAgreement item,int amountOrder,int numOrder){
         this.item=item;

@@ -1,7 +1,7 @@
 package dto;
 
 public record QuantityAgreementDto(
-        int prodId,
+        ProductDto pro,
         double price,
         int catalogNumber,
         int amountToDiscount,

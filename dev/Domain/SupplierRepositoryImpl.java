@@ -9,20 +9,30 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class SupplierRepositoryImpl implements SupplierRepository{
+    private static SupplierRepositoryImpl instance;
     private SupplierDao supDao;
-    private Map<Integer,Supplier> supList;
-    public SupplierRepositoryImpl(){
-        this.supDao=new JdbcSupplierDao();
-        this.supList=new HashMap<>();
+    private Map<Integer, Supplier> supList;
+
+    private SupplierRepositoryImpl() {
+        this.supDao = new JdbcSupplierDao();
+        this.supList = new HashMap<>();
+    }
+
+
+    public static SupplierRepositoryImpl getInstance() {
+        if (instance == null) {
+            instance = new SupplierRepositoryImpl();
+        }
+        return instance;
     }
 
     @Override
     public SupplierDto addSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending) throws SQLException {
-        paymentTerms pay =StringToEnumPaymentTerms(payment);
-        Delivery del=StringToEnumDelivery(deliverySending);
+        paymentTerms pay =SupplierMapper.StringToEnumPaymentTerms(payment);
+        Delivery del=SupplierMapper.StringToEnumDelivery(deliverySending);
         LinkedList<Days> d= new LinkedList<>();
         for (String day:deliveryDays){
-            d.add(StringToEnumDays(day));
+            d.add(SupplierMapper.StringToEnumDays(day));
         }
         Supplier sup= new Supplier(supplierNumber, supplierName,  bankAccount,  pay, contactNames,  telephone,  d,  del, new LinkedList<Agreement>());
         supList.put(supplierNumber,sup);
@@ -38,13 +48,13 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     @Override
     public Optional<SupplierDto> getSupplier(int id) throws SQLException{
         if(supList.containsKey(id)){
-            return Optional.of(supList.get(id).transfer());
+            return Optional.of(SupplierMapper.transfer(supList.get(id)));
         }
         Optional<SupplierDto> optionalSup = this.supDao.findSupById(id);
 
         if (optionalSup.isPresent()) {
             SupplierDto sup = optionalSup.get();
-            supList.put(id, new Supplier(sup));
+            supList.put(id, SupplierMapper.toObject(sup));
         }
         return optionalSup;
     }
@@ -87,7 +97,7 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     public void updatePayment(int numSupplier,String payment) throws SQLException{
         this.supDao.updatePaymentSupById(numSupplier,payment);
         if(supList.containsKey(numSupplier)){
-            (supList.get(numSupplier)).setPayment(StringToEnumPaymentTerms(payment));
+            (supList.get(numSupplier)).setPayment(SupplierMapper.StringToEnumPaymentTerms(payment));
         }
     }
     public void updateTelephone(int numSupplier,String telephone) throws SQLException{
@@ -100,7 +110,7 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     public void updateDeliverySending(int numSupplier, String deliverySending) throws SQLException{
         this.supDao.updateDeliverySendingSupById(numSupplier,deliverySending);
         if(supList.containsKey(numSupplier)){
-            (supList.get(numSupplier)).setDeliverySending(StringToEnumDelivery(deliverySending));
+            (supList.get(numSupplier)).setDeliverySending(SupplierMapper.StringToEnumDelivery(deliverySending));
         }
     }
     public void updateContactNames(int numSupplier, LinkedList<String> contactNames) throws SQLException{
@@ -114,7 +124,7 @@ public class SupplierRepositoryImpl implements SupplierRepository{
         if(supList.containsKey(numSupplier)) {
             LinkedList<Days> d = new LinkedList<>();
             for (String day : days) {
-                d.add(StringToEnumDays(day));
+                d.add(SupplierMapper.StringToEnumDays(day));
             }
             (supList.get(numSupplier)).addDeliveryDays(d);
         }
@@ -122,7 +132,7 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     }
     public void removeDeliveryDays(int numSupplier,String day) throws SQLException{
         if(supList.containsKey(numSupplier)){
-            (supList.get(numSupplier)).deleteDeliveryDays(StringToEnumDays(day));
+            (supList.get(numSupplier)).deleteDeliveryDays(SupplierMapper.StringToEnumDays(day));
         }
         this.supDao.removeDaysById(numSupplier,day);
     }
@@ -131,6 +141,13 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     }
     public void removeAgreementToSup(int supplierNumber,int agree_id) throws SQLException{
         this.supDao.removeAgreeById(supplierNumber,agree_id);
+    }
+    public  String getNameById(int supplierNumber) throws SQLException{
+        Optional<SupplierDto> supDto = getSupplier(supplierNumber);
+        if (supDto.isPresent()) {
+            return supDto.get().supplierName();
+        }
+        return "";
     }
     //public boolean isConstantSup(int supplierNumber ) throws SQLException{
     //    if(supList.containsKey(supplierNumber)){
@@ -142,31 +159,5 @@ public class SupplierRepositoryImpl implements SupplierRepository{
        // return this.supDao.isConstantById(supplierNumber);
    // }
 
-    //turns String to PaymentTerms
-    //parameters:String pay
-    //returns type paymentTerms
-    private paymentTerms StringToEnumPaymentTerms(String pay){
-        if(pay.equals("Cash")){
-            return paymentTerms.Cash;
-        }
-        else if(pay.equals("Credit")) {
-            return paymentTerms.credit;
-        }
-        return null;
-    }
-    //turns String to Delivery
-    //parameters:String delivery
-    //returns type Delivery
-    private Delivery StringToEnumDelivery(String delivery){
-        if (delivery.equals("constant")){
-            return Delivery.constant;
-        }
-        else if(delivery.equals("invitation")){
-            return Delivery.invitation;
-        }
-        else if(delivery.equals("selfCollection")){
-            return Delivery.selfCollection;
-        }
-        return null;
-    }
+
 }

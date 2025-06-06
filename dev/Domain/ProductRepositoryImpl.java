@@ -15,29 +15,39 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ProductRepositoryImpl implements ProductRepository{
+    private static ProductRepositoryImpl instance;
+
     private ProductDao proDao;
-    private Map<Integer,Product> proList;
-    public ProductRepositoryImpl(){
-        this.proDao=new JdbcProductDao();
-        this.proList=new HashMap<>();
+    private Map<Integer, Product> proList;
+
+    private ProductRepositoryImpl() {
+        this.proDao = new JdbcProductDao();
+        this.proList = new HashMap<>();
+    }
+
+    public static ProductRepositoryImpl getInstance() {
+        if (instance == null) {
+            instance = new ProductRepositoryImpl();
+        }
+        return instance;
     }
 
     @Override
     public Optional<ProductDto> getProd(int num) throws SQLException {
         if(proList.containsKey(num)){
-            return Optional.of((proList.get(num)).transfer());
+            return Optional.of(ProductMapper.transfer(proList.get(num)));
         }
         Optional<ProductDto> optionalPro = this.proDao.findProById(num);
         if (optionalPro.isPresent()) {
             ProductDto pro = optionalPro.get();
-            proList.put(num, new Product(pro));
+            proList.put(num, ProductMapper.toObject(pro));
         }
         return optionalPro;
     }
 
     @Override
     public ProductDto addPro(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException {
-        proList.put(productNumber,new Product(productName,productNumber,StringToEnumUnit(unitOfMeasure),manufacturer));
+        proList.put(productNumber,new Product(productName,productNumber,ProductMapper.StringToEnumUnit(unitOfMeasure),manufacturer));
         return this.proDao.savePro(new ProductDto(productName, productNumber,  unitOfMeasure,  manufacturer));
     }
 
@@ -53,7 +63,7 @@ public class ProductRepositoryImpl implements ProductRepository{
     public void updateUnitOfMeasure(int productNumber, String unitOfMeasure) throws SQLException {
         this.proDao.updateUnitOfMeasureById(productNumber,unitOfMeasure);
         if(proList.containsKey(productNumber)){
-            proList.get(productNumber).setUnitOfMeasure(StringToEnumUnit(unitOfMeasure));
+            proList.get(productNumber).setUnitOfMeasure(ProductMapper.StringToEnumUnit(unitOfMeasure));
         }
     }
 
@@ -64,20 +74,7 @@ public class ProductRepositoryImpl implements ProductRepository{
             proList.get(productNumber).setManufacturer(manufacturer);
         }
     }
-    public unit StringToEnumUnit(String unitOfMeasure){
-        if (unitOfMeasure.equals("kg")) {
-            return unit.kg;
-        }else if (unitOfMeasure.equals("g")) {
-            return unit.g;
-        }else if (unitOfMeasure.equals("ml")) {
-            return unit.ml;
-        }else if (unitOfMeasure.equals("liter")) {
-            return unit.liter;
-        }
-        else {
-            return null;
-        }
-    }
+
 
 }
 

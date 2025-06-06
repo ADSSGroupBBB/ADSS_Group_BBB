@@ -16,6 +16,6 @@ public interface PeriodAgreementDao {
     void updateAddressPeriodById(int numAgreement,String address) throws SQLException;
     void updateContactPhonePeriodById(int numAgreement,String ContactPhone) throws SQLException;
     void updateAmountById(int numAgreement,int productNumber,int amount) throws SQLException;
-    List<Optional<PeriodAgreementDto>> findAllPeriodAgreeBySupId(int numS)throws SQLException;
+    List<PeriodAgreementDto> findAllPeriodAgreeBySupId(int numS)throws SQLException;
 
 }

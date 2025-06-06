@@ -11,7 +11,7 @@ public record OrderDto(
          String address, //the address for shipment
          String date,   //the date the order was made
          String contactPhone,    //contact info (phone number)
-         LinkedList<ItemOrderDto>items,    //the items in the order
+         LinkedList<ItemOrderDto> items,    //the items in the order
          String statusOrder //the status of the order
 ) {
 }

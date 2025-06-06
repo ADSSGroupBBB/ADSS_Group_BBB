@@ -9,6 +9,10 @@ public class Agreement {
     protected LinkedList<QuantityAgreement> productsList; //the list of products for this agreement
     protected String date;    //the date the agreement was made
 
+    public String getDate() {
+        return date;
+    }
+
     //the agreement constructor
     //gets supplierNumber, date
     public Agreement(int supplierNumber,String date){
@@ -18,6 +22,13 @@ public class Agreement {
         this.date=date;
 
     }
+    public Agreement(int IDNumber, int supplierNumber, LinkedList<QuantityAgreement> productsList, String date) {
+        this.IDNumber = IDNumber;
+        this.supplierNumber = supplierNumber;
+        this.productsList = productsList;
+        this.date = date;
+    }
+
     //a method to add product to an agreement
     //gets: Product, double,int(catalogNumber),int(amountToDiscount),int(discount)
     public void addProductAgreement(Product p, double price,int catalogNumber,int amountToDiscount,int discount){

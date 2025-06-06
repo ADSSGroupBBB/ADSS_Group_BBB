@@ -11,6 +11,13 @@ public class PeriodAgreement extends Agreement {
         this.address=address; //the address for shipment
         this.contactPhone=contactPhone;
     }
+    public PeriodAgreement(int IDNumber, int supplierNumber, String date, String address, String contactPhone) {
+        super(supplierNumber, date);
+        this.IDNumber = IDNumber;
+        this.address = address;
+        this.contactPhone = contactPhone;
+    }
+
 
     public void addProductAgreement(Product p, double price, int catalogNumber, int amountToDiscount, int discount, int amountToOrder) {
         this.productsList.add(new PeriodicOrderItem(this.IDNumber, p, price, catalogNumber, amountToDiscount, discount, amountToOrder));

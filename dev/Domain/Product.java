@@ -18,16 +18,6 @@ public class Product {
 
     }
 
-    public Product(ProductDto pro){
-        this.productName=pro.productName();
-        this.productNumber=pro.productNumber();
-        this.unitOfMeasure=StringToEnumUnit(pro.unitOfMeasure());
-        this.manufacturer=pro.manufacturer();
-    }
-    public ProductDto transfer(){
-        return new ProductDto(this.productName,this.productNumber,(this.unitOfMeasure).name(),this.manufacturer);
-    }
-
 
     //productName setter
     public void setProductName(String productName) {

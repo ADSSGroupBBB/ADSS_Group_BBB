@@ -16,7 +16,7 @@ public class SupplierController {
 
     // private constructor to prevent direct instantiation
     private SupplierController() {
-        this.supRepo = new SupplierRepositoryImpl();
+        this.supRepo =  SupplierRepositoryImpl.getInstance();
     }
 
     // public method to access the single instance
@@ -159,58 +159,6 @@ public class SupplierController {
     public LinkedList<String> getDays(int numSupplier) throws SQLException{
         return this.supRepo.getDaysById(numSupplier);
     }
-    //turns a String to Days type
-    //parameter:String day
-    //returns type Days
-    private Days StringToEnumDays(String day){
-        if(day.equals("Sunday")){
-            return Days.Sunday;
-        }
-        else if(day.equals("Monday")){
-            return Days.Monday;
-        }
-        else if(day.equals("Tuesday")){
-            return Days.Tuesday;
-        }
-        else if(day.equals("Wednesday")){
-            return Days.Wednesday;
-        }
-        else if(day.equals("Thursday")){
-            return Days.Thursday;
-        }
-        else if(day.equals("Friday")){
-            return Days.Friday;
-        }
-        else {
-            return null;
-        }
-    }
-    //turns String to PaymentTerms
-    //parameters:String pay
-    //returns type paymentTerms
-    private paymentTerms StringToEnumPaymentTerms(String pay){
-        if(pay.equals("Cash")){
-            return paymentTerms.Cash;
-        }
-        else if(pay.equals("Credit")) {
-            return paymentTerms.credit;
-        }
-        return null;
-    }
-    //turns String to Delivery
-    //parameters:String delivery
-    //returns type Delivery
-    private Delivery StringToEnumDelivery(String delivery){
-        if (delivery.equals("constant")){
-            return Delivery.constant;
-        }
-        else if(delivery.equals("invitation")){
-            return Delivery.invitation;
-        }
-        else if(delivery.equals("selfCollection")){
-            return Delivery.selfCollection;
-        }
-        return null;
-    }
+
 
 }

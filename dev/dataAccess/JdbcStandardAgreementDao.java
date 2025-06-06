@@ -1,6 +1,7 @@
 package dataAccess;
 
 import dto.AgreementDto;
+import dto.ProductDto;
 import dto.QuantityAgreementDto;
 import dto.SupplierDto;
 import util.*;
@@ -9,10 +10,7 @@ import util.Database;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class JdbcStandardAgreementDao implements StandardAgreementDAO{
     public AgreementDto saveStandard (AgreementDto agree) throws SQLException {
@@ -33,7 +31,7 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
                 try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
                     for (QuantityAgreementDto pro : agree.productsList()) {
                         psPro.setInt(1, agree.IDNumber());
-                        psPro.setInt(2, pro.prodId());
+                        psPro.setInt(2, pro.pro().productNumber());
                         psPro.setDouble(3, pro.price());
                         psPro.setInt(4, pro.catalogNumber());
                         psPro.setInt(5, pro.amountToDiscount());
@@ -57,7 +55,7 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
                     """;
             try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, id);
-                psPro.setInt(2, pro.prodId());
+                psPro.setInt(2, pro.pro().productNumber());
                 psPro.setDouble(3, pro.price());
                 psPro.setInt(4, pro.catalogNumber());
                 psPro.setInt(5, pro.amountToDiscount());
@@ -115,42 +113,73 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
     public Optional<AgreementDto> findStandardAgreeById(int numA) throws SQLException {
         try {
             Database.getConnection().setAutoCommit(false);
-        int idNum;
-        int supplierNumber;
-        String date;
-        String type;
-        String sql = "SELECT * FROM standardAgreements WHERE IDNumber = ? AND type = ?";
-        try (PreparedStatement psAgree = Database.getConnection().prepareStatement(sql)) {
-            psAgree.setInt(1, numA);
-            psAgree.setString(2, "standard");
-            try (ResultSet agree = psAgree.executeQuery()) {
-                if (agree.next()) {
-                    idNum = agree.getInt("IDNumber");
-                    supplierNumber = agree.getInt("supplierNumber");
-                    date = agree.getString("date");
-                    type = agree.getString("type");
+
+            String sql = """
+            SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                   qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                   p.productNumber, p.productName, p.unitOfMeasure, p.manufacturer
+            FROM standardAgreements sa
+            LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+            LEFT JOIN products p ON qa.prodId = p.productNumber
+            WHERE sa.IDNumber = ? AND sa.type = 'standard'
+        """;
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, numA);
+
+                try (ResultSet rs = ps.executeQuery()) {
                     LinkedList<QuantityAgreementDto> products = new LinkedList<>();
-                    String sqlP = "SELECT * FROM quantityAgreements WHERE IDNumber= ?";
-                    try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
-                        psPro.setInt(1, numA);
-                        try (ResultSet pro = psPro.executeQuery()) {
-                            while (pro.next()) {
-                                products.add(new QuantityAgreementDto(pro.getInt("prodId"), pro.getDouble("price"), pro.getInt("catalogNumber"), pro.getInt("amountToDiscount"), pro.getInt("discount")));
-                            }
+                    int idNum = -1;
+                    int supplierNumber = -1;
+                    String date = null;
+
+                    while (rs.next()) {
+                        if (idNum == -1) {
+                            idNum = rs.getInt("IDNumber");
+                            supplierNumber = rs.getInt("supplierNumber");
+                            date = rs.getString("date");
                         }
+
+                        if (rs.getObject("prodId") == null) {
+                            continue;
+                        }
+
+                        ProductDto product = new ProductDto(
+                                rs.getString("productName"),
+                                rs.getInt("productNumber"),
+                                rs.getString("unitOfMeasure"),
+                                rs.getString("manufacturer")
+                        );
+
+                        QuantityAgreementDto qProduct = new QuantityAgreementDto(
+                                product,
+                                rs.getDouble("price"),
+                                rs.getInt("catalogNumber"),
+                                rs.getInt("amountToDiscount"),
+                                rs.getInt("discount")
+                        );
+
+                        products.add(qProduct);
                     }
+
                     Database.getConnection().commit();
-                    return Optional.of(new AgreementDto(idNum, supplierNumber,products, date));
+
+                    if (idNum != -1) {
+                        return Optional.of(new AgreementDto(idNum, supplierNumber, products, date));
+                    }
                 }
             }
-        }
+
             Database.getConnection().commit();
         } catch (SQLException e) {
             Database.getConnection().rollback();
             throw e;
         }
+
         return Optional.empty();
     }
+
+
     public void updateCatalogById(int numAgree,int productNumber,int catalogNumber) throws SQLException{
         String sql = "UPDATE quantityAgreements SET catalogNumber = ? WHERE IDNumber = ? AND prodId = ?";
         try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
@@ -187,45 +216,74 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
             ps.executeUpdate();
         }
     }
-    public List<Optional<AgreementDto>> findAllStandardAgreeBySupId(int numS) throws SQLException{
+    public List<AgreementDto> findAllStandardAgreeBySupId(int supplierId) throws SQLException {
+        String sql = """
+        SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+               qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+               p.productNumber, p.productName, p.unitOfMeasure, p.manufacturer
+        FROM standardAgreements sa
+        LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+        LEFT JOIN products p ON qa.prodId = p.productNumber
+        WHERE sa.supplierNumber = ? AND sa.type = 'standard'
+        ORDER BY sa.IDNumber
+    """;
+
         try {
             Database.getConnection().setAutoCommit(false);
-            int idNum;
-            int supplierNumber;
-            String date;
-            String type;
-            List<Optional<AgreementDto>> agreements=new LinkedList<>();
-            String sql = "SELECT * FROM standardAgreements WHERE supplierNumber = ? AND type = ?";
-            try (PreparedStatement psAgree = Database.getConnection().prepareStatement(sql)) {
-                psAgree.setInt(1, numS);
-                psAgree.setString(2, "standard");
-                try (ResultSet agree = psAgree.executeQuery()) {
-                    while (agree.next()) {
-                        idNum = agree.getInt("IDNumber");
-                        supplierNumber = agree.getInt("supplierNumber");
-                        date = agree.getString("date");
-                        type = agree.getString("type");
-                        LinkedList<QuantityAgreementDto> products = new LinkedList<>();
-                        String sqlP = "SELECT * FROM quantityAgreements WHERE IDNumber= ?";
-                        try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
-                            psPro.setInt(1, idNum);
-                            try (ResultSet pro = psPro.executeQuery()) {
-                                while (pro.next()) {
-                                    products.add(new QuantityAgreementDto(pro.getInt("prodId"), pro.getDouble("price"), pro.getInt("catalogNumber"), pro.getInt("amountToDiscount"), pro.getInt("discount")));
-                                }
-                            }
+
+            Map<Integer, AgreementDto> agreementsMap = new LinkedHashMap<>();
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, supplierId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int idNum = rs.getInt("IDNumber");
+                        AgreementDto agreement = agreementsMap.get(idNum);
+
+                        if (agreement == null) {
+                            agreement = new AgreementDto(
+                                    idNum,
+                                    rs.getInt("supplierNumber"),
+                                    new LinkedList<>(),
+                                    rs.getString("date")
+                            );
+                            agreementsMap.put(idNum, agreement);
                         }
-                        agreements.add(Optional.of(new AgreementDto(idNum, supplierNumber,products, date)));
+
+                        if (rs.getObject("prodId") != null) {
+                            ProductDto product = new ProductDto(
+                                    rs.getString("productName"),
+                                    rs.getInt("productNumber"),
+                                    rs.getString("unitOfMeasure"),
+                                    rs.getString("manufacturer")
+                            );
+
+                            QuantityAgreementDto quantityProduct = new QuantityAgreementDto(
+                                    product,
+                                    rs.getDouble("price"),
+                                    rs.getInt("catalogNumber"),
+                                    rs.getInt("amountToDiscount"),
+                                    rs.getInt("discount")
+                            );
+
+                            agreement.productsList().add(quantityProduct);
+                        }
                     }
                 }
             }
+
             Database.getConnection().commit();
-            return agreements;
+
+            return new ArrayList<>(agreementsMap.values());
+
+
         } catch (SQLException e) {
             Database.getConnection().rollback();
             throw e;
         }
     }
+
 }
 
 

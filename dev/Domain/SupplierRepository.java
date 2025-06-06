@@ -13,7 +13,6 @@ public interface SupplierRepository {
     Optional<SupplierDto> getSupplier(int id) throws SQLException;
     String ContactName(int supplierNumber) throws SQLException;
     LinkedList<String> getDaysById(int numSupplier) throws SQLException;
-    boolean existsDay(int supplierNumber, String day) throws SQLException;
     void updateName(int numSupplier,String nameSupplier) throws SQLException;
     void updateBankAccount(int numSupplier,String bankAccount) throws SQLException;
     void updatePayment(int numSupplier,String payment) throws SQLException;
@@ -24,7 +23,7 @@ public interface SupplierRepository {
     void removeDeliveryDays(int numSupplier,String day) throws SQLException;
     void addAgreementToSup(int supplierNumber,int agree_id) throws SQLException;
     void removeAgreementToSup(int supplierNumber,int agree_id) throws SQLException;
-
+    String getNameById(int supplierNumber) throws SQLException;
     //boolean isConstantSup(int supplierNumber ) throws SQLException;
 
 }

@@ -13,42 +13,51 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class StandardAgreementRepositoryImpl implements StandardAgreementRepository{
+    private static StandardAgreementRepositoryImpl instance;
+
     private StandardAgreementDAO standardDao;
     private Map<Integer, Agreement> standardAgreementsList;
-    public StandardAgreementRepositoryImpl(){
-        this.standardDao=new JdbcStandardAgreementDao();
-        this.standardAgreementsList=new HashMap<>();
+
+    private StandardAgreementRepositoryImpl() {
+        this.standardDao = new JdbcStandardAgreementDao();
+        this.standardAgreementsList = new HashMap<>();
     }
 
-    public AgreementDto saveStandardAgreement (int supplierNumber, String date){
+    public static StandardAgreementRepositoryImpl getInstance() {
+        if (instance == null) {
+            instance = new StandardAgreementRepositoryImpl();
+        }
+        return instance;
+    }
+    public AgreementDto saveStandardAgreement (int supplierNumber, String date) throws SQLException{
         Agreement agree=new Agreement(supplierNumber,date);
-        SupplierRepository sRepo=SupplierRepository.getInstance();
+        SupplierRepository sRepo=SupplierRepositoryImpl.getInstance();
         sRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
         this.standardAgreementsList.put(agree.getIDNumber(),agree);
         return this.standardDao.saveStandard(new AgreementDto(agree.IDNumber,agree.supplierNumber,new LinkedList<QuantityAgreementDto>(),date));
     }
     public void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount) throws SQLException {
+        ProductRepository p = ProductRepositoryImpl.getInstance();
+        Optional<ProductDto> pro = p.getProd(numPro);
         if(this.standardAgreementsList.containsKey(id)) {
-            ProductRepository p = ProductRepositoryImpl.getInstance();
-            Optional<ProductDto> pro = p.getProd(numPro);
-            this.standardAgreementsList.get(id).addProductAgreement(new Product(pro), price, catalogNumber, amountToDiscount, discount);
+            this.standardAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount);
         }
-        this.standardDao.addProById( id, new QuantityAgreementDto(numPro,  price, catalogNumber, amountToDiscount, discount));
+        this.standardDao.addProById( id, new QuantityAgreementDto(pro.get(),  price, catalogNumber, amountToDiscount, discount));
     }
-    public void deleteProductStandardAgree(int numAgree,int productNumber){
+    public void deleteProductStandardAgree(int numAgree,int productNumber) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.get(numAgree).removeProductAgreement(productNumber);
         }
         this.standardDao.removeProById( numAgree, productNumber);
     }
 
-    public void setDateStandardAgreement(int numAgreement,String date){
+    public void setDateStandardAgreement(int numAgreement,String date) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgreement)) {
             this.standardAgreementsList.get(numAgreement).setDate(date);
         }
         this.standardDao.updateDateById( numAgreement, date);
     }
-    public void deleteStandardAgreement(int numSup,int numAgree){
+    public void deleteStandardAgreement(int numSup,int numAgree) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.remove(numAgree);
         }
@@ -56,50 +65,62 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
         s.removeAgreementToSup(numSup, numAgree);
         this.standardDao.removeStandard(numAgree);
         }
-    public Optional<AgreementDto> getStandardAgreement(int numA){
+    public Optional<AgreementDto> getStandardAgreement(int numA) throws SQLException{
         if(this.standardAgreementsList.containsKey(numA)){
-            return Optional.of(this.standardAgreementsList.get(numA).transfer());
+            return Optional.of(AgreementMapper.transfer(this.standardAgreementsList.get(numA)));
         }
         Optional<AgreementDto> optionalAgree = this.standardDao.findStandardAgreeById(numA);
 
         if (optionalAgree.isPresent()) {
             AgreementDto agree = optionalAgree.get();
-            standardAgreementsList.put(numA, new Agreement(agree));
+            standardAgreementsList.put(numA, AgreementMapper.toObject(agree));
         }
         return optionalAgree;
     }
-    public void setNumCatalogStandard(int numAgree,int productNumber,int catalogNumber){
+    public void setNumCatalogStandard(int numAgree,int productNumber,int catalogNumber) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.get(numAgree).setCatalog(productNumber,catalogNumber);
         }
         this.standardDao.updateCatalogById( numAgree, productNumber,catalogNumber);
     }
-    public void setPriceStandardAgreement(int numAgree,int productNumber ,double price){
+    public void setPriceStandardAgreement(int numAgree,int productNumber ,double price) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.get(numAgree).setPrice(productNumber,price);
         }
         this.standardDao.updatePriceById( numAgree, productNumber,price);
     }
 
-    public void setAmountToDiscountStandardAgreement(int productNumber,int numAgree,int amountToDiscount){
+    public void setAmountToDiscountStandardAgreement(int productNumber,int numAgree,int amountToDiscount) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.get(numAgree).setAmountToDiscount(productNumber,amountToDiscount);
         }
         this.standardDao.updateAmountToDiscountById( numAgree, productNumber,amountToDiscount);
     }
-    public void setDiscountStandardAgreement(int productNumber,int numAgree,int discount){
+    public void setDiscountStandardAgreement(int productNumber,int numAgree,int discount) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.get(numAgree).setDiscount(productNumber,discount);
         }
         this.standardDao.updateDiscountById( numAgree, productNumber,discount);
     }
-    public List<Optional<AgreementDto>> allAgreementsByStandardSup(int numS ){
-        List<Optional<AgreementDto>> optionalAgrees = this.standardDao.findAllStandardAgreeBySupId(numS);
-        for (Optional<AgreementDto> agree:optionalAgrees) {
-            if (agree.isPresent()) {
-                AgreementDto a = agree.get();
-                standardAgreementsList.put(a.IDNumber(), new Agreement(a));
+    public QuantityAgreementDto proFromAgreeByIndex(int numAgree, int numP) throws SQLException{
+        int i=1;
+        Optional<AgreementDto> agree=getStandardAgreement(numAgree);
+        if(agree.isPresent()) {
+            List<QuantityAgreementDto> products = agree.get().productsList();
+            for (QuantityAgreementDto qa : products) {
+                if (i == numP) {
+                    return qa;
+                }
+                i++;
             }
+        }
+        return null;
+    }
+    public List<AgreementDto> allAgreementsByStandardSup(int numS ) throws SQLException{
+        List<AgreementDto> optionalAgrees = this.standardDao.findAllStandardAgreeBySupId(numS);
+        for (AgreementDto agree:optionalAgrees) {
+                standardAgreementsList.put(agree.IDNumber(), AgreementMapper.toObject(agree));
+
         }
         return optionalAgrees;
     }

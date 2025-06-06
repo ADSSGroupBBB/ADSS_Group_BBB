@@ -18,6 +18,6 @@ public interface StandardAgreementDAO {
     void updatePriceById(int numAgree,int productNumber,double price) throws SQLException;
     void updateAmountToDiscountById(int numAgree,int productNumber,int amountToDiscount) throws SQLException;
     void updateDiscountById(int numAgree,int productNumber,int discount) throws SQLException;
-    List<Optional<AgreementDto>> findAllStandardAgreeBySupId(int numS) throws SQLException;
+    List<AgreementDto> findAllStandardAgreeBySupId(int numS) throws SQLException;
 
 }

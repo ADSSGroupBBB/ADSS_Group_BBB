@@ -67,6 +67,26 @@ public class QuantityAgreement {
         this.amountToDiscount = amountToDiscount;
     }
 
+    public int getNumAgreement() {
+        return numAgreement;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getCatalogNumber() {
+        return catalogNumber;
+    }
+
+    public int getAmountToDiscount() {
+        return amountToDiscount;
+    }
+
+    public int getDiscount() {
+        return discount;
+    }
+
     public int getDiscountAgreement() {
         return discount;
     }

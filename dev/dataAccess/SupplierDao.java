@@ -1,7 +1,5 @@
 package dataAccess;
 
-import Domain.Supplier;
-import dto.SupplierBackDto;
 import dto.SupplierDto;
 
 import java.sql.SQLException;
