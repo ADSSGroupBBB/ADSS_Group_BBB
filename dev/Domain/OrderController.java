@@ -5,10 +5,8 @@ import dto.PeriodAgreementDto;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.time.LocalDate;
-import java.util.Optional;
 
 //a class for the manager (the controller) of Order
 public class OrderController {
@@ -83,15 +81,29 @@ public class OrderController {
     public String StringOrder(int orderNumber) throws SQLException {
         (new Order(this.orderRepo.getOrder(orderNumber))).print_Order();
     }
-    public String addPeriodOrder(){
+    public String addPeriodOrder() throws SQLException{
         AgreementsController ac=AgreementsController.getInstance();
-        PeriodAgreement todayPeriodOrder=ac.getPeriodOrderToday(todayDate);
+        int count=0;
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
-        for (PeriodAgreement agree: todayPeriodOrder){
-            addNewOrder(agree.getIDNumber(),agree.getSupplierNumber(),agree.getAddress(),dateAsString,agree.getContactPhone(),"shipped");
+        List<PeriodAgreementDto> todayPeriodOrder=ac.getPeriodOrderToday(todayDate);
+        LinkedList<OrderDto> ordersToday=this.orderRepo.getOrderByDate(dateAsString);
+        boolean flag=false;
+        for (PeriodAgreementDto agree: todayPeriodOrder) {
+            for (OrderDto o : ordersToday) {
+                if (agree.IDNumber() == o.numAgreement()) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (flag == false) {
+                addNewOrder(agree.IDNumber(), agree.supplierNumber(), agree.address(), dateAsString, agree.contactPhone(), "shipped");
+                count++;
+            }
         }
+        String orderString= count+" orders created";
+        return orderString;
     }
 
 

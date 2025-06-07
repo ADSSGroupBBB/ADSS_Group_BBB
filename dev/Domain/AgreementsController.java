@@ -195,6 +195,6 @@ public class AgreementsController {
         }
         return false;
     }
-    public List<PeriodAgreementDto> getPeriodOrderToday
+    public List<PeriodAgreementDto> getPeriodOrderToday()
 
 }
