@@ -1,8 +1,8 @@
 package Presentation_employee;
 
-import Service_employee.BranchDTO;
-import Service_employee.EmployeeDTO;
-import Service_employee.ShiftDTO;
+import DTO.BranchDTO;
+import DTO.EmployeeDTO;
+import DTO.ShiftDTO;
 
 import java.util.List;
 

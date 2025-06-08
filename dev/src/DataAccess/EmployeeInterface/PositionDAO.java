@@ -1,6 +1,6 @@
 package DataAccess.EmployeeInterface;
 
-import Service_employee.PositionDTO;
+import DTO.PositionDTO;
 
 import java.sql.SQLException;
 import java.util.List;

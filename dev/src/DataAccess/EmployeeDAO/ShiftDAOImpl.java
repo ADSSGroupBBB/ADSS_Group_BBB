@@ -2,8 +2,8 @@ package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.ShiftDAO;
 import DataAccess.EmployeeInterface.ShiftAssignmentDAO;
-import util.WrapperDatabase;
-import Service_employee.ShiftDTO;
+import util.Database;
+import DTO.ShiftDTO;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -26,7 +26,7 @@ public class ShiftDAOImpl implements ShiftDAO {
             FROM shifts WHERE id = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
@@ -60,7 +60,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         List<ShiftDTO> shifts = new ArrayList<>();
         String sql = "SELECT id FROM shifts ORDER BY date, shift_type";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -77,7 +77,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         List<ShiftDTO> shifts = new ArrayList<>();
         String sql = "SELECT id FROM shifts WHERE date >= ? AND date <= ? ORDER BY date, shift_type";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, startDate.toString());
@@ -98,7 +98,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         List<ShiftDTO> shifts = new ArrayList<>();
         String sql = "SELECT id FROM shifts WHERE branch_address = ? ORDER BY date, shift_type";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, branchAddress);
@@ -118,7 +118,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         String sql = "SELECT id FROM shifts WHERE date >= ? ORDER BY date, shift_type";
 
         List<ShiftDTO> shifts = new ArrayList<>();
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, today.toString());
@@ -138,7 +138,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         String sql = "SELECT id FROM shifts WHERE date < ? ORDER BY date DESC, shift_type";
 
         List<ShiftDTO> shifts = new ArrayList<>();
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, today.toString());
@@ -163,7 +163,7 @@ public class ShiftDAOImpl implements ShiftDAO {
             ORDER BY s.date DESC, s.shift_type
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -184,7 +184,7 @@ public class ShiftDAOImpl implements ShiftDAO {
             VALUES (?, ?, ?, ?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shift.getId());
@@ -209,7 +209,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         }
 
         String sql = "DELETE FROM shifts WHERE id = ?";
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
@@ -222,7 +222,7 @@ public class ShiftDAOImpl implements ShiftDAO {
         if (employeeId == null) return null;
 
         String sql = "SELECT first_name, last_name FROM employees WHERE id = ?";
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);

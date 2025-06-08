@@ -1,4 +1,5 @@
 package Presentation_employee;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -17,7 +18,7 @@ public abstract class BaseScreen {
      * Displays the screen content. Must be implemented by all concrete screen classes.
      * This is the main entry point for each screen and implements the Template Method pattern.
      */
-    public abstract void display();
+    public abstract void display() throws SQLException;
 
     /**
      * Displays a menu with multiple options and prompts the user to make a selection.

@@ -1,5 +1,6 @@
 package JUnit.Test_employee;
 
+import DTO.*;
 import Service_employee.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

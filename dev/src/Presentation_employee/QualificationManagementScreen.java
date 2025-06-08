@@ -1,7 +1,7 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
-import Service_employee.PositionDTO;
+import DTO.EmployeeDTO;
+import DTO.PositionDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 

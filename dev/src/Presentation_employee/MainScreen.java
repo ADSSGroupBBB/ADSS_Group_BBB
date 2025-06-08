@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
+import DTO.EmployeeDTO;
 import java.sql.SQLException;
 import static Presentation.DeliveriesManagerIO.presentingDeliveriesMenu;
 
@@ -28,7 +28,7 @@ public class MainScreen extends BaseScreen {
      * provides options for navigating to different functional areas.
      */
     @Override
-    public void display() {
+    public void display() throws SQLException {
         displayTitle("Super-Li Employee Management System");
 
         String employeeType = "Regular Employee";

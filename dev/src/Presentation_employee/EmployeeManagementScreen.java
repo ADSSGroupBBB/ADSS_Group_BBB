@@ -1,10 +1,14 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
-import Service_employee.BranchDTO;
+import Service.DriversApplication;
+import DTO.EmployeeDTO;
+import DTO.BranchDTO;
+
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +19,7 @@ public class EmployeeManagementScreen extends BaseScreen {
     private final NavigationManager navigationManager;
     private final DateTimeFormatter dateFormatter;
     private final EmployeeDTO loggedInEmployee;
+    private static DriversApplication dra = new DriversApplication();
 
     /**
      * Constructor that takes the navigation manager.
@@ -30,7 +35,7 @@ public class EmployeeManagementScreen extends BaseScreen {
      * Only HR Managers can access this functionality.
      */
     @Override
-    public void display() {
+    public void display() throws SQLException {
         // Check permissions
         if (!loggedInEmployee.isHRManager()) {
             displayError("Access denied. Only HR Managers can access this functionality.");
@@ -44,7 +49,8 @@ public class EmployeeManagementScreen extends BaseScreen {
                 "Search Employee by ID",
                 "Update Employee",
                 "Update Employee Branch",
-                "Remove Employee"
+                "Remove Employee",
+                "Remove Driver"
         };
 
         int choice;
@@ -73,6 +79,8 @@ public class EmployeeManagementScreen extends BaseScreen {
                 case 7:
                     removeEmployee();
                     break;
+                case 8:
+                    removeDriver();
                 case 0:
                     // Return to previous menu
                     break;
@@ -85,7 +93,7 @@ public class EmployeeManagementScreen extends BaseScreen {
      */
 
 
-    private void addNewEmployee() {
+    private void addNewEmployee() throws SQLException {
         displayTitle("Add New Employee");
 
         String id = getInput("Enter ID");
@@ -151,10 +159,59 @@ public class EmployeeManagementScreen extends BaseScreen {
                     role, password, sickDays, vacationDays, pensionFundName, branchAddress
             );
         } else {
-            success = navigationManager.getEmployeeService().addEmployee(
-                    id, firstName, lastName, bankAccount, startDate, salary,
-                    sickDays, vacationDays, pensionFundName, branchAddress
-            );
+            boolean isDriver = getBooleanInput("Is this employee a driver?");
+            boolean isStoreKeeper = false;
+            if (!isDriver){
+                isStoreKeeper = getBooleanInput("Is this employee a storekeeper?");
+            }
+
+            if (isDriver){
+                // Prompt for number of licenses, ensuring a valid non-negative integer is provided
+                int numLicenses = 1;
+                while (true) {
+                    System.out.print("Enter number of licenses: ");
+                    try {
+                        numLicenses = Integer.parseInt(scanner.nextLine().trim());
+                        if (numLicenses < 1) throw new NumberFormatException();
+                        break;
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a non-negative integer.");
+                    }
+                }
+
+                // Collect the list of licenses for the driver
+                List<Integer> licenseList = new ArrayList<>();
+                for (int i = 0; i < numLicenses; i++) {
+                    while (true) {
+                        System.out.print("Enter license #" + (i + 1) + ": ");
+                        try {
+                            int license = Integer.parseInt(scanner.nextLine().trim());
+                            licenseList.add(license);
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input. Please enter a valid int.");
+                        }
+                    }
+                }
+
+                // Call the service method to insert the new driver
+                success = navigationManager.getEmployeeService().addDriver(
+                        id, firstName, lastName, bankAccount, startDate, salary,
+                        sickDays, vacationDays, pensionFundName, branchAddress, licenseList
+                );
+
+            } else if (isStoreKeeper) {
+                success = navigationManager.getEmployeeService().addStoreKeeper(
+                        id, firstName, lastName, bankAccount, startDate, salary,
+                        sickDays, vacationDays, pensionFundName, branchAddress
+                );
+            }
+            else {
+                success = navigationManager.getEmployeeService().addEmployee(
+                        id, firstName, lastName, bankAccount, startDate, salary,
+                        sickDays, vacationDays, pensionFundName, branchAddress
+                );
+            }
         }
 
         if (success) {
@@ -500,6 +557,29 @@ public class EmployeeManagementScreen extends BaseScreen {
                 displayMessage("Employee successfully removed from the system");
             } else {
                 displayError("Cannot remove the employee. They may be assigned to future shifts");
+            }
+        }
+    }
+    private void removeDriver() throws SQLException {
+        displayTitle("Remove Driver");
+        System.out.println(dra.printDrivers());
+        String id = getInput("Enter ID of driver to remove");
+        EmployeeDTO employee = navigationManager.getEmployeeService().getEmployeeDetails(id);
+
+        if (employee == null) {
+            displayError("No driver found with ID " + id);
+            return;
+        }
+
+        displayEmployeeDetails(employee);
+
+        if (getBooleanInput("Are you sure you want to remove this driver?")) {
+            boolean success = navigationManager.getEmployeeService().removeDriver(id);
+
+            if (success) {
+                displayMessage("Driver successfully removed from the system");
+            } else {
+                displayError("Cannot remove the driver. They may be assigned to future shifts");
             }
         }
     }

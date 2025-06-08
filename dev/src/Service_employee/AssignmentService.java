@@ -1,5 +1,6 @@
 package Service_employee;
 
+import DTO.EmployeeDTO;
 import Domain_employee.EmployeeController;
 
 import java.time.LocalDate;
@@ -64,6 +65,8 @@ public class AssignmentService {
 
     public List<EmployeeDTO> getQualifiedAndAvailableEmployeesByBranch(LocalDate date, String shiftType,
                                                                        String positionName, String branchAddress) {
+        List<EmployeeDTO> availableEmployees = employeeController.getAvailableEmployeesForShift(date, shiftType);
+        List<EmployeeDTO> qualifiedEmployees = employeeController.getQualifiedEmployeesForPosition(positionName);
         return getQualifiedAndAvailableEmployees(date, shiftType, positionName).stream()
                 .filter(employee -> branchAddress == null ||
                         branchAddress.equals(employee.getBranchAddress()) ||

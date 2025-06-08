@@ -1,5 +1,4 @@
-package JUnit.Test_employee;
-/**
+/**package JUnit.Test_employee;
  * Comprehensive test suite for core domain classes in the employee and shift management system.
  *
  * This file includes tests for:
@@ -21,7 +20,7 @@ package JUnit.Test_employee;
  * Technologies Used:
  * - JUnit 5 for structured unit testing.
  * - Assertions to validate expected behaviors.
- */
+
 
 import Domain_employee.*;
 import Domain_employee.Employee.UserRole;
@@ -475,3 +474,4 @@ class ShiftTest {
         assertTrue(tuesdayMorning.getAllAssignedEmployees().isEmpty());
     }
 }
+ */

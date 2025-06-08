@@ -13,8 +13,8 @@ public class DeliveriesApplication {
 
 
     // Method to add a destination to a route
-    public String addDestination(String address, List<Location> list) throws SQLException {
-        return dc.addDestination(address, list); // Delegate to UserController to add destination to route
+    public String addDestination(String address, List<Location> list, String shiftID) throws SQLException {
+        return dc.addDestination(address, list, shiftID); // Delegate to UserController to add destination to route
     }
 
     // Method to calculate and return the total weight of items in the route

@@ -1,92 +1,195 @@
 package Domain;
 
+import DTO.DriverDTO;
+
+
+import DataAccess.EmployeeDAO.DriverDAOImpl;
+import DataAccess.EmployeeDAO.EmployeeDAOImpl;
+
+import DataAccess.EmployeeDAO.ShiftAssignmentDAOImpl;
+import DataAccess.EmployeeInterface.DriverDAO;
+import DataAccess.EmployeeInterface.EmployeeDAO;
+import DataAccess.EmployeeInterface.ShiftDAO;
+import DataAccess.EmployeeInterface.ShiftAssignmentDAO;
+import Domain_employee.Driver;
+import Domain_employee.Employee;
+import DTO.EmployeeDTO;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DriverController extends DeliveriesController {
-    // Method to insert a new driver
-    /**
-     public String insertDriver(String id, String name, List<Integer> licenseList) {
-     Driver new_d = new Driver(id, name, licenseList);
+    protected static final DriverDAO driverDAO = new DriverDAOImpl();
+    protected static final EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+    protected final ShiftAssignmentDAO shiftASDAO = new ShiftAssignmentDAOImpl();
 
-     // Check if the driver already exists
-     if (!driversMap.containsKey(id)) {
-     driversMap.put(id, new_d);
-     return "New driver added: " + new_d.toString();
-     } else {
-     return "Driver with the same ID already exist.";
-     }
-     }
-     */
-    // Method to delete a driver
-    public String deleteDriver(String id) {
-        if (driversMap.containsKey(id)) {
-            Driver removed = driversMap.remove(id);
-            return "Driver removed: " + removed;
-        } else {
-            return "Driver with ID " + id + " doesn't exist.";
+    // Adds a new driver license to the system if it doesn't already exist
+    public String insertDriverLicense(String id, int license) throws SQLException {
+        Driver driver = driversMap.get(id);
+        if (driver == null) {
+            // Check if driver exists in database but not in map
+            List<DriverDTO> driverLicenses = driverDAO.findByDriverId(id);
+            if (driverLicenses.isEmpty()) {
+                return "No driver found with ID: " + id;
+            }
+            List<Integer> licenseList = new ArrayList<>();
+            for (int i = 0; i < driverLicenses.size(); i++){
+                licenseList.add(driverLicenses.get(i).license());
+            }
+            EmployeeDTO dEmployee = employeeDAO.findById(id).orElse(null);
+            assert dEmployee != null;
+            Driver newDriver = new Driver(id, dEmployee.getFirstName(), dEmployee.getLastName(), dEmployee.getBankAccount(),
+                    dEmployee.getStartDate(), dEmployee.getSalary(), Employee.UserRole.DRIVER, "driver",
+                    dEmployee.getSickDays(), dEmployee.getVacationDays(), dEmployee.getPensionFundName(),
+                    dEmployee.getBranchAddress(), licenseList);
+            newDriver.set_availabilityToDrive(driverLicenses.get(0).on_drive() == 0);
+
+            driversMap.put(id, newDriver);
+            driver  = newDriver;
         }
+
+        List<Integer> licenses = driver.getLicenses_list();
+
+        if (licenses.contains(license)) {
+            return "Driver already has this license.";
+        }
+
+        // Add new license
+        licenses.add(license);
+        DriverDTO newDriverLicense = new DriverDTO(id, license, 0); // 0 means not on drive
+        driverDAO.save(newDriverLicense);
+        return "License added to driver " + id + ": " + license;
     }
 
     // Method to delete a license from a driver
-    public String deleteLicense(String id, int license) {
+    public String deleteLicense(String id, int license) throws SQLException {
         Driver driver = driversMap.get(id);
         if (driver == null) {
-            return "No driver found with ID: " + id;
+            List<DriverDTO> driverLicenses = driverDAO.findByDriverId(id);
+            if (driverLicenses.isEmpty()) {
+                return "No driver found with ID: " + id;
+            }
+            List<Integer> licenseList = new ArrayList<>();
+            for (int i = 0; i < driverLicenses.size(); i++){
+                licenseList.add(driverLicenses.get(i).license());
+            }
+            EmployeeDTO dEmployee = employeeDAO.findById(id).orElse(null);
+            assert dEmployee != null;
+            Driver newDriver = new Driver(id, dEmployee.getFirstName(), dEmployee.getLastName(), dEmployee.getBankAccount(),
+                    dEmployee.getStartDate(), dEmployee.getSalary(), Employee.UserRole.DRIVER, "driver",
+                    dEmployee.getSickDays(), dEmployee.getVacationDays(), dEmployee.getPensionFundName(),
+                    dEmployee.getBranchAddress(), licenseList);
+            newDriver.set_availabilityToDrive(driverLicenses.get(0).on_drive() == 0);
+
+            driversMap.put(id, newDriver);
+            driver  = newDriver;
         }
         List<Integer> licenses = driver.getLicenses_list();
 
         if (licenses.contains(license)) {
             Integer licenseObj = license;
             licenses.remove(licenseObj); // Removes the license from the list
+
+            // Remove from database - delete specific license record
+            driverDAO.deleteByIdAndLicense(id, license);
+
+
             return "License removed successfully.";
         } else {
             return "License not found.";
         }
     }
 
-    // Method to add a license to a driver
-    public String addLicense(String id, int license) {
+
+    // Checks if a driver is available for a specific truck
+    public String isAvailableDriver(String id, String truckID, String shiftID) throws SQLException {
+        Truck truck = trucksMap.get(truckID);
+        if (truck == null) {
+            return "Truck with ID " + truckID + " doesn't exist";
+        }
         Driver driver = driversMap.get(id);
         if (driver == null) {
-            return "No driver found with ID: " + id;
+            List<DriverDTO> driverLicenses = driverDAO.findByDriverId(id);
+            if (driverLicenses.isEmpty()) {
+                return "No driver found with ID: " + id;
+            }
+            List<Integer> licenseList = new ArrayList<>();
+            for (int i = 0; i < driverLicenses.size(); i++){
+                licenseList.add(driverLicenses.get(i).license());
+            }
+            EmployeeDTO dEmployee = employeeDAO.findById(id).orElse(null);
+            assert dEmployee != null;
+            Driver newDriver = new Driver(id, dEmployee.getFirstName(), dEmployee.getLastName(), dEmployee.getBankAccount(),
+                    dEmployee.getStartDate(), dEmployee.getSalary(), Employee.UserRole.DRIVER, "driver",
+                    dEmployee.getSickDays(), dEmployee.getVacationDays(), dEmployee.getPensionFundName(),
+                    dEmployee.getBranchAddress(), licenseList);
+            newDriver.set_availabilityToDrive(driverLicenses.get(0).on_drive() == 0);
+
+            driversMap.put(id, newDriver);
+            driver  = newDriver;
         }
-        List<Integer> licenses = driver.getLicenses_list();
-        if (licenses.contains(license)) {
-            return "License already exist.";
+
+        if (driver.is_available()) {
+            if (shiftASDAO.isEmployeeAssigned(shiftID, id)){
+                if (driver.getLicenses_list().contains(truck.getType())) {
+                    driver.set_availabilityToDrive(false); // Mark driver as unavailable
+
+                    // Update all driver licenses in database to reflect on_drive status
+                    List<DriverDTO> driverLicenses = driverDAO.findByDriverId(id);
+                    for (DriverDTO driverLicense : driverLicenses) {
+                        DriverDTO updatedDriver = new DriverDTO(id, driverLicense.license(), 1); // 1 means on drive
+                        driverDAO.save(updatedDriver);
+                    }
+
+                    return "Driver have correct license and is ready to drive."; // Return success message
+                }
+            }
+            return "Driver doesn't have correct license for this truck type"; // Incorrect license
         } else {
-            licenses.add(license);
-            return "License added successfully.";
+            return "Driver is already in delivery"; // Driver unavailable
+
         }
     }
 
-    // Checks if a driver is available for a specific truck
-    public String isAvailableDriver(String id, String truckID) {
+    // Sets driver as available again (when delivery ends)
+    public String setDriverAvailable(String id) throws SQLException {
         if (driversMap.containsKey(id)) {
             Driver driver = driversMap.get(id);
-            if (driver.is_available()) {
-                Truck truck = trucksMap.get(truckID);
-                if (driver.getLicenses_list().contains(truck.getType())) {
-                    driver.set_availabilityToDrive(false); // Mark driver as unavailable
-                    return "Driver is available."; // Return success message
-                }
-                return "Driver doesn't have correct license for this truck type"; // Incorrect license
-            } else {
-                return "Driver is not available for a new delivery"; // Driver unavailable
+            driver.set_availabilityToDrive(true); // Mark driver as available
+
+            // Update all driver licenses in database to reflect available status
+            List<DriverDTO> driverLicenses = driverDAO.findByDriverId(id);
+            for (DriverDTO driverLicense : driverLicenses) {
+                DriverDTO updatedDriver = new DriverDTO(id, driverLicense.license(), 0); // 0 means not on drive
+                driverDAO.save(updatedDriver);
             }
+
+            return "Driver " + id + " is now available.";
         } else {
-            return "Driver doesn't exist"; // Driver not found
+            return "Driver with ID " + id + " doesn't exist in memory.";
         }
     }
-    // Prints all driver id in the system
-    public String printDrivers() {
+
+    // Prints all drivers in the system
+    public String printDrivers() throws SQLException {
         StringBuilder sb = new StringBuilder();
-        for (String key : driversMap.keySet()) {
-            sb.append("Driver: ").append(key).append("\n"); // Append address to result
+        List<DriverDTO> list = driverDAO.findAll();
+        String lastId = "";
+        // Load drivers from database to map if not already present
+        for (DriverDTO dto : list) {
+            if (!dto.id().equals(lastId)) {
+                sb.append("Driver: ").append(dto.id()).append("\n");
+                lastId = dto.id();
+            } else {
+                sb.append(dto.id()).append(" ").append(dto.on_drive()).append("\n");
+            }
         }
         // Remove the last newline character if the StringBuilder is not empty
         if (!sb.isEmpty()) {
             sb.deleteCharAt(sb.length() - 1);
         }
-        return sb.toString(); // Return formatted string of addresses
+        return sb.toString(); // Return formatted string of drivers
     }
 }

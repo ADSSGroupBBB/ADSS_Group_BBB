@@ -1,10 +1,9 @@
 package DataAccess.EmployeeDAO;
 
-import DTO.DriverDTO;
 import DataAccess.EmployeeInterface.EmployeeDAO;
 import DataAccess.EmployeeInterface.QualificationDAO;
-import util.WrapperDatabase;
-import Service_employee.EmployeeDTO;
+import util.Database;
+import DTO.EmployeeDTO;
 import Domain_employee.Employee.UserRole;
 
 import java.sql.*;
@@ -28,7 +27,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE id = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
@@ -67,7 +66,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees ORDER BY id
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -104,7 +103,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE branch_address = ? ORDER BY id
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, branchAddress);
@@ -143,7 +142,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             FROM employees WHERE role = ? ORDER BY id
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, role);
@@ -176,13 +175,13 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     @Override
     public EmployeeDTO save(EmployeeDTO employee) throws SQLException {
         String sql = """
-            INSERT INTO employees (id, first_name, last_name, bank_account, start_date, 
-                                 salary, role, password, sick_days, vacation_days, 
+            INSERT INTO employees (id, first_name, last_name, bank_account, start_date,
+                                 salary, role, password, sick_days, vacation_days,
                                  pension_fund_name, branch_address)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employee.getId());
@@ -205,35 +204,16 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
-    public DriverDTO saveDriver(DriverDTO driver) throws SQLException {
-        String sql = """
-            INSERT INTO drivers (id, license_number, on_drive) VALUES (?, ?, ?)
-        """;
-
-        try (Connection conn = WrapperDatabase.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, driver.id());
-            ps.setInt(2, driver.license());
-            ps.setInt(3, driver.on_drive());
-
-            ps.executeUpdate();
-        }
-
-        return driver;
-    }
-
-    @Override
     public boolean updateEmployee(EmployeeDTO employee) throws SQLException {
         String sql = """
-            UPDATE employees SET 
+            UPDATE employees SET
                 first_name = ?, last_name = ?, bank_account = ?, salary = ?,
                 role = ?, sick_days = ?, vacation_days = ?, pension_fund_name = ?,
                 branch_address = ?
             WHERE id = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employee.getFirstName());
@@ -261,7 +241,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             WHERE sa.employee_id = ? AND s.date > date('now')
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement checkPs = conn.prepareStatement(checkShifts)) {
 
             checkPs.setString(1, id);
@@ -274,7 +254,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 
         // Delete employee (qualifications and availability will be deleted by CASCADE)
         String sql = "DELETE FROM employees WHERE id = ?";
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);

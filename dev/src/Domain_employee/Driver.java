@@ -1,9 +1,8 @@
-package Domain;
+package Domain_employee;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
-import Domain_employee.Employee;
+
 /**
  * Represents a driver in the system.
  */
@@ -13,9 +12,9 @@ public class Driver extends Employee{
 
     // Constructor
     public Driver(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary,
-                  UserRole role, String password, int sickDays, int vacationDays, String pensionFundName, List<Integer> licenses_list) {
+                  UserRole role, String password, int sickDays, int vacationDays, String pensionFundName, String branch, List<Integer> licenses_list) {
         // Initialize driver fields
-        super(id, firstName, lastName, bankAccount, startDate, salary, role, password, sickDays, vacationDays,pensionFundName);
+        super(id, firstName, lastName, bankAccount, startDate, salary, role, password, sickDays, vacationDays,pensionFundName, branch);
         this.licenses_list = licenses_list;
         this.availableToDrive = true; // Default availability is true
     }

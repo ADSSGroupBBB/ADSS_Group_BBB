@@ -10,4 +10,5 @@ public interface ShiftAssignmentDAO {
     Map<String, String> getShiftAssignments(String shiftId) throws SQLException;
     boolean isEmployeeAssigned(String shiftId, String employeeId) throws SQLException;
     String getShiftManager(String shiftId) throws SQLException;
+    String getAssignedEmployee(String shiftId, String positionName) throws SQLException;
 }

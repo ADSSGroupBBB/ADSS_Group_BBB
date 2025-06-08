@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.AvailabilityDAO;
-import util.WrapperDatabase;
+import util.Database;
 
 import java.sql.*;
 import java.time.DayOfWeek;
@@ -17,7 +17,7 @@ public class AvailabilityDAOImpl implements AvailabilityDAO {
             VALUES (?, ?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -38,7 +38,7 @@ public class AvailabilityDAOImpl implements AvailabilityDAO {
             WHERE employee_id = ? AND day_of_week = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, employeeId);
@@ -65,7 +65,7 @@ public class AvailabilityDAOImpl implements AvailabilityDAO {
             VALUES (?, ?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             // Set default availability for all days of the week (available for all shifts)
