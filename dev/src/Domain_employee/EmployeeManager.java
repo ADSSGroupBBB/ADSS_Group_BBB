@@ -49,7 +49,6 @@ public class EmployeeManager implements IEmployeeManager {
         if (isAssignedToFutureShift) {   // Cannot remove an employee who is assigned to future shifts
             return null;
         }
-
         return employees.remove(employeeId);
     }
 

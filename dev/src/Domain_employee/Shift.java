@@ -133,7 +133,7 @@ public class Shift {
         // If position requires shift manager, set this employee as shift manager
         if (position.isRequiresShiftManager()) {
             if (!employee.isShiftManager()) {
-                return false; // העובד חייב להיות מנהל משמרת כדי למלא תפקיד זה
+                return false;
             }
             shiftManager = employee;
         }
