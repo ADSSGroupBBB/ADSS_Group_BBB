@@ -3,8 +3,11 @@ package Domain;
 import DTO.*;
 import DataAccess.DAO.DocumentDAOImpl;
 import DataAccess.DAO.ShipmentItemDAOImpl;
+import DataAccess.EmployeeDAO.ShiftAssignmentDAOImpl;
+import DataAccess.EmployeeInterface.ShiftAssignmentDAO;
 import DataAccess.Interface.DocumentDAO;
 import DataAccess.Interface.ShipmentItemDAO;
+import Domain_employee.Driver;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -21,33 +24,10 @@ public class DeliveriesController {
     protected static Map<String, Document> documentsMap = new HashMap<>();
     private static final DocumentDAO documentDAO = new DocumentDAOImpl();
     private static final ShipmentItemDAO itemDAO = new ShipmentItemDAOImpl();
-    // Initialize base data for drivers, trucks, zones, locations, etc.
-    public static void initBaseData() {
-
-/*
-        // Create drivers and add them to the driversMap
-        List<Integer> licenses1 = new ArrayList<>(Arrays.asList(111, 222, 333));
-        List<Integer> licenses2 = new ArrayList<>(Arrays.asList(111, 222, 333));
-        List<Integer> licenses3 = new ArrayList<>(Arrays.asList(222, 333));
-        List<Integer> licenses4 = new ArrayList<>(Arrays.asList(111, 444));
-        List<Integer> licenses5 = new ArrayList<>(Arrays.asList(111, 222));
-
-        Driver driver1 = new Driver("D1", "Avi Cohen", licenses1);
-        Driver driver2 = new Driver("D2", "Sarah Levi", licenses2);
-        Driver driver3 = new Driver("D3", "Dan Ron", licenses3);
-        Driver driver4 = new Driver("D4", "Muhammad Younes", licenses4);
-        Driver driver5 = new Driver("D5", "Lionel Messi", licenses5);
-
-        driversMap.put(driver1.getId(), driver1);
-        driversMap.put(driver2.getId(), driver2);
-        driversMap.put(driver3.getId(), driver3);
-        driversMap.put(driver4.getId(), driver4);
-        driversMap.put(driver5.getId(), driver5);
-*/
-    }
+    protected final ShiftAssignmentDAO shiftASDAO = new ShiftAssignmentDAOImpl();
 
     // Adds a destination location to a list
-    public String addDestination(String address, List<Location> list) throws SQLException {
+    public String addDestination(String address, List<Location> list, String shiftID) throws SQLException {
         Location new_dest = locationsMap.get(address);
         if (new_dest == null) {
             Optional<LocationDTO> optional = locationDao.findByAddress(address);
@@ -61,8 +41,9 @@ public class DeliveriesController {
             }
         }
         if (!list.contains(new_dest)) {
+            String skID = shiftASDAO.getAssignedEmployee(shiftID, "STORE_KEEPER");
             list.add(new_dest); // Add destination to list
-            return "Location added successfully to route."; // Return success message
+            return "Location added successfully to route. StoreKeeper of this location is " + skID; // Return success message
         }
         return "Location already in route."; // Destination already in list
     }

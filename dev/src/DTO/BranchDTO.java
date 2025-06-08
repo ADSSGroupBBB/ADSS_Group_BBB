@@ -1,4 +1,4 @@
-package Service_employee;
+package DTO;
 
 /**
  * Data Transfer Object for Branch information.

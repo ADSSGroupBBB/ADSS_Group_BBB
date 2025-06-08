@@ -54,7 +54,6 @@ public class DeliveriesManagerIO {
         int choice; // Variable to store user menu choice
 
         // Creating instances of various menu classes
-        DriversMenu driversMenu = new DriversMenu();
         ZonesMenu zonesMenu = new ZonesMenu();
         DeliveriesMenu deliverysMenu = new DeliveriesMenu();
         TrucksMenu trucksMenu = new TrucksMenu();
@@ -66,18 +65,17 @@ public class DeliveriesManagerIO {
             System.out.println("\n===== MENU =====");
             System.out.println("1. Add Delivery");
             System.out.println("2. Got Storage alert");
-            System.out.println("3. Add Driver");
-            System.out.println("4. Update Driver");
-            System.out.println("5. Add Shipment Zone");
-            System.out.println("6. Update Shipment Zone");
-            System.out.println("7. Add Truck");
-            System.out.println("8. Delete Truck");
-            System.out.println("9. View Documentation");
-            System.out.println("10. Add location");
-            System.out.println("11. Delete location");
-            System.out.println("12. End delivery");
-            System.out.println("13. Add item to location's required list");
-            System.out.println("14. Move to employee menu");
+            System.out.println("3. Update Driver's license");
+            System.out.println("4. Add Shipment Zone");
+            System.out.println("5. Update Shipment Zone");
+            System.out.println("6. Add Truck");
+            System.out.println("7. Delete Truck");
+            System.out.println("8. View Documentation");
+            System.out.println("9. Add location");
+            System.out.println("10. Delete location");
+            System.out.println("11. End delivery");
+            System.out.println("12. Add item to location's required list");
+            System.out.println("13. Move to employee menu");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
 
@@ -98,37 +96,37 @@ public class DeliveriesManagerIO {
                     deliverysMenu.gotStorageAlert();
                     break;
                 case 3:
-                    driversMenu.addDriver();
+                    deliverysMenu.updateDriversLicense();
                     break;
                 case 4:
-                    driversMenu.updateDrivers();
-                    break;
-                case 5:
                     zonesMenu.addShippingZone();
                     break;
-                case 6:
+                case 5:
                     zonesMenu.updateOrDeleteShipmentZone();
                     break;
-                case 7:
+                case 6:
                     trucksMenu.addTruck();
                     break;
-                case 8:
+                case 7:
                     trucksMenu.deleteTruck();
                     break;
-                case 9:
+                case 8:
                     deliverysMenu.viewDocumentation();
                     break;
-                case 10:
+                case 9:
                     locationsMenu.addLocation();
                     break;
-                case 11:
+                case 10:
                     locationsMenu.deleteLocation();
                     break;
-                case 12:
+                case 11:
                     deliverysMenu.endDelivery();
                     break;
-                case 13:
+                case 12:
                     locationsMenu.addItemToLocation();
+                    break;
+                case 13:
+                    // Move to employee menu code here
                     break;
                 case 14:
                     NavigationManager navigationManager = new NavigationManager();

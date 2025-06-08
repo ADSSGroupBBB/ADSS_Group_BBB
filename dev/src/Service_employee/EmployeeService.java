@@ -1,7 +1,12 @@
 package Service_employee;
 
+import DTO.BranchDTO;
+import DTO.EmployeeDTO;
+import DTO.PositionDTO;
+import DTO.ShiftDTO;
 import Domain_employee.EmployeeController;
 
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,20 +23,46 @@ public class EmployeeService {
         this.employeeController = new EmployeeController();
     }
 
-public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
-                           LocalDate startDate, double salary, int sickDays, int vacationDays,
-                           String pensionFundName, String branchAddress) {
+    public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName, String branchAddress) {
 
 
-    if (branchAddress == null || branchAddress.trim().isEmpty()) {
-        System.err.println("Error: Branch address is required for all employees");
-        return false;
+        if (branchAddress == null || branchAddress.trim().isEmpty()) {
+            System.err.println("Error: Branch address is required for all employees");
+            return false;
+        }
+
+        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
-    return employeeController.addEmployee(id, firstName, lastName, bankAccount,
-            startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
-}
+    public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName, String branchAddress, List<Integer> license_list) throws SQLException {
 
+
+        if (branchAddress == null || branchAddress.trim().isEmpty()) {
+            System.err.println("Error: Branch address is required for all employees");
+            return false;
+        }
+        return employeeController.addDriver(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress, license_list);
+    }
+
+    public boolean addStoreKeeper(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName, String branchAddress) {
+
+
+        if (branchAddress == null || branchAddress.trim().isEmpty()) {
+            System.err.println("Error: Branch address is required for all employees");
+            return false;
+        }
+
+        return employeeController.addStoreKeeper(id, firstName, lastName, bankAccount,
+                startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
+    }
 
     public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
                                       LocalDate startDate, double salary, String role, String password,
@@ -61,6 +92,10 @@ public boolean addEmployee(String id, String firstName, String lastName, String 
 
     public boolean removeEmployee(String id) {
         return employeeController.removeEmployee(id);
+    }
+
+    public boolean removeDriver(String id) throws SQLException {
+        return employeeController.removeDriver(id);
     }
 
     // Position Management

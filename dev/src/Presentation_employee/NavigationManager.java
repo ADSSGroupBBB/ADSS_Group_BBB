@@ -1,6 +1,11 @@
 package Presentation_employee;
 
+import DTO.EmployeeDTO;
+import Service_employee.PositionService;
+import Service_employee.ShiftService;
 import Service_employee.*;
+
+import java.sql.SQLException;
 
 /**
  * Updated Navigation manager for the application.
@@ -33,7 +38,7 @@ public class NavigationManager {
      * Starts the application by displaying the login screen.
      * If login is successful, proceeds to the main screen.
      */
-    public void start() {
+    public void start() throws SQLException {
         // First show the login screen
         loginScreen.display();
         // If login is successful, store user details and proceed to main screen
@@ -48,7 +53,7 @@ public class NavigationManager {
      * Shows the employee management screen.
      * Restricts access to HR managers only.
      */
-    public void showEmployeeManagement() {
+    public void showEmployeeManagement() throws SQLException {
         if (loggedInEmployee != null && loggedInEmployee.isHRManager()) {
             EmployeeManagementScreen screen = new EmployeeManagementScreen(this);
             screen.display();
@@ -171,7 +176,7 @@ public class NavigationManager {
      * Logs out the current user and restarts the login process.
      * Clears the current user session and returns to the login screen.
      */
-    public void logout() {
+    public void logout() throws SQLException {
         loginScreen.logout();
         loggedInEmployee = null;
         start();

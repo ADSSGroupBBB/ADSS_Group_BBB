@@ -28,8 +28,9 @@ public class Employee {
     private int sickDays;
     private int vacationDays;
     private String pensionFundName;
+    private String branch;
 
-    public Employee(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary, UserRole role, String password, int sickDays, int vacationDays, String pensionFundName) {
+    public Employee(String id, String firstName, String lastName, String bankAccount, LocalDate startDate, double salary, UserRole role, String password, int sickDays, int vacationDays, String pensionFundName, String branch) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -45,6 +46,7 @@ public class Employee {
         this.sickDays = sickDays;  // Available sick days balance
         this.vacationDays = vacationDays;
         this.pensionFundName = pensionFundName;  // Name of the employee's pension fund
+        this.branch = branch;
     }
 
     public enum UserRole {
@@ -52,11 +54,11 @@ public class Employee {
         SHIFT_MANAGER,
         HR_MANAGER,
         DRIVER,
-        WAREHOUSE_WORKER;
+        STORE_KEEPER;
 
 
         public boolean isSpecialRole() {
-            return this == DRIVER || this == WAREHOUSE_WORKER;
+            return this == DRIVER || this == STORE_KEEPER;
         }
 
         public boolean isManager() {
@@ -235,8 +237,8 @@ public class Employee {
     }
 
 
-    public boolean isWarehouseWorker() {
-        return role == UserRole.WAREHOUSE_WORKER;
+    public boolean isStoreKeeper() {
+        return role == UserRole.STORE_KEEPER;
     }
 
 

@@ -1,12 +1,11 @@
 package Domain_employee;
 
-import DTO.DriverDTO;
+import DTO.*;
 import DataAccess.EmployeeInterface.*;
 import DataAccess.EmployeeDAO.*;
-import Domain.Driver;
-import Service_employee.*;
 import Domain_employee.Employee.UserRole;
 
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,6 +25,8 @@ public class EmployeeController {
     private final ShiftAssignmentDAO assignmentDAO;
     private final RequiredPositionDAO requiredPositionDAO;
     private final BranchDAO branchDAO;
+    private final DriverDAO driverDAO;
+    private static Map<String, Driver> driversMap = new HashMap<>();
 
     public EmployeeController() {
         this.employeeDAO = new EmployeeDAOImpl();
@@ -36,6 +37,7 @@ public class EmployeeController {
         this.assignmentDAO = new ShiftAssignmentDAOImpl();
         this.requiredPositionDAO = new RequiredPositionDAOImpl();
         this.branchDAO = new BranchDAOImpl();
+        this.driverDAO = new DriverDAOImpl();
     }
 
     // Employee Management
@@ -66,30 +68,60 @@ public class EmployeeController {
 
     public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
                              LocalDate startDate, double salary, int sickDays, int vacationDays,
-                             String pensionFundName, int[] licenseList){
+                             String pensionFundName, String branchAddress, List<Integer> licenseList) {
         try {
-
-
+            // Check if driver already exists in the drivers map
+            if (driversMap.containsKey(id)) {
+                System.err.println("Driver with ID " + id + " already exists.");
+                return false;
+            }
             EmployeeDTO employee = new EmployeeDTO(id, firstName, lastName, bankAccount,
                     startDate, salary, new ArrayList<>(), UserRole.DRIVER,
-                    sickDays, vacationDays, pensionFundName, "without");
+                    sickDays, vacationDays, pensionFundName, branchAddress);
 
             employeeDAO.save(employee);
-
-            // Set default availability
             availabilityDAO.setDefaultAvailability(id);
-            for (int i = 0; i< licenseList.length; i ++){
-                employeeDAO.saveDriver(new DriverDTO(id, licenseList[i], 0));
+
+            List<DriverDTO> optionalDriver = driverDAO.findByDriverId(id);
+            if (!optionalDriver.isEmpty()) {
+                return false;
             }
 
+            // Save each license for the driver
+            for (Integer license : licenseList) {
+                DriverDTO driver = new DriverDTO(id, license, 0); // 0 means not on drive
+                driverDAO.save(driver);
+            }
 
+            // Add to drivers map (if still needed for business logic)
+
+            Driver domainDriver = new Driver(id, firstName, lastName, bankAccount,
+                    startDate, salary, UserRole.DRIVER, "driver",
+                    sickDays, vacationDays, pensionFundName,
+                    branchAddress, licenseList);
+            driversMap.put(id, domainDriver);
 
             return true;
         } catch (Exception e) {
-            System.err.println("Error adding employee: " + e.getMessage());
+            System.err.println("Error adding driver: " + e.getMessage());
             return false;
         }
     }
+
+    public void setDefaultAvailability(String id) throws SQLException {
+        // Set default availability - available
+        availabilityDAO.setDefaultAvailability(id);
+    }
+
+    public List<DriverDTO> getDriverLicenses(String driverId) {
+        try {
+            return driverDAO.findByDriverId(driverId);
+        } catch (Exception e) {
+            System.err.println("Error getting driver licenses: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
 
     public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
                                       LocalDate startDate, double salary, String role, String password,
@@ -150,6 +182,20 @@ public class EmployeeController {
         } catch (Exception e) {
             System.err.println("Error removing employee: " + e.getMessage());
             return false;
+        }
+    }
+
+    // Deletes a driver completely from the system by ID
+    public boolean removeDriver(String id) throws SQLException {
+        if (driversMap.containsKey(id)) {
+            driversMap.remove(id); // Remove driver from the map
+            driverDAO.deleteById(id);
+            return employeeDAO.deleteById(id);
+        } else {
+            if (driverDAO.deleteById(id)) {
+                return employeeDAO.deleteById(id);
+            }
+            return false; // Driver not found
         }
     }
 
@@ -768,5 +814,43 @@ public class EmployeeController {
         }
     }
 
+    // Employee Management
+    public boolean addStoreKeeper(String id, String firstName, String lastName, String bankAccount,
+                               LocalDate startDate, double salary, int sickDays, int vacationDays,
+                               String pensionFundName, String branchAddress) {
+        try {
+            // Validate branch exists
+            if (branchAddress != null && !branchDAO.branchExists(branchAddress)) {
+                return false;
+            }
 
+            EmployeeDTO employee = new EmployeeDTO(id, firstName, lastName, bankAccount,
+                    startDate, salary, new ArrayList<>(), UserRole.STORE_KEEPER,
+                    sickDays, vacationDays, pensionFundName, branchAddress);
+
+            employeeDAO.save(employee);
+
+            // Set default availability
+            availabilityDAO.setDefaultAvailability(id);
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error adding employee: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String getShiftIdByTime(LocalDate startDate, String shiftTime) throws SQLException {
+        List<ShiftDTO> shiftsList = shiftDAO.findByDateRange(startDate, startDate);
+        if (shiftsList.isEmpty()){
+            return "No shifts in this date.";
+        }
+        for (ShiftDTO dto : shiftsList)
+        {
+            if (Objects.equals(shiftTime, dto.getShiftType())){
+                return dto.getId();
+            }
+        }
+        return "Shift in the requested hour don't exist";
+    }
 }

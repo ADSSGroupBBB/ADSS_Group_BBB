@@ -1,6 +1,7 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
+import DTO.BranchDTO;
+import DTO.EmployeeDTO;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -118,7 +119,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void displayAvailabilityByBranch() {
         displayTitle("Employee Availability by Branch");
 
-        List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+        List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
             displayError("No branches available in the system");
@@ -136,7 +137,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             return;
         }
 
-        Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+        BranchDTO selectedBranch = branches.get(choice - 1);
         List<EmployeeDTO> employees = navigationManager.getEmployeeService()
                 .getEmployeesByBranch(selectedBranch.getAddress());
         String title = "Availability at " + selectedBranch.getAddress();
@@ -280,7 +281,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
     private void generateBranchAvailabilityReport() {
         displayTitle("Branch Availability Report");
 
-        List<Service_employee.BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
+        List<BranchDTO> branches = navigationManager.getBranchService().getAllBranches();
 
         if (branches.isEmpty()) {
             displayError("No branches available in the system");
@@ -299,7 +300,7 @@ public class EmployeeAvailabilityScreen extends BaseScreen {
             return;
         }
 
-        Service_employee.BranchDTO selectedBranch = branches.get(choice - 1);
+        BranchDTO selectedBranch = branches.get(choice - 1);
         List<EmployeeDTO> employees = navigationManager.getEmployeeService()
                 .getEmployeesByBranch(selectedBranch.getAddress());
         String title = "Availability Report - " + selectedBranch.getAddress();

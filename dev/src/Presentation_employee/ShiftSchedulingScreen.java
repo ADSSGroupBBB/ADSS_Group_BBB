@@ -1,6 +1,10 @@
 package Presentation_employee;
 
-import Service_employee.*;
+import DTO.BranchDTO;
+import DTO.EmployeeDTO;
+import DTO.PositionDTO;
+import DTO.ShiftDTO;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -197,7 +201,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
         }
 
         // Select employee
-        EmployeeDTO employee = selectEmployeeFromList(eligibleEmployees);
+        EmployeeDTO employee = selectEmployeeFromList(eligibleEmployees, shift.getBranchAddress());
         if (employee == null) return;
 
         // Check if employee is already assigned
@@ -232,16 +236,10 @@ public class ShiftSchedulingScreen extends BaseScreen {
      * Gets eligible employees for a shift considering branch assignment.
      */
     private List<EmployeeDTO> getEligibleEmployeesForShift(ShiftDTO shift, String positionName) {
-        if (shift.hasBranch()) {
-            // Shift has specific branch - get employees for that branch
-            return navigationManager.getAssignmentService()
-                    .getQualifiedAndAvailableEmployeesByBranch(
-                            shift.getDate(), shift.getShiftType(), positionName, shift.getBranchAddress());
-        } else {
-            // Shift has no specific branch - get all qualified and available employees
-            return navigationManager.getAssignmentService()
-                    .getQualifiedAndAvailableEmployees(shift.getDate(), shift.getShiftType(), positionName);
-        }
+
+        // Shift has specific branch - get employees for that branch
+        return navigationManager.getAssignmentService()
+                .getQualifiedAndAvailableEmployees(shift.getDate(), shift.getShiftType(), positionName);
     }
 
     /**
@@ -414,7 +412,7 @@ public class ShiftSchedulingScreen extends BaseScreen {
     /**
      * Helper method to get start date from user input.
      */
-    private LocalDate getStartDate() {
+    public LocalDate getStartDate() {
         LocalDate startDate = null;
         while (startDate == null) {
             try {
@@ -551,15 +549,22 @@ public class ShiftSchedulingScreen extends BaseScreen {
     /**
      * Displays a menu for selecting an employee from a provided list.
      */
-    private EmployeeDTO selectEmployeeFromList(List<EmployeeDTO> employees) {
+    private EmployeeDTO selectEmployeeFromList(List<EmployeeDTO> employees, String address) {
         if (employees.isEmpty()) {
             displayError("No employees to select from");
             return null;
         }
 
         // Build array of names for display in menu
-        String[] employeeNames = new String[employees.size()];
-        for (int i = 0; i < employees.size(); i++) {
+        List<EmployeeDTO> newList = new ArrayList<>();
+        for (EmployeeDTO emp : employees) {
+            if (emp.getBranchAddress().equals(address)) {
+                newList.add(emp);
+            }
+        }
+        String[] employeeNames = new String[newList.size()];
+
+        for (int i = 0; i < newList.size(); i++) {
             EmployeeDTO emp = employees.get(i);
             String branchInfo = emp.hasBranch() ? " [" + emp.getBranchAddress() + "]" : " [No Branch]";
             employeeNames[i] = emp.getFullName() + " (ID: " + emp.getId() + ")" + branchInfo;

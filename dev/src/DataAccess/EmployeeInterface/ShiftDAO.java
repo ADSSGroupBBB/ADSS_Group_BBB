@@ -1,6 +1,6 @@
 package DataAccess.EmployeeInterface;
 
-import Service_employee.ShiftDTO;
+import DTO.ShiftDTO;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;

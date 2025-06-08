@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.ShiftAssignmentDAO;
-import util.WrapperDatabase;
+import util.Database;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
             VALUES (?, ?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -34,7 +34,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
     public boolean removeAssignment(String shiftId, String positionName) throws SQLException {
         String sql = "DELETE FROM shift_assignments WHERE shift_id = ? AND position_name = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -55,7 +55,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
             WHERE sa.shift_id = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -74,7 +74,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
     public boolean isEmployeeAssigned(String shiftId, String employeeId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM shift_assignments WHERE shift_id = ? AND employee_id = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -94,7 +94,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
             WHERE shift_id = ? AND is_shift_manager = 1
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -110,10 +110,11 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
     /**
      * Get assignment details for a specific position in a shift
      */
+    @Override
     public String getAssignedEmployee(String shiftId, String positionName) throws SQLException {
         String sql = "SELECT employee_id FROM shift_assignments WHERE shift_id = ? AND position_name = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -135,7 +136,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
         java.util.Set<String> positions = new java.util.HashSet<>();
         String sql = "SELECT DISTINCT position_name FROM shift_assignments WHERE shift_id = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);
@@ -154,7 +155,7 @@ public class ShiftAssignmentDAOImpl implements ShiftAssignmentDAO {
     public int countAssignmentsForPosition(String shiftId, String positionName) throws SQLException {
         String sql = "SELECT COUNT(*) FROM shift_assignments WHERE shift_id = ? AND position_name = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftId);

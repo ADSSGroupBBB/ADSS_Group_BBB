@@ -1,7 +1,11 @@
 package Service_employee;
 
+import DTO.EmployeeDTO;
+import DTO.PositionDTO;
+import DTO.ShiftDTO;
 import Domain_employee.EmployeeController;
 
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -180,7 +184,9 @@ public class ShiftService {
         return historicalShifts;
     }
 
-
+    public String getShiftIdByTime(LocalDate startDate, String shiftTime) throws SQLException {
+        return employeeController.getShiftIdByTime(startDate, shiftTime);
+    }
 
     public List<ShiftDTO> getAllShifts() {
         return employeeController.getAllShifts();

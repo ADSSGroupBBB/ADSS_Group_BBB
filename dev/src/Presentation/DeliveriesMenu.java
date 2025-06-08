@@ -3,21 +3,27 @@ package Presentation;
 import Domain.Location;
 import Domain.Shipment_item;
 import Domain.WeightEx;
+import Presentation_employee.NavigationManager;
 import Service.DeliveriesApplication;
 import Service.DriversApplication;
 import Service.LocationApplication;
 import Service.TrucksApplication;
+import DTO.ShiftDTO;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 public class DeliveriesMenu {
 
     private static DeliveriesApplication da = new DeliveriesApplication();
     private static LocationApplication la = new LocationApplication();
+    private static DriversApplication dra = new DriversApplication();
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final NavigationManager navigationManager = new NavigationManager();
 
     // Method to add a new delivery to the system
     public void addDelivery(List<Location> route) throws SQLException {
@@ -26,13 +32,62 @@ public class DeliveriesMenu {
         DriversApplication dra = new DriversApplication();
 
         System.out.println("Add Delivery selected.");
-        /////////////////////////////////////////////////////////print shifts?
-        System.out.println("Enter Delivery date (format: dd/MM/yyyy):");
-        String dateInput = scanner.nextLine();  // User enters the delivery date
-        System.out.print("Enter delivery hour (format: HH:mm): ");
-        String deliveryTime = scanner.nextLine();  // User enters the delivery time
+        String shiftID = "", deliveryTime = "", dateStr = "";
+        while (true) {
+            try {
+                System.out.println("Enter Delivery date (format: dd/MM/yyyy) or -1 to exit:");
+                dateStr = scanner.nextLine();
+
+                // Check for exit condition
+                if (dateStr.equals("-1")) {
+                    break;
+                }
+
+                LocalDate startDate = LocalDate.parse(dateStr, dateFormatter);
+
+                System.out.print("Enter delivery hour (format: HH:mm) or -1 to exit: ");
+                deliveryTime = scanner.nextLine();
+
+                // Check for exit condition
+                if (deliveryTime.equals("-1")) {
+                    break;
+                }
+
+                String[] timeParts = deliveryTime.split(":");
+                int hour = Integer.parseInt(timeParts[0]);
+                String shiftTime = "invalid";
+
+                // Check if hour is between 08:00 and 14:00 (8 AM to 2 PM)
+                if (hour >= 7 && hour < 14) {
+                    shiftTime = "MORNING";
+                }
+                else if (hour >= 14 && hour < 21) {
+                    shiftTime = "EVENING";
+                }
+
+                shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime);
+
+                // Check if we got a valid shift ID
+                if (shiftID != null && !shiftTime.equals("invalid")) {
+                    // Valid selection - break out of loop or continue with your logic
+                    System.out.println("Valid shift selected: " + shiftID);
+                    break; // Remove this if you want to continue processing
+                } else {
+                    System.out.println("Invalid date/time combination. Please try again.");
+                }
+
+            } catch (Exception e) {
+                System.out.println("Invalid input format. Please try again.");
+            }
+        }
+
+        if (Objects.equals(shiftID, "")) {
+            System.out.println("No valid shift selected.");
+            return; // or handle accordingly
+        }
+
         System.out.print("Enter wanted truck's id: ");
-        System.out.println(ta.printTrucks());////////////////////////////////
+        System.out.println(ta.printTrucks());
         String truckID = scanner.nextLine();
         while (!truckID.equals("-1") && !ta.isAvailableTruck(truckID)) {
             System.out.println("Truck unavailable. Please choose another one.");
@@ -45,9 +100,12 @@ public class DeliveriesMenu {
             System.out.println("Operation cancelled.");
             return;  // Exit or handle cancellation appropriately
         }
-        System.out.print("Enter wanted driver's id: ");/////////////////////////////////print drivers
+        System.out.println("These are the company drivers");
+        System.out.println(dra.printDrivers());
+        System.out.print("Enter wanted driver's id: ");
         String driverID = scanner.nextLine();
-        String res = dra.isAvailableDriver(driverID, truckID);
+        String res = dra.isAvailableDriver(driverID, truckID, shiftID);
+
         System.out.println(res);
 
         while (!driverID.equals("-1") && !Objects.equals(res, "Driver is available.")) {
@@ -55,7 +113,7 @@ public class DeliveriesMenu {
             System.out.println(dra.printDrivers());  // Print list of drivers
             System.out.print("Enter wanted driver's id (or -1 to cancel): ");
             driverID = scanner.nextLine();
-            res = dra.isAvailableDriver(driverID, truckID);  // Re-check availability
+            res = dra.isAvailableDriver(driverID, truckID, shiftID);  // Re-check availability
             System.out.println(res);
         }
 
@@ -67,13 +125,18 @@ public class DeliveriesMenu {
         if (route == null) {  // If the route is not provided, prompt the user to choose locations
             route = new ArrayList<>();
             System.out.println("Choose origin from known locations: ");
-            System.out.println(la.printLocations());////////////////////////////////////////
+            System.out.println(la.printLocations());
 
             boolean added_succesfully = false;
-            while (!res.equals("Location added successfully.")) {  // Keep asking for origin until added successfully
+            while (!added_succesfully) {  // Keep asking for origin until added successfully
                 originAddress = scanner.nextLine();
-                res = da.addDestination(originAddress, route);
+                res = da.addDestination(originAddress, route, shiftID);
+                String shortm = res.substring(0, res.indexOf(" to route"));
+                if (shortm.equals("Location added successfully")){
+                    added_succesfully = true;
+                }
             }
+
             res = "";
             System.out.println("Choose destinations from known locations: ");
             String address;
@@ -81,7 +144,7 @@ public class DeliveriesMenu {
                 while (!res.equals("Location added successfully.")) {  // Keep asking for destinations until added successfully
                     System.out.print("Enter destination address: ");
                     address = scanner.nextLine().trim();
-                    res = da.addDestination(address, route);
+                    res = da.addDestination(address, route, shiftID);
                 }
                 res = "";
                 System.out.println("If you want to add another destination press 1. To continue press any other key. ");
@@ -142,7 +205,7 @@ public class DeliveriesMenu {
         }
         da.sortRouteAccordingToZones(route);  // Sort the route according to zones
         List<Shipment_item> items = da.getTotalItems(route);  // Get the total items for the route
-        String doc_id = da.addDocument(items, dateInput,truckID,deliveryTime,driverID,originAddress,route, eventMessage);  // Add delivery document
+        String doc_id = da.addDocument(items, dateStr,truckID,deliveryTime,driverID,originAddress,route, eventMessage);  // Add delivery document
         System.out.println("Document saved.");
         System.out.println(da.printDocument(doc_id));  // Print the document
         System.out.println("Delivery ongoing");
@@ -203,7 +266,7 @@ public class DeliveriesMenu {
         }
 
         String originAddress = "Headquarters";  // Set the origin address as Headquarters
-        System.out.println(da.addDestination(originAddress, route));  // Add the origin location to the route
+        System.out.println(da.addDestination(originAddress, route, ""));  // Add the origin location to the route
 
 
         System.out.println("Set destinations with " + itemName + " storage alert: (Headquarters is the origin (main warehouse from which the " +
@@ -215,7 +278,7 @@ public class DeliveriesMenu {
             while (!res.equals("Location added successfully to route.")) {  // Keep asking until destination is added successfully
                 System.out.print("Enter destination address: ");
                 address = scanner.nextLine().trim();
-                res = da.addDestination(address, route);
+                res = da.addDestination(address, route, "");
             }
             res = "";
             System.out.println("If you want to add another destination press 1. To continue press any other key. ");
@@ -267,7 +330,6 @@ public class DeliveriesMenu {
         }
         else {
 
-
             System.out.println(da.printDocIDS());  // Print available document IDs
             while (true) {  // Keep asking for the document ID until valid
                 System.out.print("Enter document id: ");
@@ -276,6 +338,49 @@ public class DeliveriesMenu {
                 System.out.println("Zone name cannot be empty.");
             }
             System.out.println(da.printDocument(docID));  // Print the document based on the document ID
+        }
+    }
+
+    // Method to update or delete an existing driver
+    public void updateDriversLicense() throws SQLException {
+        System.out.println("Update Driver License selected.");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("These are the existing drivers");
+        System.out.println(dra.printDrivers());
+        // Prompt for Driver ID, ensuring it is not empty
+        String driverId = "";
+        while (true) {
+            System.out.print("Enter Driver ID: ");
+            driverId = scanner.nextLine().trim();
+            if (!driverId.isEmpty()) break;
+            System.out.println("Driver ID cannot be empty.");
+        }
+
+
+        // If changing license list, present sub-options to add or remove licenses
+        System.out.println("Choose an option ");
+        System.out.println("1. Delete license");
+        System.out.println("2. Add license");
+
+        // Ensure a valid choice (either 1 or 2)
+        while (!scanner.hasNextInt()) {
+            System.out.print("Invalid input. Please enter a number: ");
+            scanner.nextInt();
+        }
+        int choice = scanner.nextInt();
+        if (choice == 1) {
+            // Prompt for license to delete and call the service method
+            System.out.print("Enter license to remove: ");
+            scanner.nextInt();
+            int license = scanner.nextInt();
+            System.out.println(dra.deleteLicense(driverId, license));
+        } else if (choice == 2) {
+            // Prompt for license to add and call the service method
+            System.out.print("Enter license to add: ");
+            int license = scanner.nextInt();
+            System.out.println(dra.addLicense(driverId, license));
+        } else {
+            System.out.println("Invalid option try again.");
         }
     }
 }

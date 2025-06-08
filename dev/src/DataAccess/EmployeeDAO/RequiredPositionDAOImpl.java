@@ -1,7 +1,7 @@
 package DataAccess.EmployeeDAO;
 
 import DataAccess.EmployeeInterface.RequiredPositionDAO;
-import util.WrapperDatabase;
+import util.Database;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class RequiredPositionDAOImpl implements RequiredPositionDAO {
             VALUES (?, ?, ?)
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftType.toUpperCase());
@@ -36,7 +36,7 @@ public class RequiredPositionDAOImpl implements RequiredPositionDAO {
             WHERE shift_type = ? AND position_name = ?
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftType.toUpperCase());
@@ -61,7 +61,7 @@ public class RequiredPositionDAOImpl implements RequiredPositionDAO {
             ORDER BY position_name
         """;
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftType.toUpperCase());
@@ -82,7 +82,7 @@ public class RequiredPositionDAOImpl implements RequiredPositionDAO {
     public boolean removeRequiredPosition(String shiftType, String positionName) throws SQLException {
         String sql = "DELETE FROM required_positions WHERE shift_type = ? AND position_name = ?";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, shiftType.toUpperCase());
@@ -100,7 +100,7 @@ public class RequiredPositionDAOImpl implements RequiredPositionDAO {
         java.util.Set<String> shiftTypes = new java.util.HashSet<>();
         String sql = "SELECT DISTINCT shift_type FROM required_positions";
 
-        try (Connection conn = WrapperDatabase.getConnection();
+        try (Connection conn = Database.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 

@@ -1,6 +1,6 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
+import DTO.EmployeeDTO;
 
 /**
  * Updated LoginScreen with the new service architecture.

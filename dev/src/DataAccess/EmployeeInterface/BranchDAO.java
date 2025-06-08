@@ -1,7 +1,7 @@
 // BranchDAO.java
 package DataAccess.EmployeeInterface;
 
-import Service_employee.BranchDTO;
+import DTO.BranchDTO;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;

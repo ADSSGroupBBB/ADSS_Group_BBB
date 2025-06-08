@@ -1,7 +1,7 @@
 package Presentation_employee;
 
-import Service_employee.EmployeeDTO;
-import Service_employee.ShiftDTO;
+import DTO.EmployeeDTO;
+import DTO.ShiftDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

@@ -1,4 +1,4 @@
-package JUnit.Presentation;
+/**package JUnit.Presentation;
 import Domain.Location;
 import Domain.Shipment_item;
 import Domain.Shipping_Zone;
@@ -26,7 +26,7 @@ public class DeliveriesMenuTest {
         // Initialize the test data from UserController
         DeliveriesController.initBaseData();  // Initialize base data using the method from UserController
     }
-/**
+
     @Test
     public void testViewDocumentation() {
         // Create some mock Shipment_item objects
@@ -84,6 +84,7 @@ public class DeliveriesMenuTest {
         assertTrue(documentDetails1.contains("Zone1"));
         assertTrue(documentDetails2.contains("Zone2"));
     }
-    */
+
 }
 
+ */

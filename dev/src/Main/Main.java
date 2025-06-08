@@ -48,7 +48,7 @@ public class Main {
             case 3:
                 break;
             default:
-                System.out.println("Invalid choice choose 1 or 2 or 3.");
+                System.out.println("Invalid choice choose 1 or 2.");
         }
 
 
