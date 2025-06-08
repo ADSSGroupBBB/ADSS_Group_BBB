@@ -108,12 +108,13 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
             }
         return optionalAgrees;
     }
-    public List<PeriodAgreementDto> allAgreementsByDay(String day) throws SQLException{
-        List<PeriodAgreementDto> optionalAgrees = this.periodDao.findAllPeriodAgreeByDat( day);
-        for (PeriodAgreementDto agree:optionalAgrees) {
+    public List<PeriodAgreementDto> allPeriodAgreementsToOrder(String day,String date) throws SQLException{
+
+        LinkedList<PeriodAgreementDto> agreeToOrders = this.periodDao.findPeriodAgreementsToOrder(day,date);
+        for (PeriodAgreementDto agree:agreeToOrders) {
             this.periodAgreementsList.put(agree.IDNumber(), PeriodAgreementMapper.toObject(agree));
         }
-        return optionalAgrees;
+        return agreeToOrders;
     }
 
 

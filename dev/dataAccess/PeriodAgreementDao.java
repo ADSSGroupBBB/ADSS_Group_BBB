@@ -4,6 +4,7 @@ import dto.PeriodAgreementDto;
 import dto.PeriodAgreementItemDto;
 
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,5 +18,6 @@ public interface PeriodAgreementDao {
     void updateContactPhonePeriodById(int numAgreement,String ContactPhone) throws SQLException;
     void updateAmountById(int numAgreement,int productNumber,int amount) throws SQLException;
     List<PeriodAgreementDto> findAllPeriodAgreeBySupId(int numS)throws SQLException;
+    LinkedList<PeriodAgreementDto> findPeriodAgreementsToOrder(String todayDay, String todayDate) throws SQLException;
 
 }

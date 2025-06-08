@@ -73,34 +73,25 @@ public class OrderController {
     //set an order's status as deleted
     //parameter:int orderNumber,String status
     public void statusDelete(int orderNumber,String status) throws SQLException{
-        this.orderRepo.setStatus(orderNumber,status);
+        this.orderRepo.updateStatus(orderNumber,status);
     }
     //prints order
     //parameter:int orderNumber
     //returns String
     public String StringOrder(int orderNumber) throws SQLException {
-        (new Order(this.orderRepo.getOrder(orderNumber))).print_Order();
+        return (OrderMapper.toObject(this.orderRepo.getOrder(orderNumber).get())).print_Order();
     }
+
     public String addPeriodOrder() throws SQLException{
         AgreementsController ac=AgreementsController.getInstance();
         int count=0;
         LocalDate todayDate = LocalDate.now();
+        List<PeriodAgreementDto> todayPeriodOrder=ac.getAllPeriodToOrder(); //לבדוק שמעל המלאי ולפני עריכה תופעל הפונקציה
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
-        List<PeriodAgreementDto> todayPeriodOrder=ac.getPeriodOrderToday(todayDate);
-        LinkedList<OrderDto> ordersToday=this.orderRepo.getOrderByDate(dateAsString);
-        boolean flag=false;
-        for (PeriodAgreementDto agree: todayPeriodOrder) {
-            for (OrderDto o : ordersToday) {
-                if (agree.IDNumber() == o.numAgreement()) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag == false) {
+        for (PeriodAgreementDto agree:todayPeriodOrder){
                 addNewOrder(agree.IDNumber(), agree.supplierNumber(), agree.address(), dateAsString, agree.contactPhone(), "shipped");
                 count++;
-            }
         }
         String orderString= count+" orders created";
         return orderString;

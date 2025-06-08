@@ -17,4 +17,6 @@ public interface PeriodAgreementRepository {
     void setContactPhoneAgreePeriod(int numAgreement,String ContactPhone) throws SQLException;
     void setAmountPeriodOrder(int productNumber,int numAgree,int amount) throws SQLException;
     List<PeriodAgreementDto> allAgreementsByPeriodSup(int numS ) throws SQLException;
-}
+     List<PeriodAgreementDto> allPeriodAgreementsToOrder(String day,String date) throws SQLException;
+
+    }

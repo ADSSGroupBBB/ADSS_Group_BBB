@@ -341,5 +341,92 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             throw e;
         }
     }
+    public LinkedList<PeriodAgreementDto> findPeriodAgreementsToOrder(String todayDay, String todayDate) throws SQLException {
+        LinkedList<PeriodAgreementDto> result = new LinkedList<>();
+        try {
+            Database.getConnection().setAutoCommit(false);
+            String sql = """
+                        SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                               pa.address, pa.contactPhone,
+                               qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                               p.productName, p.unitOfMeasure, p.manufacturer,
+                               pai.amountToOrder
+                        FROM suppliers s
+                        JOIN Supplier_Days sd ON s.supplierNumber = sd.supplierNumber
+                        JOIN standardAgreements sa ON s.supplierNumber = sa.supplierNumber
+                        JOIN periodAgreements pa ON sa.IDNumber = pa.IDNumber
+                        LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+                        LEFT JOIN products p ON qa.prodId = p.productNumber
+                        LEFT JOIN periodAgreementItems pai ON qa.IDNumber = pai.IDNumber AND qa.prodId = pai.prodId
+                        WHERE sd.day = ?
+                          AND sa.type = 'period'
+                          AND sa.IDNumber NOT IN (
+                              SELECT o.numAgreement
+                              FROM orders o
+                              WHERE o.date = ?
+                          )
+                    """;
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setString(1, todayDay);
+                ps.setString(2, todayDate);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    Map<Integer, PeriodAgreementDto> agreementsMap = new LinkedHashMap<>();
+
+                    while (rs.next()) {
+                        int idNum = rs.getInt("IDNumber");
+
+                        PeriodAgreementDto existingAgreement = agreementsMap.get(idNum);
+                        if (existingAgreement == null) {
+                            int supplierNumber = rs.getInt("supplierNumber");
+                            String date = rs.getString("date");
+                            String address = rs.getString("address");
+                            String contactPhone = rs.getString("contactPhone");
+
+                            existingAgreement = new PeriodAgreementDto(
+                                    idNum,
+                                    supplierNumber,
+                                    new LinkedList<>(),
+                                    date,
+                                    address,
+                                    contactPhone
+                            );
+                            agreementsMap.put(idNum, existingAgreement);
+                        }
+
+                        int prodId = rs.getInt("prodId");
+                        if (!rs.wasNull()) {
+                            ProductDto product = new ProductDto(
+                                    rs.getString("productName"),
+                                    prodId,
+                                    rs.getString("unitOfMeasure"),
+                                    rs.getString("manufacturer")
+                            );
+
+                            QuantityAgreementDto quantityDto = new QuantityAgreementDto(
+                                    product,
+                                    rs.getDouble("price"),
+                                    rs.getInt("catalogNumber"),
+                                    rs.getInt("amountToDiscount"),
+                                    rs.getInt("discount")
+                            );
+
+                            int amountToOrder = rs.getInt("amountToOrder");
+                            PeriodAgreementItemDto item = new PeriodAgreementItemDto(quantityDto, amountToOrder);
+                            existingAgreement.productsList().add(item);
+                        }
+                    }
+
+                    result.addAll(agreementsMap.values());
+                }
+            }
+
+            return result;
+        } catch (SQLException e) {
+            Database.getConnection().rollback();
+            throw e;
+        }
+    }
 
     }

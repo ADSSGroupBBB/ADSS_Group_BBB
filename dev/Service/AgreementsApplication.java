@@ -74,5 +74,9 @@ public class AgreementsApplication {
     public void setPeriodAmountToOrder(int productNumber, int numAgree,int amount ){
         ac.setAmountOrder(productNumber,numAgree,amount);
     }
+    public boolean periodAgreementCanEdit(int numS ){
+        return ac.periodAgreeCanEdit(numS);
+    }
+
 
 }

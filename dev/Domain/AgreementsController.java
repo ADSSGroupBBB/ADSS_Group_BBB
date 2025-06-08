@@ -7,6 +7,9 @@ import dto.PeriodAgreementDto;
 import dto.QuantityAgreementDto;
 
 import java.sql.SQLException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 //a class for the controller of agreement (manager)
@@ -195,6 +198,26 @@ public class AgreementsController {
         }
         return false;
     }
-    public List<PeriodAgreementDto> getPeriodOrderToday()
+    public List<PeriodAgreementDto> getAllPeriodToOrder()  throws SQLException{
+        LocalDate todayDate = LocalDate.now();
+        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dateAsString = todayDate.format(formatDate);
+        return this.periodAgreeRepo.allPeriodAgreementsToOrder(todayDate.toString(),dateAsString);
+    }
+    public boolean periodAgreeCanEdit(int numS) throws SQLException {
+        SupplierController sup = SupplierController.getInstance();
+        LinkedList<String> days = sup.getDays(numS);
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        for (String day : days) {
+            DayOfWeek supplierDay = DayOfWeek.valueOf(day.toUpperCase());
+            int todayValue = today.getValue();
+            int supplierDayValue = supplierDay.getValue();
+            int daysUntilDelivery = (supplierDayValue - todayValue + 7) % 7;
+            if (daysUntilDelivery >= 1) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

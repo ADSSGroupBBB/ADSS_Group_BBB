@@ -531,6 +531,10 @@ public class AgreementsManager {
                     } else {
                         System.out.println("The periodic agreement not exists in the system");
                     }
+                    if(!aa.periodAgreementCanEdit(supplierNumber)){
+                        System.out.println("The agreement cannot be edited on the same day");
+                        return;
+                    }
                 }
             }
             else {
