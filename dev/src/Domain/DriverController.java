@@ -145,8 +145,9 @@ public class DriverController extends DeliveriesController {
 
                     return "Driver have correct license and is ready to drive."; // Return success message
                 }
+                return "Driver doesn't have correct license for this truck type"; // Incorrect license
             }
-            return "Driver doesn't have correct license for this truck type"; // Incorrect license
+            return "Driver is not in the origin of the destination."; // Driver unavailable
         } else {
             return "Driver is already in delivery"; // Driver unavailable
 
@@ -180,10 +181,15 @@ public class DriverController extends DeliveriesController {
         // Load drivers from database to map if not already present
         for (DriverDTO dto : list) {
             if (!dto.id().equals(lastId)) {
-                sb.append("Driver: ").append(dto.id()).append("\n");
+                if (dto.on_drive() == 0){
+                    sb.append("Driver: ").append(dto.id()).append(" ").append(dto.license()).append(" free to drive\n");
+                }
+                else {
+                    sb.append("Driver: ").append(dto.id()).append(" ").append(dto.license()).append(" currently on another delivery\n");
+                }
                 lastId = dto.id();
             } else {
-                sb.append(dto.id()).append(" ").append(dto.on_drive()).append("\n");
+                sb.append("Additional license: ").append(dto.license()).append("\n");
             }
         }
         // Remove the last newline character if the StringBuilder is not empty
