@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class Stock {
     private static Stock instance; // the single instance
-    private Map<String, PairInt > productStock; // map of product ID to quantity
+    private Map<Integer, ProductStock > productStock; // map of product ID to quantity
 
     // private constructor to prevent external instantiation
     private Stock() {
@@ -18,8 +18,8 @@ public class Stock {
             Random rn = new Random();
             int min = rn.nextInt(5) + 1;
             int curr = rn.nextInt(6)+5;
-            PairInt pi = new PairInt(min, curr);
-            productStock.put(product.getProductName(), pi );
+            ProductStock pi = new ProductStock(product.getProductNumber(),min, curr);
+            productStock.put(product.getProductNumber(), pi );
         }
     }
 
@@ -30,9 +30,15 @@ public class Stock {
         }
         return instance;
     }
+    public int getCurrentAmount(int numProduct){
+        return this.productStock.get(numProduct).getCurrentAmount();
+    }
+    public  int getMinimumAmount(int numProduct){
+        return this.productStock.get(numProduct).getMinimumCount();
+    }
 
     // Getter
-    public Map<String, PairInt> getProductStock() {
+    public Map<Integer, ProductStock> getProductStock() {
         return productStock;
     }
 
@@ -52,7 +58,7 @@ public class Stock {
                 }
             }
         }
-        for (Map.Entry<String, PairInt> entry : getProductStock().entrySet()) {
+        for (Map.Entry<Integer, PairInt> entry : getProductStock().entrySet()) {
             if (entry.getValue().first < entry.getValue().second) {  //check if the amount of product is smaller than the minimum required
                 automaticOrder.outOfStock.add(entry.getKey()); //if so add the id number of the product to the list
             }

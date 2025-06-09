@@ -3,7 +3,9 @@ package presentation;
 import Domain.Status;
 import Service.OrderApplication;
 import Service.StockApplication;
+import util.Database;
 
+import java.sql.SQLException;
 import java.sql.Time;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -22,8 +24,9 @@ public class OrderManager {
             System.out.println("Choose option 1-4");
             System.out.println("1.Add an order");
             System.out.println("2.Cancel an order");
-            System.out.println("3.Search an order");
-            System.out.println("4.Back to main menu");
+            System.out.println("3.Update on arrival of an order");
+            System.out.println("4.Search an order");
+            System.out.println("5.Back to main menu");
             if(scanner.hasNextInt()) {
                 choice = scanner.nextInt();
                 scanner.nextLine();
@@ -95,7 +98,7 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-
+        if (a == 1){
             while (true) {
                 System.out.println("Enter the number of the supplier you would like to order from");
                 if (scanner.hasNextInt()) {
@@ -149,34 +152,6 @@ public class OrderManager {
                 }
             }
 
-            int numS = 0;
-            while (true) {
-                System.out.println("Enter order's status:");
-                System.out.println("1.canceled");
-                System.out.println("2.deleted");
-                System.out.println("3.arrived");
-                if (scanner.hasNextInt()) {
-                    numS = scanner.nextInt();
-                    scanner.nextLine();
-                    if (numS >= 1 && numS <= 3) {
-                        break;
-                    } else {
-                        System.out.println("The number is invalid, please select again");
-                        scanner.nextLine();
-                    }
-                } else {
-                    System.out.println("The number is invalid, please select again");
-                    scanner.nextLine();
-
-                }
-            }
-            if (numS == 1) {
-                statusOrder="canceled";
-            } else if (numS == 2) {
-                statusOrder= "deleted";
-            } else {
-                statusOrder= "arrived";
-            }
             while (true) {
                 System.out.println("Enter the agreement number from which you would like to place an order");
                 if (scanner.hasNextInt()) {
@@ -193,8 +168,7 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
-        if (a == 1){
-            int orderNumber= oa.addOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
+            int orderNumber= oa.addOrder(numAgreement,numSupplier,address,date,contactPhone);
             int numP = 0;
             LinkedList<Integer> numProducts=new LinkedList<Integer>();
             while (true) {
@@ -277,9 +251,16 @@ public class OrderManager {
                 }
             }
             if (choiceType==1){
-                int orderID = oa
+                try {
+                    String orders = oa.createPeriodOrder();
+                    System.out.println(orders);
+                }
+             catch (SQLException e) {
+                 System.out.println("failed to create automatic order");
+            }
+
             }else{
-                int orderID =oa.addStandardAutoOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
+                int orderID =oa.addOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
                 if (orderID!=-1){
                     System.out.println("automatic order created successfully!");
                 }else{
@@ -308,7 +289,7 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        oa.deleteOrder(orderNumber);
+        oa.setStatusOrder(orderNumber,"deleted");
     }
     public void searchOrder(){
         StockApplication sa = new StockApplication();
@@ -352,7 +333,7 @@ public class OrderManager {
         if (choiceType ==1) {
             System.out.println(oa.printOrder(orderNumber));
         }else {
-            sa.upStock(orderNumber);
+            oa.setStatusOrder(orderNumber,"arrived");
         }
     }
 

@@ -2,6 +2,7 @@ package Domain;
 
 import dto.OrderDto;
 import dto.PeriodAgreementDto;
+import dto.PeriodAgreementItemDto;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -26,13 +27,13 @@ public class OrderController {
         }
         return instance;
     }
-    public Order orderBYnum(int orderID){
-        return allOrder.get(orderID);
+    public Order orderBYnum(int orderID) throws SQLException{
+        return OrderMapper.toObject(this.orderRepo.getOrder(orderID).get());
     }
     //add order to supplier
     //parameters:int orderNumber,int numSupplier,String address,String date,String contactPhone,String statusOrder
-    public int addNewOrder(int numAgree,int numSupplier,String address,String date,String contactPhone,String statusOrder) throws SQLException {
-        return (this.orderRepo.addOrder(numAgree,numSupplier,address,date,contactPhone,statusOrder)).orderNumber();
+    public int addNewOrder(int numAgree,int numSupplier,String address,String date,String contactPhone) throws SQLException {
+        return (this.orderRepo.addOrder(numAgree,numSupplier,address,date,contactPhone,"shipped")).orderNumber();
 
     }
     //checks if a certain order exists
@@ -45,14 +46,13 @@ public class OrderController {
         }
         return false;
     }
-    public Status StatusByID (int orderId) throws SQLException{
-        return this.orderRepo.getOrder(orderId).statusOrder();
-    }
+
     //prints all the products from a certain agreement
     //parameters:int numAgreement
     //returns String
     public String printProByAgree(int numAgreement) throws SQLException{
-        return this.orderRepo.printProductsByAgree(numAgreement);
+        AgreementsController ag= AgreementsController.getInstance();
+        return ag.printProduct(numAgreement);
     }
     //finds the amount of product in an agreement
     //parameters:int numAgreement
@@ -66,13 +66,18 @@ public class OrderController {
     //returns bool
     public boolean addItemOrder(int orderNumber, int numP,int amount) throws SQLException{
         AgreementsController ag=AgreementsController.getInstance();
-        int numAgreement=allOrder.get(orderNumber).getNumAgreement();
+        int numAgreement=this.orderRepo.getOrder(orderNumber).get().numAgreement();
         QuantityAgreement qa=ag.productFromAgreeByIndex(numAgreement,numP);
-        return allOrder.get(orderNumber).addProductOrder(qa,amount);
+        Order o=OrderMapper.toObject(this.orderRepo.getOrder(orderNumber).get());
+        boolean success= o.addProductOrder(qa,amount);
+        if(success){
+            this.orderRepo.addProductOrder(orderNumber,numP,amount);
+        }
+        return success;
     }
-    //set an order's status as deleted
+    //set an order's status as status
     //parameter:int orderNumber,String status
-    public void statusDelete(int orderNumber,String status) throws SQLException{
+    public void updateStatus(int orderNumber,String status) throws SQLException{
         this.orderRepo.updateStatus(orderNumber,status);
     }
     //prints order
@@ -85,13 +90,23 @@ public class OrderController {
     public String addPeriodOrder() throws SQLException{
         AgreementsController ac=AgreementsController.getInstance();
         int count=0;
+        Stock s= Stock.getInstance();
         LocalDate todayDate = LocalDate.now();
         List<PeriodAgreementDto> todayPeriodOrder=ac.getAllPeriodToOrder(); //לבדוק שמעל המלאי ולפני עריכה תופעל הפונקציה
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
         for (PeriodAgreementDto agree:todayPeriodOrder){
-                addNewOrder(agree.IDNumber(), agree.supplierNumber(), agree.address(), dateAsString, agree.contactPhone(), "shipped");
+                int numOrder=addNewOrder(agree.IDNumber(), agree.supplierNumber(), agree.address(), dateAsString, agree.contactPhone());
                 count++;
+                for (PeriodAgreementItemDto it:agree.productsList()){
+                    int amount=it.amountToOrder();
+                    int productNum=it.productAgreement().pro().productNumber();
+                    if(!(s.getCurrentAmount(productNum)+it.amountToOrder()>=s.getMinimumAmount(productNum))){
+                        amount=amount+s.getMinimumAmount(it.productAgreement().pro().productNumber());
+                    }
+                    addItemOrder(numOrder,productNum,amount);
+                    s.getProductStock().get(productNum).setBeOrdered(true);
+                }
         }
         String orderString= count+" orders created";
         return orderString;

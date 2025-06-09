@@ -206,18 +206,17 @@ public class AgreementsController {
     }
     public boolean periodAgreeCanEdit(int numS) throws SQLException {
         SupplierController sup = SupplierController.getInstance();
+        OrderController ord=OrderController.getInstance();
         LinkedList<String> days = sup.getDays(numS);
         DayOfWeek today = LocalDate.now().getDayOfWeek();
-        for (String day : days) {
-            DayOfWeek supplierDay = DayOfWeek.valueOf(day.toUpperCase());
-            int todayValue = today.getValue();
-            int supplierDayValue = supplierDay.getValue();
-            int daysUntilDelivery = (supplierDayValue - todayValue + 7) % 7;
-            if (daysUntilDelivery >= 1) {
-                return true;
+        if(days.contains(today.getValue())){
+            if(days.size()==1){
+                return false;
             }
-        }
-        return false;
+            ord.addPeriodOrder();
+            return true;
+         }
+        return true;
     }
 
 }
