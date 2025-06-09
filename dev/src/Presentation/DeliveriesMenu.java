@@ -162,12 +162,14 @@ public class DeliveriesMenu {
                     System.out.print("Enter destination address: ");
                     System.out.println(la.printLocations());  // Print available locations for the route
                     address = scanner.nextLine().trim();
-                    shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
+                    shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, address);
                     res = da.addDestination(address, route, shiftID);
                     String shortm = res.substring(0, res.indexOf("."));
                     if (shortm.equals("Success")){
                         System.out.println(res);
                         added_succesfully = true;
+                    } else {
+                        System.out.println(res);
                     }
                 }
                 added_succesfully = false;
