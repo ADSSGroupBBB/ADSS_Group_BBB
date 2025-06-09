@@ -51,7 +51,6 @@ public class Main {
                 System.out.println("Invalid choice choose 1 or 2.");
         }
 
-
         System.out.println("System shutdown complete.");
     }
 

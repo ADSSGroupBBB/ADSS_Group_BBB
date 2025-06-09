@@ -527,7 +527,7 @@ public final class Database {
             // Insert qualifications, availability, and shifts
             insertQualifications(conn);
             insertAvailability(conn);
-            insertSampleShifts(conn, branches);
+            insertSingleShiftPerBranch(conn, branches); // שונה לכאן!
         }
     }
 
@@ -605,51 +605,15 @@ public final class Database {
         }
     }
 
-    private static void insertSampleShifts(Connection conn, List<String> branches) throws SQLException {
+    /**
+     * יוצר שבוע שלם של משמרות לכל סניף החל מ-29.7.2025 - רק בנתונים הראשוניים
+     */
+    private static void insertSingleShiftPerBranch(Connection conn, List<String> branches) throws SQLException {
         if (branches.isEmpty()) return;
 
-        String sampleBranch = branches.get(0);
-        createShiftsForWeek(conn, LocalDate.now().minusWeeks(1), sampleBranch, true);
-        createShiftsForWeek(conn, LocalDate.now().plusWeeks(1), sampleBranch, false);
+        LocalDate startDate = LocalDate.of(2025, 7, 29); // תאריך התחלה
 
-        LocalDate[] specificDates = {
-                LocalDate.of(2025, 7, 6),   // 6.7.2025
-                LocalDate.of(2025, 7, 22)  // 22.7.2025
-        };
-
-        String shiftSql = "INSERT OR IGNORE INTO shifts (id, date, shift_type, start_time, end_time, branch_address) VALUES (?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement shiftPs = conn.prepareStatement(shiftSql)) {
-            for (String branchAddress : branches) {
-                for (LocalDate date : specificDates) {
-                    String branchSuffix = branchAddress != null ? "_" + branchAddress.replaceAll("\\s+", "") : "";
-
-                    // Morning shift
-                    String morningShiftId = date.toString() + "_morning" + branchSuffix;
-                    shiftPs.setString(1, morningShiftId);
-                    shiftPs.setString(2, date.toString());
-                    shiftPs.setString(3, "MORNING");
-                    shiftPs.setString(4, LocalTime.of(7, 0).toString());
-                    shiftPs.setString(5, LocalTime.of(14, 0).toString());
-                    shiftPs.setString(6, branchAddress);
-                    shiftPs.executeUpdate();
-
-                    // Evening shift
-                    String eveningShiftId = date.toString() + "_evening" + branchSuffix;
-                    shiftPs.setString(1, eveningShiftId);
-                    shiftPs.setString(2, date.toString());
-                    shiftPs.setString(3, "EVENING");
-                    shiftPs.setString(4, LocalTime.of(14, 0).toString());
-                    shiftPs.setString(5, LocalTime.of(21, 0).toString());
-                    shiftPs.setString(6, branchAddress);
-                    shiftPs.executeUpdate();
-                }
-            }
-        }
-        System.out.println("Created shifts for specific dates: 6.7.2025 and 22.7.2025");
-    }
-
-    private static void createShiftsForWeek(Connection conn, LocalDate startDate, String branchAddress, boolean assignEmployees) throws SQLException {
+        // וודא שזה יום ראשון - אם לא, מצא את יום הראשון הקרוב
         while (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
             startDate = startDate.minusDays(1);
         }
@@ -660,45 +624,65 @@ public final class Database {
         try (PreparedStatement shiftPs = conn.prepareStatement(shiftSql);
              PreparedStatement assignPs = conn.prepareStatement(assignmentSql)) {
 
-            LocalDate currentDate = startDate;
-            for (int i = 0; i < 7; i++) {
-                String branchSuffix = branchAddress != null ? "_" + branchAddress.replaceAll("\\s+", "") : "";
-
-                String morningShiftId = currentDate.toString() + "_morning" + branchSuffix;
-                shiftPs.setString(1, morningShiftId);
-                shiftPs.setString(2, currentDate.toString());
-                shiftPs.setString(3, "MORNING");
-                shiftPs.setString(4, LocalTime.of(7, 0).toString());
-                shiftPs.setString(5, LocalTime.of(14, 0).toString());
-                shiftPs.setString(6, branchAddress);
-                shiftPs.executeUpdate();
-
-                String eveningShiftId = currentDate.toString() + "_evening" + branchSuffix;
-                shiftPs.setString(1, eveningShiftId);
-                shiftPs.setString(2, currentDate.toString());
-                shiftPs.setString(3, "EVENING");
-                shiftPs.setString(4, LocalTime.of(14, 0).toString());
-                shiftPs.setString(5, LocalTime.of(21, 0).toString());
-                shiftPs.setString(6, branchAddress);
-                shiftPs.executeUpdate();
-
-                if (assignEmployees) {
-                    assignPs.setString(1, morningShiftId);
-                    assignPs.setString(2, "666");
-                    assignPs.setString(3, "Floor Manager");
-                    assignPs.setInt(4, 1);
-                    assignPs.executeUpdate();
-
-                    assignPs.setString(1, eveningShiftId);
-                    assignPs.setString(2, "666");
-                    assignPs.setString(3, "Floor Manager");
-                    assignPs.setInt(4, 1);
-                    assignPs.executeUpdate();
+            // Find available shift manager
+            String shiftManagerId = "666";
+            String checkEmployeeSql = "SELECT id FROM employees WHERE id = ?";
+            try (PreparedStatement checkPs = conn.prepareStatement(checkEmployeeSql)) {
+                checkPs.setString(1, "666");
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (!rs.next()) {
+                        shiftManagerId = "admin";
+                    }
                 }
+            }
 
-                currentDate = currentDate.plusDays(1);
+            // יוצר שבוע שלם לכל סניף (7 ימים * 2 משמרות = 14 משמרות לכל סניף)
+            for (String branchAddress : branches) {
+                String branchSuffix = branchAddress != null ? "_" + branchAddress.replaceAll("\\s+", "") : "";
+                LocalDate currentDate = startDate;
+
+                // יוצר 7 ימים של משמרות
+                for (int day = 0; day < 7; day++) {
+
+                    // משמרת בוקר
+                    String morningShiftId = currentDate.toString() + "_morning" + branchSuffix;
+                    shiftPs.setString(1, morningShiftId);
+                    shiftPs.setString(2, currentDate.toString());
+                    shiftPs.setString(3, "MORNING");
+                    shiftPs.setString(4, LocalTime.of(7, 0).toString());
+                    shiftPs.setString(5, LocalTime.of(14, 0).toString());
+                    shiftPs.setString(6, branchAddress);
+                    shiftPs.executeUpdate();
+
+                    // Assign shift manager to morning shift
+                    assignPs.setString(1, morningShiftId);
+                    assignPs.setString(2, shiftManagerId);
+                    assignPs.setString(3, "Floor Manager");
+                    assignPs.setInt(4, 1);
+                    assignPs.executeUpdate();
+
+                    // משמרת ערב
+                    String eveningShiftId = currentDate.toString() + "_evening" + branchSuffix;
+                    shiftPs.setString(1, eveningShiftId);
+                    shiftPs.setString(2, currentDate.toString());
+                    shiftPs.setString(3, "EVENING");
+                    shiftPs.setString(4, LocalTime.of(14, 0).toString());
+                    shiftPs.setString(5, LocalTime.of(21, 0).toString());
+                    shiftPs.setString(6, branchAddress);
+                    shiftPs.executeUpdate();
+
+                    // Assign shift manager to evening shift
+                    assignPs.setString(1, eveningShiftId);
+                    assignPs.setString(2, shiftManagerId);
+                    assignPs.setString(3, "Floor Manager");
+                    assignPs.setInt(4, 1);
+                    assignPs.executeUpdate();
+
+                    currentDate = currentDate.plusDays(1);
+                }
             }
         }
+        System.out.println("Created full week of shifts (14 per branch) starting from " + startDate + " with shift managers assigned");
     }
 
     /**

@@ -1,10 +1,13 @@
+
+
+
 package Service_employee;
 
 import DTO.BranchDTO;
 import DTO.EmployeeDTO;
 import DTO.PositionDTO;
 import DTO.ShiftDTO;
-import Domain_employee.EmployeeController;
+import Domain_employee.*;
 
 import java.sql.SQLException;
 import java.time.DayOfWeek;
@@ -12,276 +15,272 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Thin service layer for employee operations.
- * Acts as a bridge between presentation layer and controller (business logic).
- * This service should be thin and mainly delegate to the controller.
+ * Service layer that directly uses specialized controllers.
  */
 public class EmployeeService {
-    private final EmployeeController employeeController;
+    private final EmployeeManagementController employeeManagementController;
+    private final EmployeeDriverController employeeDriverController;
+    private final PositionManagementController positionManagementController;
+    private final AvailabilityManagementController availabilityManagementController;
+    private final ShiftManagementController shiftManagementController;
+    private final BranchManagementController branchManagementController;
 
     public EmployeeService() {
-        this.employeeController = new EmployeeController();
+        this.employeeManagementController = new EmployeeManagementController();
+        this.employeeDriverController = new EmployeeDriverController();
+        this.positionManagementController = new PositionManagementController();
+        this.availabilityManagementController = new AvailabilityManagementController();
+        this.shiftManagementController = new ShiftManagementController();
+        this.branchManagementController = new BranchManagementController();
     }
 
+    // Employee Management - Direct delegation
     public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
                                LocalDate startDate, double salary, int sickDays, int vacationDays,
                                String pensionFundName, String branchAddress) {
-
-
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
             System.err.println("Error: Branch address is required for all employees");
             return false;
         }
-
-        return employeeController.addEmployee(id, firstName, lastName, bankAccount,
+        return employeeManagementController.addEmployee(id, firstName, lastName, bankAccount,
                 startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
     public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
-                               LocalDate startDate, double salary, int sickDays, int vacationDays,
-                               String pensionFundName, String branchAddress, List<Integer> license_list) throws SQLException {
-
-
+                             LocalDate startDate, double salary, int sickDays, int vacationDays,
+                             String pensionFundName, String branchAddress, List<Integer> license_list) throws SQLException {
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
             System.err.println("Error: Branch address is required for all employees");
             return false;
         }
-        return employeeController.addDriver(id, firstName, lastName, bankAccount,
+        return employeeDriverController.addDriver(id, firstName, lastName, bankAccount,
                 startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress, license_list);
     }
 
     public boolean addStoreKeeper(String id, String firstName, String lastName, String bankAccount,
-                               LocalDate startDate, double salary, int sickDays, int vacationDays,
-                               String pensionFundName, String branchAddress) {
-
-
+                                  LocalDate startDate, double salary, int sickDays, int vacationDays,
+                                  String pensionFundName, String branchAddress) {
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
             System.err.println("Error: Branch address is required for all employees");
             return false;
         }
-
-        return employeeController.addStoreKeeper(id, firstName, lastName, bankAccount,
+        return employeeManagementController.addStoreKeeper(id, firstName, lastName, bankAccount,
                 startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
     public boolean addManagerEmployee(String id, String firstName, String lastName, String bankAccount,
                                       LocalDate startDate, double salary, String role, String password,
                                       int sickDays, int vacationDays, String pensionFundName, String branchAddress) {
-
-
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
             System.err.println("Error: Branch address is required for all employees");
             return false;
         }
-
-        return employeeController.addManagerEmployee(id, firstName, lastName, bankAccount,
+        return employeeManagementController.addManagerEmployee(id, firstName, lastName, bankAccount,
                 startDate, salary, role, password, sickDays, vacationDays, pensionFundName, branchAddress);
     }
 
     public EmployeeDTO getEmployeeDetails(String id) {
-        return employeeController.getEmployee(id);
+        return employeeManagementController.getEmployee(id);
     }
 
     public List<EmployeeDTO> getAllEmployees() {
-        return employeeController.getAllEmployees();
+        return employeeManagementController.getAllEmployees();
     }
 
     public List<EmployeeDTO> getEmployeesByBranch(String branchAddress) {
-        return employeeController.getEmployeesByBranch(branchAddress);
+        return employeeManagementController.getEmployeesByBranch(branchAddress);
     }
 
     public boolean removeEmployee(String id) {
-        return employeeController.removeEmployee(id);
+        return employeeManagementController.removeEmployee(id);
     }
 
     public boolean removeDriver(String id) throws SQLException {
-        return employeeController.removeDriver(id);
+        return employeeDriverController.removeDriver(id);
     }
 
-    // Position Management
+    // Position Management - Direct delegation
     public boolean addPosition(String name, boolean isShiftManagerRole) {
-        return employeeController.addPosition(name, isShiftManagerRole);
+        return positionManagementController.addPosition(name, isShiftManagerRole);
     }
 
     public List<PositionDTO> getAllPositions() {
-        return employeeController.getAllPositions();
+        return positionManagementController.getAllPositions();
     }
 
     public PositionDTO getPositionDetails(String name) {
-        return employeeController.getPositionDetails(name);
+        return positionManagementController.getPositionDetails(name);
     }
 
-    // Qualification Management
+    // Qualification Management - Direct delegation
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
-        return employeeController.addQualificationToEmployee(employeeId, positionName);
+        return positionManagementController.addQualificationToEmployee(employeeId, positionName);
     }
 
     public boolean removeQualificationFromEmployee(String employeeId, String positionName) {
-        return employeeController.removeQualificationFromEmployee(employeeId, positionName);
+        return positionManagementController.removeQualificationFromEmployee(employeeId, positionName);
     }
 
     public List<EmployeeDTO> getQualifiedEmployeesForPosition(String positionName) {
-        return employeeController.getQualifiedEmployeesForPosition(positionName);
+        return positionManagementController.getQualifiedEmployeesForPosition(positionName);
     }
 
-    // Availability Management
+    // Availability Management - Direct delegation
     public boolean updateEmployeeAvailability(String employeeId, DayOfWeek dayOfWeek,
                                               boolean morningAvailable, boolean eveningAvailable) {
-        return employeeController.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
+        return availabilityManagementController.updateEmployeeAvailability(employeeId, dayOfWeek,
+                morningAvailable, eveningAvailable);
     }
 
     public boolean updateEmployeeAvailabilityForNextWeek(String employeeId, DayOfWeek dayOfWeek,
                                                          boolean morningAvailable, boolean eveningAvailable) {
-        // For now, same as regular availability update
-        return employeeController.updateEmployeeAvailability(employeeId, dayOfWeek, morningAvailable, eveningAvailable);
+        return availabilityManagementController.updateEmployeeAvailability(employeeId, dayOfWeek,
+                morningAvailable, eveningAvailable);
     }
 
     public boolean isEmployeeAvailable(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
-        return employeeController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
+        return availabilityManagementController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
     }
 
     public boolean isEmployeeAvailableForNextWeek(String employeeId, DayOfWeek dayOfWeek, String shiftType) {
-        // For now, same as regular availability check
-        return employeeController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
+        return availabilityManagementController.isEmployeeAvailable(employeeId, dayOfWeek, shiftType);
     }
 
-    // Shift Management
+    // Shift Management - Direct delegation
     public ShiftDTO createShift(LocalDate date, String shiftType) {
-        return employeeController.createShift(date, shiftType, null);
+        return shiftManagementController.createShift(date, shiftType, null);
     }
 
     public ShiftDTO createShift(LocalDate date, String shiftType, String branchAddress) {
-        return employeeController.createShift(date, shiftType, branchAddress);
+        return shiftManagementController.createShift(date, shiftType, branchAddress);
     }
 
     public List<ShiftDTO> getAllShiftsAsDTO() {
-        return employeeController.getAllShifts();
+        return shiftManagementController.getAllShifts();
     }
 
     public List<ShiftDTO> getFutureShifts() {
-        return employeeController.getFutureShifts();
+        return shiftManagementController.getFutureShifts();
     }
 
     public List<ShiftDTO> getHistoricalShifts() {
-        return employeeController.getHistoricalShifts();
+        return shiftManagementController.getHistoricalShifts();
     }
 
     public List<ShiftDTO> getShiftsByBranch(String branchAddress) {
-        return employeeController.getShiftsByBranch(branchAddress);
+        return shiftManagementController.getShiftsByBranch(branchAddress);
     }
 
-    // Shift Assignment
+    // Shift Assignment - Direct delegation
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-        return employeeController.assignEmployeeToShift(shiftId, employeeId, positionName);
+        return shiftManagementController.assignEmployeeToShift(shiftId, employeeId, positionName);
     }
 
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
-        return employeeController.removeAssignmentFromShift(shiftId, positionName);
+        return shiftManagementController.removeAssignmentFromShift(shiftId, positionName);
     }
 
     public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
-        return employeeController.isEmployeeAlreadyAssignedToShift(shiftId, employeeId);
+        return shiftManagementController.isEmployeeAlreadyAssignedToShift(shiftId, employeeId);
     }
 
     public boolean areAllRequiredPositionsCovered(String shiftId) {
-        return employeeController.areAllRequiredPositionsCovered(shiftId);
+        return shiftManagementController.areAllRequiredPositionsCovered(shiftId);
     }
 
-    // Required Positions
+    // Required Positions - Direct delegation
     public boolean addRequiredPosition(String shiftType, String positionName, int count) {
-        return employeeController.addRequiredPosition(shiftType, positionName, count);
+        return positionManagementController.addRequiredPosition(shiftType, positionName, count);
     }
 
     public int getRequiredPositionsCount(String shiftType, String positionName) {
-        return employeeController.getRequiredPositionsCount(shiftType, positionName);
+        return positionManagementController.getRequiredPositionsCount(shiftType, positionName);
     }
 
-    // Employee Updates
+    // Employee Updates - Direct delegation
     public boolean updateEmployeeFirstName(String id, String firstName) {
-        return employeeController.updateEmployeeFirstName(id, firstName);
+        return employeeManagementController.updateEmployeeFirstName(id, firstName);
     }
 
     public boolean updateEmployeeLastName(String id, String lastName) {
-        return employeeController.updateEmployeeLastName(id, lastName);
+        return employeeManagementController.updateEmployeeLastName(id, lastName);
     }
 
     public boolean updateEmployeeBankAccount(String id, String bankAccount) {
-        return employeeController.updateEmployeeBankAccount(id, bankAccount);
+        return employeeManagementController.updateEmployeeBankAccount(id, bankAccount);
     }
 
     public boolean updateEmployeeSalary(String id, double salary) {
-        return employeeController.updateEmployeeSalary(id, salary);
+        return employeeManagementController.updateEmployeeSalary(id, salary);
     }
 
     public boolean updateEmployeeRole(String id, String role) {
-        return employeeController.updateEmployeeRole(id, role);
+        return employeeManagementController.updateEmployeeRole(id, role);
     }
 
     public boolean updateEmployeePassword(String id, String password) {
-        return employeeController.updateEmployeePassword(id, password);
+        return employeeManagementController.updateEmployeePassword(id, password);
     }
 
     public boolean updateEmployeeSickDays(String id, int sickDays) {
-        return employeeController.updateEmployeeSickDays(id, sickDays);
+        return employeeManagementController.updateEmployeeSickDays(id, sickDays);
     }
 
     public boolean updateEmployeeVacationDays(String id, int vacationDays) {
-        return employeeController.updateEmployeeVacationDays(id, vacationDays);
+        return employeeManagementController.updateEmployeeVacationDays(id, vacationDays);
     }
 
     public boolean updateEmployeePensionFund(String id, String pensionFundName) {
-        return employeeController.updateEmployeePensionFund(id, pensionFundName);
+        return employeeManagementController.updateEmployeePensionFund(id, pensionFundName);
     }
 
     public boolean updateEmployeeBranch(String id, String branchAddress) {
-        return employeeController.updateEmployeeBranch(id, branchAddress);
+        return employeeManagementController.updateEmployeeBranch(id, branchAddress);
     }
 
-    // Branch Management
+    // Branch Management - Direct delegation
     public List<BranchDTO> getAllBranches() {
-        return employeeController.getAllBranches();
+        return branchManagementController.getAllBranches();
     }
 
     public BranchDTO getBranchByAddress(String address) {
-        return employeeController.getBranchByAddress(address);
+        return branchManagementController.getBranchByAddress(address);
     }
 
     public boolean branchExists(String address) {
-        return employeeController.branchExists(address);
+        return branchManagementController.branchExists(address);
     }
 
-    // Utility Methods
+    // Utility Methods - Direct delegation
     public boolean hasShiftManagers() {
-        return employeeController.hasShiftManagers();
+        return employeeManagementController.hasShiftManagers();
     }
 
     public List<EmployeeDTO> getAvailableEmployeesForShift(LocalDate date, String shiftType) {
-        return employeeController.getAvailableEmployeesForShift(date, shiftType);
+        return availabilityManagementController.getAvailableEmployeesForShift(date, shiftType);
     }
 
     public List<PositionDTO> getMissingPositionsForShift(String shiftId) {
-        return employeeController.getMissingPositionsForShift(shiftId);
+        return positionManagementController.getMissingPositionsForShift(shiftId);
     }
 
     public boolean deleteShift(String shiftId) {
-        return employeeController.deleteShift(shiftId);
+        return shiftManagementController.deleteShift(shiftId);
     }
 
-    // Password verification (for login)
+    // Password verification (for login) - Direct delegation
     public boolean verifyPassword(String id, String password) {
-        return employeeController.verifyPassword(id, password);
+        return employeeManagementController.verifyPassword(id, password);
     }
 
-    // Shift hours management
+    // Shift hours management - Direct delegation
     public boolean updateShiftHours(String shiftTypeStr, String newStart, String newEnd) {
-        return employeeController.updateShiftHours(shiftTypeStr, newStart, newEnd);
+        return shiftManagementController.updateShiftHours(shiftTypeStr, newStart, newEnd);
     }
 
     public List<EmployeeDTO> getEmployeesWithoutBranch() {
-        return employeeController.getAllEmployees().stream()
+        return employeeManagementController.getAllEmployees().stream()
                 .filter(emp -> !emp.hasBranch())
                 .toList();
     }
 }
-
-

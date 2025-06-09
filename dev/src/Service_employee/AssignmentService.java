@@ -1,51 +1,62 @@
+
+
 package Service_employee;
 
 import DTO.EmployeeDTO;
-import Domain_employee.EmployeeController;
+import Domain_employee.ShiftManagementController;
+import Domain_employee.AvailabilityManagementController;
+import Domain_employee.PositionManagementController;
+import Domain_employee.EmployeeManagementController;
 
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Thin service layer for shift assignment operations.
- * Acts as a bridge between presentation layer and controller (business logic).
+ * Acts as a bridge between presentation layer and specialized controllers.
  */
 public class AssignmentService {
-    private final EmployeeController employeeController;
+    private final ShiftManagementController shiftController;
+    private final AvailabilityManagementController availabilityController;
+    private final PositionManagementController positionController;
+    private final EmployeeManagementController employeeController;
 
     public AssignmentService() {
-        this.employeeController = new EmployeeController();
+        this.shiftController = new ShiftManagementController();
+        this.availabilityController = new AvailabilityManagementController();
+        this.positionController = new PositionManagementController();
+        this.employeeController = new EmployeeManagementController();
     }
 
     // Shift Assignment Operations
     public boolean assignEmployeeToShift(String shiftId, String employeeId, String positionName) {
-        return employeeController.assignEmployeeToShift(shiftId, employeeId, positionName);
+        return shiftController.assignEmployeeToShift(shiftId, employeeId, positionName);
     }
 
     public boolean removeAssignmentFromShift(String shiftId, String positionName) {
-        return employeeController.removeAssignmentFromShift(shiftId, positionName);
+        return shiftController.removeAssignmentFromShift(shiftId, positionName);
     }
 
     public boolean areAllRequiredPositionsCovered(String shiftId) {
-        return employeeController.areAllRequiredPositionsCovered(shiftId);
+        return shiftController.areAllRequiredPositionsCovered(shiftId);
     }
 
     public boolean isEmployeeAlreadyAssignedToShift(String shiftId, String employeeId) {
-        return employeeController.isEmployeeAlreadyAssignedToShift(shiftId, employeeId);
+        return shiftController.isEmployeeAlreadyAssignedToShift(shiftId, employeeId);
     }
 
     public List<EmployeeDTO> getAvailableEmployeesForShift(LocalDate date, String shiftType) {
-        return employeeController.getAvailableEmployeesForShift(date, shiftType);
+        return availabilityController.getAvailableEmployeesForShift(date, shiftType);
     }
 
     public int getRequiredPositionsCount(String shiftType, String positionName) {
-        return employeeController.getRequiredPositionsCount(shiftType, positionName);
+        return positionController.getRequiredPositionsCount(shiftType, positionName);
     }
 
     // Branch-specific assignment operations
     public List<EmployeeDTO> getAvailableEmployeesForShiftByBranch(LocalDate date, String shiftType, String branchAddress) {
         // Get available employees and filter by branch
-        return employeeController.getAvailableEmployeesForShift(date, shiftType).stream()
+        return availabilityController.getAvailableEmployeesForShift(date, shiftType).stream()
                 .filter(employee -> branchAddress == null ||
                         branchAddress.equals(employee.getBranchAddress()) ||
                         employee.getBranchAddress() == null) // Allow employees without specific branch
@@ -53,8 +64,8 @@ public class AssignmentService {
     }
 
     public List<EmployeeDTO> getQualifiedAndAvailableEmployees(LocalDate date, String shiftType, String positionName) {
-        List<EmployeeDTO> availableEmployees = employeeController.getAvailableEmployeesForShift(date, shiftType);
-        List<EmployeeDTO> qualifiedEmployees = employeeController.getQualifiedEmployeesForPosition(positionName);
+        List<EmployeeDTO> availableEmployees = availabilityController.getAvailableEmployeesForShift(date, shiftType);
+        List<EmployeeDTO> qualifiedEmployees = positionController.getQualifiedEmployeesForPosition(positionName);
 
         // Return intersection of available and qualified employees
         return availableEmployees.stream()
@@ -65,8 +76,6 @@ public class AssignmentService {
 
     public List<EmployeeDTO> getQualifiedAndAvailableEmployeesByBranch(LocalDate date, String shiftType,
                                                                        String positionName, String branchAddress) {
-        List<EmployeeDTO> availableEmployees = employeeController.getAvailableEmployeesForShift(date, shiftType);
-        List<EmployeeDTO> qualifiedEmployees = employeeController.getQualifiedEmployeesForPosition(positionName);
         return getQualifiedAndAvailableEmployees(date, shiftType, positionName).stream()
                 .filter(employee -> branchAddress == null ||
                         branchAddress.equals(employee.getBranchAddress()) ||
