@@ -187,10 +187,11 @@ public final class Database {
 
         st.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS doc_items (
-                    doc_id       TEXT PRIMARY KEY,
+                    doc_id       TEXT NOT NULL,
                     name         TEXT NOT NULL,
                     weight       INTEGER NOT NULL,
                     amount       INTEGER NOT NULL,
+                    PRIMARY KEY (doc_id, name),  -- Composite key
                     FOREIGN KEY(name) REFERENCES shipment_items(name)
                 );
             """);
@@ -208,9 +209,10 @@ public final class Database {
 
         st.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS doc_locations (
-                    doc_id   TEXT PRIMARY KEY,
-                    address       TEXT NOT NULL,
-                    FOREIGN KEY(address) REFERENCES locations(address)
+                        doc_id   TEXT NOT NULL,
+                        address  TEXT NOT NULL,
+                        PRIMARY KEY (doc_id, address),  -- Composite key
+                        FOREIGN KEY(address) REFERENCES locations(address)
                 );
             """);
     }
@@ -426,7 +428,8 @@ public final class Database {
                         {"MORNING", "Cashier", "2"}, {"MORNING", "Stocker", "1"}, {"MORNING", "Security", "1"},
                         {"MORNING", "Floor Manager", "1"}, {"MORNING", "Customer Service", "1"}, {"MORNING", "STORE_KEEPER", "1"},
                         {"EVENING", "Cashier", "3"}, {"EVENING", "Stocker", "2"}, {"EVENING", "Security", "1"},
-                        {"EVENING", "Floor Manager", "1"}, {"EVENING", "Customer Service", "2"}, {"EVENING", "STORE_KEEPER", "1"}
+                        {"EVENING", "Floor Manager", "1"}, {"EVENING", "Customer Service", "2"}, {"EVENING", "STORE_KEEPER", "1"},
+                        {"MORNING", "Driver", "1"}, {"EVENING", "Driver", "1"}, {"EVENING", "STORE_KEEPER", "1"}
                 };
 
                 for (String[] req : requirements) {
@@ -583,6 +586,8 @@ public final class Database {
         }
     }
 
+
+
     private static void insertAvailability(Connection conn) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO employee_availability (employee_id, day_of_week, morning_available, evening_available) VALUES (?, ?, ?, ?)")) {
             // Include ALL employees: admin, regular employees, shift manager, drivers, and store keepers
@@ -607,46 +612,10 @@ public final class Database {
 
     private static void insertSampleShifts(Connection conn, List<String> branches) throws SQLException {
         if (branches.isEmpty()) return;
-
-        String sampleBranch = branches.get(0);
-        createShiftsForWeek(conn, LocalDate.now().minusWeeks(1), sampleBranch, true);
-        createShiftsForWeek(conn, LocalDate.now().plusWeeks(1), sampleBranch, false);
-
-        LocalDate[] specificDates = {
-                LocalDate.of(2025, 7, 6),   // 6.7.2025
-                LocalDate.of(2025, 7, 22)  // 22.7.2025
-        };
-
-        String shiftSql = "INSERT OR IGNORE INTO shifts (id, date, shift_type, start_time, end_time, branch_address) VALUES (?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement shiftPs = conn.prepareStatement(shiftSql)) {
-            for (String branchAddress : branches) {
-                for (LocalDate date : specificDates) {
-                    String branchSuffix = branchAddress != null ? "_" + branchAddress.replaceAll("\\s+", "") : "";
-
-                    // Morning shift
-                    String morningShiftId = date.toString() + "_morning" + branchSuffix;
-                    shiftPs.setString(1, morningShiftId);
-                    shiftPs.setString(2, date.toString());
-                    shiftPs.setString(3, "MORNING");
-                    shiftPs.setString(4, LocalTime.of(7, 0).toString());
-                    shiftPs.setString(5, LocalTime.of(14, 0).toString());
-                    shiftPs.setString(6, branchAddress);
-                    shiftPs.executeUpdate();
-
-                    // Evening shift
-                    String eveningShiftId = date.toString() + "_evening" + branchSuffix;
-                    shiftPs.setString(1, eveningShiftId);
-                    shiftPs.setString(2, date.toString());
-                    shiftPs.setString(3, "EVENING");
-                    shiftPs.setString(4, LocalTime.of(14, 0).toString());
-                    shiftPs.setString(5, LocalTime.of(21, 0).toString());
-                    shiftPs.setString(6, branchAddress);
-                    shiftPs.executeUpdate();
-                }
-            }
+        for (int i=0; i < branches.size(); i++){
+            createShiftsForWeek(conn, LocalDate.now().minusWeeks(1), branches.get(i), false);
+            createShiftsForWeek(conn, LocalDate.now().plusWeeks(1), branches.get(i), true);
         }
-        System.out.println("Created shifts for specific dates: 6.7.2025 and 22.7.2025");
     }
 
     private static void createShiftsForWeek(Connection conn, LocalDate startDate, String branchAddress, boolean assignEmployees) throws SQLException {
@@ -683,6 +652,7 @@ public final class Database {
                 shiftPs.executeUpdate();
 
                 if (assignEmployees) {
+                    // Assign shift manager (existing code)
                     assignPs.setString(1, morningShiftId);
                     assignPs.setString(2, "666");
                     assignPs.setString(3, "Floor Manager");
@@ -694,12 +664,138 @@ public final class Database {
                     assignPs.setString(3, "Floor Manager");
                     assignPs.setInt(4, 1);
                     assignPs.executeUpdate();
+
+                    // NEW: Assign drivers and store keepers for June 15, 2025
+                    if (currentDate.equals(LocalDate.of(2025, 6, 15))) {
+                        assignDriversAndStoreKeepersForDate(conn, assignPs, morningShiftId, eveningShiftId, branchAddress);
+                    }
+
+                    if ("Headquarters".equals(branchAddress)) {
+                        assignStoreKeepersForHeadquarters(conn, assignPs, morningShiftId, eveningShiftId, branchAddress);
+                    }
                 }
 
                 currentDate = currentDate.plusDays(1);
             }
         }
     }
+
+    /**
+     * Helper method to assign store keepers to every shift at Headquarters
+     */
+    private static void assignStoreKeepersForHeadquarters(Connection conn, PreparedStatement assignPs,
+                                                          String morningShiftId, String eveningShiftId,
+                                                          String branchAddress) throws SQLException {
+
+        // Get store keepers for Headquarters who are qualified for the STORE_KEEPER position
+        String storeKeeperQuery = """
+        SELECT e.id 
+        FROM employees e
+        INNER JOIN employee_qualifications eq ON e.id = eq.employee_id
+        WHERE e.role = 'STORE_KEEPER' 
+          AND e.branch_address = ?
+          AND eq.position_name = 'STORE_KEEPER'
+        """;
+
+        try (PreparedStatement storeKeeperPs = conn.prepareStatement(storeKeeperQuery)) {
+            storeKeeperPs.setString(1, branchAddress);
+            try (ResultSet storeKeeperRs = storeKeeperPs.executeQuery()) {
+                while (storeKeeperRs.next()) {
+                    String storeKeeperId = storeKeeperRs.getString("id");
+
+                    // Morning shift assignment for store keeper
+                    assignPs.setString(1, morningShiftId);
+                    assignPs.setString(2, storeKeeperId);
+                    assignPs.setString(3, "STORE_KEEPER");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+
+                    // Evening shift assignment for store keeper
+                    assignPs.setString(1, eveningShiftId);
+                    assignPs.setString(2, storeKeeperId);
+                    assignPs.setString(3, "STORE_KEEPER");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method to assign drivers and store keepers for a specific date
+     * Only assigns employees to positions they are qualified for
+     */
+    private static void assignDriversAndStoreKeepersForDate(Connection conn, PreparedStatement assignPs,
+                                                            String morningShiftId, String eveningShiftId,
+                                                            String branchAddress) throws SQLException {
+
+        // Get drivers for this branch who are qualified for the Driver position
+        String driverQuery = """
+        SELECT e.id 
+        FROM employees e
+        INNER JOIN employee_qualifications eq ON e.id = eq.employee_id
+        WHERE e.role = 'DRIVER' 
+          AND e.branch_address = ?
+          AND eq.position_name = 'Driver'
+        """;
+
+        try (PreparedStatement driverPs = conn.prepareStatement(driverQuery)) {
+            driverPs.setString(1, branchAddress);
+            try (ResultSet driverRs = driverPs.executeQuery()) {
+                while (driverRs.next()) {
+                    String driverId = driverRs.getString("id");
+
+                    // Morning shift assignment for driver
+                    assignPs.setString(1, morningShiftId);
+                    assignPs.setString(2, driverId);
+                    assignPs.setString(3, "Driver");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+
+                    // Evening shift assignment for driver
+                    assignPs.setString(1, eveningShiftId);
+                    assignPs.setString(2, driverId);
+                    assignPs.setString(3, "Driver");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+                }
+            }
+        }
+
+        // Get store keepers for this branch who are qualified for the STORE_KEEPER position
+        String storeKeeperQuery = """
+        SELECT e.id 
+        FROM employees e
+        INNER JOIN employee_qualifications eq ON e.id = eq.employee_id
+        WHERE e.role = 'STORE_KEEPER' 
+          AND e.branch_address = ?
+          AND eq.position_name = 'STORE_KEEPER'
+        """;
+
+        try (PreparedStatement storeKeeperPs = conn.prepareStatement(storeKeeperQuery)) {
+            storeKeeperPs.setString(1, branchAddress);
+            try (ResultSet storeKeeperRs = storeKeeperPs.executeQuery()) {
+                while (storeKeeperRs.next()) {
+                    String storeKeeperId = storeKeeperRs.getString("id");
+
+                    // Morning shift assignment for store keeper
+                    assignPs.setString(1, morningShiftId);
+                    assignPs.setString(2, storeKeeperId);
+                    assignPs.setString(3, "STORE_KEEPER");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+
+                    // Evening shift assignment for store keeper
+                    assignPs.setString(1, eveningShiftId);
+                    assignPs.setString(2, storeKeeperId);
+                    assignPs.setString(3, "STORE_KEEPER");
+                    assignPs.setInt(4, 0); // not shift manager
+                    assignPs.executeUpdate();
+                }
+            }
+        }
+    }
+
 
     /**
      * Get all available branches from the locations table

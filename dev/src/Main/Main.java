@@ -40,8 +40,6 @@ public class Main {
                 presentingDeliveriesMenu();
                 break;
             case 2:
-                //initializeFirstUser(); // create the first user if there is no employee in the system
-                // Create and start the navigation manager
                 NavigationManager navigationManager = new NavigationManager();
                 navigationManager.start();
                 break;

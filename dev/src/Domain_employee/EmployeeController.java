@@ -840,17 +840,17 @@ public class EmployeeController {
         }
     }
 
-    public String getShiftIdByTime(LocalDate startDate, String shiftTime) throws SQLException {
+    public String getShiftIdByTime(LocalDate startDate, String shiftTime, String branchAddress) throws SQLException {
         List<ShiftDTO> shiftsList = shiftDAO.findByDateRange(startDate, startDate);
         if (shiftsList.isEmpty()){
-            return "No shifts in this date.";
+            return "Non existent shift.";
         }
         for (ShiftDTO dto : shiftsList)
         {
-            if (Objects.equals(shiftTime, dto.getShiftType())){
+            if (Objects.equals(branchAddress, dto.getBranchAddress()) && Objects.equals(shiftTime, dto.getShiftType())){
                 return dto.getId();
             }
         }
-        return "Shift in the requested hour don't exist";
+        return "Non existent shift.";
     }
 }

@@ -3,14 +3,19 @@ package Domain;
 import DTO.*;
 import DataAccess.DAO.DocumentDAOImpl;
 import DataAccess.DAO.ShipmentItemDAOImpl;
+import DataAccess.EmployeeDAO.DriverDAOImpl;
 import DataAccess.EmployeeDAO.ShiftAssignmentDAOImpl;
+import DataAccess.EmployeeInterface.DriverDAO;
 import DataAccess.EmployeeInterface.ShiftAssignmentDAO;
 import DataAccess.Interface.DocumentDAO;
 import DataAccess.Interface.ShipmentItemDAO;
 import Domain_employee.Driver;
+import Domain_employee.Employee;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static Domain.DriverController.employeeDAO;
 import static Domain.LocationController.locationDao;
 import static Domain.TrucksController.truckDAO;
 
@@ -25,6 +30,7 @@ public class DeliveriesController {
     private static final DocumentDAO documentDAO = new DocumentDAOImpl();
     private static final ShipmentItemDAO itemDAO = new ShipmentItemDAOImpl();
     protected final ShiftAssignmentDAO shiftASDAO = new ShiftAssignmentDAOImpl();
+    protected static final DriverDAO driverDAO = new DriverDAOImpl();
 
     // Adds a destination location to a list
     public String addDestination(String address, List<Location> list, String shiftID) throws SQLException {
@@ -34,18 +40,21 @@ public class DeliveriesController {
             if (optional.isPresent()) {
                 LocationDTO dto = optional.get();
                 Shipping_Zone getZone = zoneMap.get(dto.zone().name());
-                new_dest = new Location(dto.contact_name(), dto.contact_num(), dto.address(), getZone); // Create a new location object
+                new_dest = new Location(dto.contact_name(), dto.contact_num(), address, getZone); // Create a new location object
             }
             else{
-                return "Location unknown."; // Location not found
+                return "Error. Location unknown."; // Location not found
             }
         }
         if (!list.contains(new_dest)) {
             String skID = shiftASDAO.getAssignedEmployee(shiftID, "STORE_KEEPER");
-            list.add(new_dest); // Add destination to list
-            return "Location added successfully to route. StoreKeeper of this location is " + skID; // Return success message
+            if (skID != null) {
+                list.add(new_dest); // Add destination to list
+                return "Success. Location added successfully to route. StoreKeeper of this location is " + skID; // Return success message
+            }
+            return "Error. Location is missing a STORE_KEEPER in this shift.";
         }
-        return "Location already in route."; // Destination already in list
+        return "Error. Location already in route."; // Destination already in list
     }
 
     // Calculates the total weight of items in the route
@@ -53,8 +62,10 @@ public class DeliveriesController {
         Truck truck = trucksMap.get(id);
         int curr_weight = truck.getTruck_weight(); // Get truck's current weight
         for (int i = 1; i < list.size(); i++) {
-            for (Shipment_item item : list.get(i).getItems_required()) {
-                curr_weight += item.getWeight() * item.getAmount(); // Add item weights to total
+            if (list.get(i).getItems_required() != null) {
+                for (Shipment_item item : list.get(i).getItems_required()) {
+                    curr_weight += item.getWeight() * item.getAmount(); // Add item weights to total
+                }
             }
         }
         if (curr_weight > truck.getMax_weight()) {
@@ -141,8 +152,10 @@ public class DeliveriesController {
     public List<Shipment_item> getTotalItems(List<Location> route) {
         List<Shipment_item> items = new ArrayList<>();
         for (int i = 1; i < route.size(); i++) {
-            List<Shipment_item> loc_items = route.get(i).getItems_required();
-            items.addAll(loc_items); // Add all items to the list
+            if (route.get(i).getItems_required() != null) {
+                List<Shipment_item> loc_items = route.get(i).getItems_required();
+                items.addAll(loc_items); // Add all items to the list
+            }
         }
         return items; // Return all items in the route
     }
@@ -178,8 +191,20 @@ public class DeliveriesController {
     }
 
     // Checks if an item exists in the system
-    public boolean setItem(String itemName) {
-        return totalItemsMap.containsKey(itemName); // Check if item exists in map
+    public boolean setItem(String itemName) throws SQLException {
+        if (totalItemsMap.containsKey(itemName))
+        {
+            return true;
+        }
+
+        Optional<ShipmentItemDTO> optional = itemDAO.findByName(itemName);
+        if (optional.isPresent()) {
+            ShipmentItemDTO item = optional.get();
+            totalItemsMap.put(itemName, item.weight());
+            return true;
+        }
+            return false; // Truck not found in table
+
     }
 
     // Sets the required item in the route if not already present
@@ -308,9 +333,21 @@ public class DeliveriesController {
                 return "Delivery doesn't exist"; // Document not found
             }
         }
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        driversMap.get(document.getDriver_id()).set_availabilityToDrive(true); // Mark driver available
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        String dID = document.getDriver_id();
+        if (driversMap.containsKey(dID)) {
+            Driver driver = driversMap.get(dID);
+            driver.set_availabilityToDrive(true); // Mark driver as available
+        }
+
+        // Update all driver licenses in database to reflect available status
+        List<DriverDTO> driverLicenses = driverDAO.findByDriverId(dID);
+        for (DriverDTO driverLicense : driverLicenses) {
+            DriverDTO updatedDriver = new DriverDTO(dID, driverLicense.license(), 0); // 0 means not on drive
+            driverDAO.save(updatedDriver);
+        }
+
+
         Truck truck;
         if (trucksMap.containsKey(document.getTruck_id())) {
             truck = trucksMap.get(document.getTruck_id());
@@ -329,6 +366,8 @@ public class DeliveriesController {
         for (Location loc : document.getDestinations()) {
             loc.setItems_required(null); // All needs fulfilled
         }
+        TruckDTO newDto = new TruckDTO(truck.getTruck_id(),truck.getType(),truck.getTruck_weight(), truck.getMax_weight(), truck.getCurrWeight(), false);
+        truckDAO.save(newDto);
         document.setEventMessage("Delivery finished."); // Set event message
 
         return "Delivery ended successfully.\nDriver is now available for another delivery.\nTruck is now available for another delivery."; // Return success message

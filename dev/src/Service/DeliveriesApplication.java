@@ -49,7 +49,7 @@ public class DeliveriesApplication {
     }
 
     // Method to set an item (likely for shipment or tracking purposes)
-    public boolean setItem(String itemName) {
+    public boolean setItem(String itemName) throws SQLException {
         return dc.setItem(itemName); // Delegate to UserController to set an item
     }
 

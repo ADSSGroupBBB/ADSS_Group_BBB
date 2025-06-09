@@ -199,12 +199,21 @@ public class EmployeeManagementScreen extends BaseScreen {
                         id, firstName, lastName, bankAccount, startDate, salary,
                         sickDays, vacationDays, pensionFundName, branchAddress, licenseList
                 );
+                if (success){
+                    success = navigationManager.getPositionService()
+                            .addQualificationToEmployee(id, "Driver");
+                }
+
 
             } else if (isStoreKeeper) {
                 success = navigationManager.getEmployeeService().addStoreKeeper(
                         id, firstName, lastName, bankAccount, startDate, salary,
                         sickDays, vacationDays, pensionFundName, branchAddress
                 );
+                if (success){
+                    success = navigationManager.getPositionService()
+                            .addQualificationToEmployee(id, "STORE_KEEPER");
+                }
             }
             else {
                 success = navigationManager.getEmployeeService().addEmployee(

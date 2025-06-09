@@ -3,9 +3,11 @@ package Domain;
 import DTO.LocationDTO;
 import DTO.ShippingZoneDTO;
 import DataAccess.DAO.LocationDAOImpl;
+import DataAccess.DAO.ShipmentItemDAOImpl;
 import DataAccess.Interface.LocationDAO;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +53,7 @@ public class LocationController  extends DeliveriesController{
         List<LocationDTO> list = locationDao.findAll();
         for (LocationDTO dto : list){
             if (!locationsMap.containsKey(dto.address())){
-                Shipping_Zone getZone = zoneMap.get(dto.zone().name());
+                Shipping_Zone getZone = zoneMap.computeIfAbsent(dto.zone().name(), k -> new Shipping_Zone(dto.zone().num(), dto.zone().name()));
                 Location newLoc = new Location(dto.contact_name(), dto.contact_num(), dto.address(), getZone); // Create a new location object
                 locationsMap.put(newLoc.getAddress(), newLoc);
             }
@@ -84,7 +86,8 @@ public class LocationController  extends DeliveriesController{
         }
         List<Shipment_item> items = location.getItems_required();
         if (totalItemsMap.containsKey(itemName)) {
-            if (items.isEmpty()) {
+            if (items == null ) {
+                items = new ArrayList<>();
                 Shipment_item item = new Shipment_item(totalItemsMap.get(itemName), itemName);
                 item.setAmount(amountToAdd);
                 items.add(item);

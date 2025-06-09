@@ -184,8 +184,8 @@ public class ShiftService {
         return historicalShifts;
     }
 
-    public String getShiftIdByTime(LocalDate startDate, String shiftTime) throws SQLException {
-        return employeeController.getShiftIdByTime(startDate, shiftTime);
+    public String getShiftIdByTime(LocalDate startDate, String shiftTime, String branchAddress) throws SQLException {
+        return employeeController.getShiftIdByTime(startDate, shiftTime, branchAddress);
     }
 
     public List<ShiftDTO> getAllShifts() {

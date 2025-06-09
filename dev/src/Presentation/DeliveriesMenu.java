@@ -26,59 +26,88 @@ public class DeliveriesMenu {
     private final NavigationManager navigationManager = new NavigationManager();
 
     // Method to add a new delivery to the system
-    public void addDelivery(List<Location> route) throws SQLException {
+    public void addDelivery(List<Location> route, String shiftID, LocalDate startDate, String shiftTime ) throws SQLException {
         Scanner scanner = new Scanner(System.in);  // Scanner object to read user input
         TrucksApplication ta = new TrucksApplication();
         DriversApplication dra = new DriversApplication();
 
         System.out.println("Add Delivery selected.");
-        String shiftID = "", deliveryTime = "", dateStr = "";
-        while (true) {
-            try {
-                System.out.println("Enter Delivery date (format: dd/MM/yyyy) or -1 to exit:");
-                dateStr = scanner.nextLine();
+        String deliveryTime = "", dateStr = "11/11/1111", originAddress = "", res ;
+        boolean wasEmpty = false, added_succesfully = false;
 
-                // Check for exit condition
-                if (dateStr.equals("-1")) {
-                    break;
+        if (route == null) { // If the route is not provided, prompt the user to choose locations
+
+            while (true) {
+                try {
+                    System.out.println("Enter Delivery date (format: dd/MM/yyyy) or -1 to exit:");
+                    dateStr = scanner.nextLine();
+
+                    // Check for exit condition
+                    if (dateStr.equals("-1")) {
+                        break;
+                    }
+
+                    startDate = LocalDate.parse(dateStr, dateFormatter);
+
+                    System.out.print("Enter delivery hour (format: HH:mm) or -1 to exit: ");
+                    deliveryTime = scanner.nextLine();
+
+                    // Check for exit condition
+                    if (deliveryTime.equals("-1")) {
+                        break;
+                    }
+
+                    String[] timeParts = deliveryTime.split(":");
+                    int hour = Integer.parseInt(timeParts[0]);
+                    shiftTime = "invalid";
+
+                    // Check if hour is between 08:00 and 14:00 (8 AM to 2 PM)
+                    if (hour >= 7 && hour < 14) {
+                        shiftTime = "MORNING";
+                    } else if (hour >= 14 && hour < 21) {
+                        shiftTime = "EVENING";
+                    }
+
+
+                    route = new ArrayList<>();
+                    System.out.println("Choose origin from known locations: ");
+                    System.out.println(la.printLocations());
+
+                    while (!added_succesfully) {  // Keep asking for origin until added successfully
+                        originAddress = scanner.nextLine();
+                        shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
+                        if (!shiftID.equals("Non existent shift.")) {
+                            res = da.addDestination(originAddress, route, shiftID);
+                            String shortm = res.substring(0, res.indexOf("."));
+                            if (shortm.equals("Success")) {
+                                added_succesfully = true;
+                            }
+                            System.out.println(res);
+                        } else {
+                            System.out.println(shiftID);
+                            return;
+                        }
+                    }
+
+
+                    shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
+
+                    // Check if we got a valid shift ID
+                    if (shiftID != null && !shiftTime.equals("invalid")) {
+                        // Valid selection - break out of loop or continue with your logic
+                        System.out.println("Valid shift selected: " + shiftID);
+                        wasEmpty = true;
+                        break; // Remove this if you want to continue processing
+                    } else {
+                        System.out.println("Invalid date/time combination. Please try again.");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Invalid input format. Please try again.");
                 }
-
-                LocalDate startDate = LocalDate.parse(dateStr, dateFormatter);
-
-                System.out.print("Enter delivery hour (format: HH:mm) or -1 to exit: ");
-                deliveryTime = scanner.nextLine();
-
-                // Check for exit condition
-                if (deliveryTime.equals("-1")) {
-                    break;
-                }
-
-                String[] timeParts = deliveryTime.split(":");
-                int hour = Integer.parseInt(timeParts[0]);
-                String shiftTime = "invalid";
-
-                // Check if hour is between 08:00 and 14:00 (8 AM to 2 PM)
-                if (hour >= 7 && hour < 14) {
-                    shiftTime = "MORNING";
-                }
-                else if (hour >= 14 && hour < 21) {
-                    shiftTime = "EVENING";
-                }
-
-                shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime);
-
-                // Check if we got a valid shift ID
-                if (shiftID != null && !shiftTime.equals("invalid")) {
-                    // Valid selection - break out of loop or continue with your logic
-                    System.out.println("Valid shift selected: " + shiftID);
-                    break; // Remove this if you want to continue processing
-                } else {
-                    System.out.println("Invalid date/time combination. Please try again.");
-                }
-
-            } catch (Exception e) {
-                System.out.println("Invalid input format. Please try again.");
             }
+        } else {
+            originAddress = da.getOriginAddressFromRoute(route);
         }
 
         if (Objects.equals(shiftID, "")) {
@@ -104,12 +133,11 @@ public class DeliveriesMenu {
         System.out.println(dra.printDrivers());
         System.out.print("Enter wanted driver's id: ");
         String driverID = scanner.nextLine();
-        String res = dra.isAvailableDriver(driverID, truckID, shiftID);
+        res = dra.isAvailableDriver(driverID, truckID, shiftID);
 
         System.out.println(res);
 
-        while (!driverID.equals("-1") && !Objects.equals(res, "Driver is available.")) {
-            System.out.println("Can't make the delivery with this driver. Please choose another one.");
+        while (!driverID.equals("-1") && !Objects.equals(res, "Driver have correct license and is ready to drive.")) {
             System.out.println(dra.printDrivers());  // Print list of drivers
             System.out.print("Enter wanted driver's id (or -1 to cancel): ");
             driverID = scanner.nextLine();
@@ -121,41 +149,36 @@ public class DeliveriesMenu {
             System.out.println("Operation cancelled.");
             return;  // Exit or handle cancellation appropriately
         }
-        String originAddress = "";
-        if (route == null) {  // If the route is not provided, prompt the user to choose locations
-            route = new ArrayList<>();
-            System.out.println("Choose origin from known locations: ");
-            System.out.println(la.printLocations());
 
-            boolean added_succesfully = false;
-            while (!added_succesfully) {  // Keep asking for origin until added successfully
-                originAddress = scanner.nextLine();
-                res = da.addDestination(originAddress, route, shiftID);
-                String shortm = res.substring(0, res.indexOf(" to route"));
-                if (shortm.equals("Location added successfully")){
-                    added_succesfully = true;
-                }
-            }
+        if (wasEmpty) {  // If the route is not provided, prompt the user to choose locations
 
-            res = "";
             System.out.println("Choose destinations from known locations: ");
+
             String address;
+            added_succesfully = false;
             while (true) {  // Allow the user to add multiple destinations
-                while (!res.equals("Location added successfully.")) {  // Keep asking for destinations until added successfully
+                while (!added_succesfully) {  // Keep asking for destinations until added successfully
+
                     System.out.print("Enter destination address: ");
+                    System.out.println(la.printLocations());  // Print available locations for the route
                     address = scanner.nextLine().trim();
+                    shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
                     res = da.addDestination(address, route, shiftID);
+                    String shortm = res.substring(0, res.indexOf("."));
+                    if (shortm.equals("Success")){
+                        System.out.println(res);
+                        added_succesfully = true;
+                    }
                 }
-                res = "";
+                added_succesfully = false;
                 System.out.println("If you want to add another destination press 1. To continue press any other key. ");
                 String choice = scanner.nextLine().trim();
                 if (!choice.equals("1")) {  // Exit the loop if the user doesn't want to add another destination
                     break;
                 }
             }
-        } else {
-            originAddress = da.getOriginAddressFromRoute(route);  // If route is provided, get the origin from the route
         }
+
         System.out.println("Finished adding destinations. Checking if delivery weight is valid. ");
         String eventMessage = "Everything is good. Delivery ongoing";
         try {
@@ -266,21 +289,83 @@ public class DeliveriesMenu {
         }
 
         String originAddress = "Headquarters";  // Set the origin address as Headquarters
-        System.out.println(da.addDestination(originAddress, route, ""));  // Add the origin location to the route
+        String shiftID = "", deliveryTime = "", dateStr = "11/11/1111", res = "" , shiftTime = "";
+        LocalDate startDate = LocalDate.parse(dateStr, dateFormatter);
+
+        while (true) {
+            try {
+                System.out.println("Enter Delivery date (format: dd/MM/yyyy) or -1 to exit:");
+                dateStr = scanner.nextLine();
+
+                // Check for exit condition
+                if (dateStr.equals("-1")) {
+                    break;
+                }
+
+                startDate = LocalDate.parse(dateStr, dateFormatter);
+
+                System.out.print("Enter delivery hour (format: HH:mm) or -1 to exit: ");
+                deliveryTime = scanner.nextLine();
+
+                // Check for exit condition
+                if (deliveryTime.equals("-1")) {
+                    break;
+                }
+
+                String[] timeParts = deliveryTime.split(":");
+                int hour = Integer.parseInt(timeParts[0]);
+                shiftTime = "invalid";
+
+                // Check if hour is between 08:00 and 14:00 (8 AM to 2 PM)
+                if (hour >= 7 && hour < 14) {
+                    shiftTime = "MORNING";
+                }
+                else if (hour >= 14 && hour < 21) {
+                    shiftTime = "EVENING";
+                }
+
+
+                shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
+
+                // Check if we got a valid shift ID
+                if (shiftID != null && !shiftTime.equals("invalid")) {
+                    // Valid selection - break out of loop or continue with your logic
+                    System.out.println("Valid shift selected: " + shiftID);
+                    break; // Remove this if you want to continue processing
+                } else {
+                    System.out.println("Invalid date/time combination. Please try again.");
+                }
+
+            } catch (Exception e) {
+                System.out.println("Invalid input format. Please try again.");
+            }
+        }
+
+        System.out.println(da.addDestination(originAddress, route, shiftID));  // Add the origin location to the route
 
 
         System.out.println("Set destinations with " + itemName + " storage alert: (Headquarters is the origin (main warehouse from which the " +
                 "goods are taken)");
-        System.out.println(la.printLocations());  // Print available locations for the route
+
         String address;
-        String res = "";
-        while (true) {  // Keep asking for destination addresses
-            while (!res.equals("Location added successfully to route.")) {  // Keep asking until destination is added successfully
+        System.out.println("Choose destinations from known locations: ");
+
+        added_succesfully = false;
+        while (true) {  // Allow the user to add multiple destinations
+            while (!added_succesfully) {  // Keep asking for destinations until added successfully
+
                 System.out.print("Enter destination address: ");
+                System.out.println(la.printLocations());  // Print available locations for the route
                 address = scanner.nextLine().trim();
-                res = da.addDestination(address, route, "");
+                shiftID = navigationManager.getShiftService().getShiftIdByTime(startDate, shiftTime, originAddress);
+                res = da.addDestination(address, route, shiftID);
+                String shortm = res.substring(0, res.indexOf("."));
+                if (shortm.equals("Success")){
+                    System.out.println(res);
+                    added_succesfully = true;
+                }
             }
-            res = "";
+            added_succesfully = false;
             System.out.println("If you want to add another destination press 1. To continue press any other key. ");
             String choice = scanner.nextLine().trim();
             if (!choice.equals("1")) {  // Exit the loop if the user doesn't want to add another destination
@@ -291,7 +376,7 @@ public class DeliveriesMenu {
         int amount = Integer.parseInt(scanner.nextLine().trim());  // Get the amount as input
         System.out.println(da.setRequiredItemInRoute(route, itemName, amount));  // Set the required amount in the route
         System.out.println("Send you now to full delivery planning after requirements added to specific locations");
-        addDelivery(route);  // Proceed to add the delivery
+        addDelivery(route, shiftID, startDate, shiftTime);  // Proceed to add the delivery
     }
 
     // Method to end the current delivery

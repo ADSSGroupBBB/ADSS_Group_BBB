@@ -1,6 +1,8 @@
 package Presentation;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 import Domain.DeliveriesController;
@@ -9,7 +11,7 @@ import Service.*;
 
 
 public class DeliveriesManagerIO {
-
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     // Method to present the main menu to the user
     public static void presentingDeliveriesMenu() throws SQLException {
         Scanner scanner = new Scanner(System.in);
@@ -90,7 +92,7 @@ public class DeliveriesManagerIO {
             // Execute the appropriate action based on user's choice
             switch (choice) {
                 case 1:
-                    deliverysMenu.addDelivery(null);
+                    deliverysMenu.addDelivery(null, "", LocalDate.parse("11/11/1111", dateFormatter),"");
                     break;
                 case 2:
                     deliverysMenu.gotStorageAlert();
