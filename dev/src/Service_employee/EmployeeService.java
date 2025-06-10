@@ -1,6 +1,3 @@
-
-
-
 package Service_employee;
 
 import DTO.BranchDTO;
@@ -19,7 +16,6 @@ import java.util.List;
  */
 public class EmployeeService {
     private final EmployeeManagementController employeeManagementController;
-    private final EmployeeDriverController employeeDriverController;
     private final PositionManagementController positionManagementController;
     private final AvailabilityManagementController availabilityManagementController;
     private final ShiftManagementController shiftManagementController;
@@ -27,7 +23,6 @@ public class EmployeeService {
 
     public EmployeeService() {
         this.employeeManagementController = new EmployeeManagementController();
-        this.employeeDriverController = new EmployeeDriverController();
         this.positionManagementController = new PositionManagementController();
         this.availabilityManagementController = new AvailabilityManagementController();
         this.shiftManagementController = new ShiftManagementController();
@@ -48,12 +43,12 @@ public class EmployeeService {
 
     public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
                              LocalDate startDate, double salary, int sickDays, int vacationDays,
-                             String pensionFundName, String branchAddress, List<Integer> license_list) throws SQLException {
+                             String pensionFundName, String branchAddress, List<Integer> license_list) {
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
             System.err.println("Error: Branch address is required for all employees");
             return false;
         }
-        return employeeDriverController.addDriver(id, firstName, lastName, bankAccount,
+        return employeeManagementController.addDriver(id, firstName, lastName, bankAccount,
                 startDate, salary, sickDays, vacationDays, pensionFundName, branchAddress, license_list);
     }
 
@@ -95,8 +90,8 @@ public class EmployeeService {
         return employeeManagementController.removeEmployee(id);
     }
 
-    public boolean removeDriver(String id) throws SQLException {
-        return employeeDriverController.removeDriver(id);
+    public boolean removeDriver(String id) {
+        return employeeManagementController.removeDriver(id);
     }
 
     // Position Management - Direct delegation
@@ -282,5 +277,20 @@ public class EmployeeService {
         return employeeManagementController.getAllEmployees().stream()
                 .filter(emp -> !emp.hasBranch())
                 .toList();
+    }
+
+    // Helper method to get specific employee
+    public EmployeeDTO getEmployee(String employeeId) {
+        return employeeManagementController.getEmployee(employeeId);
+    }
+
+    // Methods for shift ID by time - delegated to shift management
+    public String getShiftIdByTime(LocalDate startDate, String shiftTime, String branchAddress) throws SQLException {
+        return shiftManagementController.getShiftIdByTime(startDate, shiftTime, branchAddress);
+    }
+
+    // Get all shifts
+    public List<ShiftDTO> getAllShifts() {
+        return shiftManagementController.getAllShifts();
     }
 }

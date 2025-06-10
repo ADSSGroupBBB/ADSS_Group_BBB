@@ -28,6 +28,7 @@ public class PositionManagementController {
         this.assignmentDAO = new ShiftAssignmentDAOImpl();
     }
 
+    // Position Management
     public boolean addPosition(String name, boolean isShiftManagerRole) {
         try {
             PositionDTO position = new PositionDTO(name, isShiftManagerRole);
@@ -64,6 +65,7 @@ public class PositionManagementController {
         }
     }
 
+    // Qualification Management
     public boolean addQualificationToEmployee(String employeeId, String positionName) {
         try {
             boolean success = qualificationDAO.addQualification(employeeId, positionName);
@@ -122,6 +124,7 @@ public class PositionManagementController {
         }
     }
 
+    // Required Positions Management
     public boolean addRequiredPosition(String shiftType, String positionName, int count) {
         try {
             return requiredPositionDAO.setRequiredPosition(shiftType, positionName, count);
@@ -168,6 +171,84 @@ public class PositionManagementController {
         } catch (Exception e) {
             System.err.println("Error getting missing positions: " + e.getMessage());
             return new ArrayList<>();
+        }
+    }
+
+    // Employee Access (for position management screens)
+    public List<EmployeeDTO> getAllEmployees() {
+        try {
+            return employeeDAO.findAll();
+        } catch (Exception e) {
+            System.err.println("Error getting all employees: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    // Position validation and checks
+    public boolean hasQualification(String employeeId, String positionName) {
+        try {
+            return qualificationDAO.hasQualification(employeeId, positionName);
+        } catch (Exception e) {
+            System.err.println("Error checking qualification: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public Map<String, Integer> getRequiredPositionsForShiftType(String shiftType) {
+        try {
+            return requiredPositionDAO.getRequiredPositions(shiftType);
+        } catch (Exception e) {
+            System.err.println("Error getting required positions for shift type: " + e.getMessage());
+            return new HashMap<>();
+        }
+    }
+
+    // Position deletion with validation
+    public boolean deletePosition(String positionName) {
+        try {
+            // Check if position is used by any employees
+            List<EmployeeDTO> qualifiedEmployees = getQualifiedEmployeesForPosition(positionName);
+            if (!qualifiedEmployees.isEmpty()) {
+                System.err.println("Cannot delete position: " + qualifiedEmployees.size() + " employees are qualified for this position");
+                return false;
+            }
+
+            // Check if position is required for any shifts
+            Map<String, Integer> morningReqs = requiredPositionDAO.getRequiredPositions("MORNING");
+            Map<String, Integer> eveningReqs = requiredPositionDAO.getRequiredPositions("EVENING");
+
+            if (morningReqs.containsKey(positionName) || eveningReqs.containsKey(positionName)) {
+                System.err.println("Cannot delete position: Position is required for shifts");
+                return false;
+            }
+
+            return positionDAO.deleteByName(positionName);
+        } catch (Exception e) {
+            System.err.println("Error deleting position: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Remove all requirements for a position
+    public boolean removeAllRequirementsForPosition(String positionName) {
+        try {
+            boolean success = true;
+            success &= requiredPositionDAO.removeRequiredPosition("MORNING", positionName);
+            success &= requiredPositionDAO.removeRequiredPosition("EVENING", positionName);
+            return success;
+        } catch (Exception e) {
+            System.err.println("Error removing requirements for position: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Get all shift types that have requirements
+    public Set<String> getAllShiftTypesWithRequirements() {
+        try {
+            return ((RequiredPositionDAOImpl) requiredPositionDAO).getAllShiftTypes();
+        } catch (Exception e) {
+            System.err.println("Error getting shift types with requirements: " + e.getMessage());
+            return new HashSet<>();
         }
     }
 }

@@ -5,23 +5,30 @@ import DataAccess.EmployeeInterface.*;
 import DataAccess.EmployeeDAO.*;
 import Domain_employee.Employee.UserRole;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
 /**
  * Controller responsible for employee management operations.
+ * Handles employee CRUD operations, role management, driver management, and basic employee data.
+ * Now includes all driver-related functionality for unified employee management.
  */
 public class EmployeeManagementController {
     private final EmployeeDAO employeeDAO;
     private final BranchDAO branchDAO;
     private final AvailabilityDAO availabilityDAO;
+    private final DriverDAO driverDAO;
+    private static Map<String, Driver> driversMap = new HashMap<>();
 
     public EmployeeManagementController() {
         this.employeeDAO = new EmployeeDAOImpl();
         this.branchDAO = new BranchDAOImpl();
         this.availabilityDAO = new AvailabilityDAOImpl();
+        this.driverDAO = new DriverDAOImpl();
     }
 
+    // Basic Employee Management
     public boolean addEmployee(String id, String firstName, String lastName, String bankAccount,
                                LocalDate startDate, double salary, int sickDays, int vacationDays,
                                String pensionFundName, String branchAddress) {
@@ -98,6 +105,105 @@ public class EmployeeManagementController {
         }
     }
 
+    // ===== DRIVER MANAGEMENT - Merged from EmployeeDriverController =====
+
+    public boolean addDriver(String id, String firstName, String lastName, String bankAccount,
+                             LocalDate startDate, double salary, int sickDays, int vacationDays,
+                             String pensionFundName, String branchAddress, List<Integer> licenseList) {
+        try {
+            // Check if driver already exists in the drivers map
+            if (driversMap.containsKey(id)) {
+                System.err.println("Driver with ID " + id + " already exists.");
+                return false;
+            }
+
+            // Validate branch exists
+            if (branchAddress != null && !branchDAO.branchExists(branchAddress)) {
+                return false;
+            }
+
+            EmployeeDTO employee = new EmployeeDTO(id, firstName, lastName, bankAccount,
+                    startDate, salary, new ArrayList<>(), UserRole.DRIVER,
+                    sickDays, vacationDays, pensionFundName, branchAddress);
+
+            employeeDAO.save(employee);
+            availabilityDAO.setDefaultAvailability(id);
+
+            List<DriverDTO> optionalDriver = driverDAO.findByDriverId(id);
+            if (!optionalDriver.isEmpty()) {
+                return false;
+            }
+
+            // Save each license for the driver
+            for (Integer license : licenseList) {
+                DriverDTO driver = new DriverDTO(id, license, 0); // 0 means not on drive
+                driverDAO.save(driver);
+            }
+
+            // Add to drivers map (for delivery module compatibility)
+            Driver domainDriver = new Driver(id, firstName, lastName, bankAccount,
+                    startDate, salary, UserRole.DRIVER, "driver",
+                    sickDays, vacationDays, pensionFundName,
+                    branchAddress, licenseList);
+            driversMap.put(id, domainDriver);
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error adding driver: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean removeDriver(String id) {
+        try {
+            if (driversMap.containsKey(id)) {
+                driversMap.remove(id);
+                driverDAO.deleteById(id);
+                return employeeDAO.deleteById(id);
+            } else {
+                if (driverDAO.deleteById(id)) {
+                    return employeeDAO.deleteById(id);
+                }
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("Error removing driver: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<DriverDTO> getDriverLicenses(String driverId) {
+        try {
+            return driverDAO.findByDriverId(driverId);
+        } catch (Exception e) {
+            System.err.println("Error getting driver licenses: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    // Driver map management for delivery module compatibility
+    public static Map<String, Driver> getDriversMap() {
+        return driversMap;
+    }
+
+    public static void addDriverToMap(String id, Driver driver) {
+        driversMap.put(id, driver);
+    }
+
+    public static void removeDriverFromMap(String id) {
+        driversMap.remove(id);
+    }
+
+    public static boolean driverExistsInMap(String id) {
+        return driversMap.containsKey(id);
+    }
+
+    public static Driver getDriverFromMap(String id) {
+        return driversMap.get(id);
+    }
+
+    // ===== END DRIVER MANAGEMENT =====
+
     public EmployeeDTO getEmployee(String id) {
         try {
             return employeeDAO.findById(id).orElse(null);
@@ -134,6 +240,7 @@ public class EmployeeManagementController {
         }
     }
 
+    // Employee Updates
     public boolean updateEmployeeFirstName(String id, String firstName) {
         try {
             EmployeeDTO employee = employeeDAO.findById(id).orElse(null);
@@ -250,7 +357,7 @@ public class EmployeeManagementController {
     }
 
     public boolean updateEmployeePassword(String id, String password) {
-        // Password update logic would go here
+        // Password functionality can be implemented here if needed
         return true;
     }
 

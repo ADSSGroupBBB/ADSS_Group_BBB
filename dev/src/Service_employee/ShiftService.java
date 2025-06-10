@@ -3,7 +3,7 @@ package Service_employee;
 import DTO.EmployeeDTO;
 import DTO.PositionDTO;
 import DTO.ShiftDTO;
-import Domain_employee.EmployeeController;
+import Domain_employee.*;
 
 import java.sql.SQLException;
 import java.time.DayOfWeek;
@@ -11,63 +11,47 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Thin service layer for shift operations.
- * Acts as a bridge between presentation layer and controller (business logic).
- */
 public class ShiftService {
-    private final EmployeeController employeeController;
+    private final ShiftManagementController shiftManagementController;
+    private final PositionManagementController positionManagementController;
+    private final EmployeeManagementController employeeManagementController;
+    private final AvailabilityManagementController availabilityManagementController;
 
     public ShiftService() {
-        this.employeeController = new EmployeeController();
+        this.shiftManagementController = new ShiftManagementController();
+        this.positionManagementController = new PositionManagementController();
+        this.employeeManagementController = new EmployeeManagementController();
+        this.availabilityManagementController = new AvailabilityManagementController();
     }
 
-
-
     public List<ShiftDTO> createShiftsForWeek(LocalDate startDate, String branchAddress) {
-
         if (branchAddress == null || branchAddress.trim().isEmpty()) {
-            System.out.println("Error: Branch address is required for creating shifts.");
             return new ArrayList<>();
         }
 
         List<ShiftDTO> createdShifts = new ArrayList<>();
         LocalDate currentDate = startDate;
-
-        // Get manager positions for validation
-        List<PositionDTO> managerPositions = employeeController.getAllPositions().stream()
+        List<PositionDTO> managerPositions = positionManagementController.getAllPositions().stream()
                 .filter(PositionDTO::isRequiresShiftManager)
                 .toList();
 
         if (managerPositions.isEmpty()) {
-            System.out.println("No shift manager positions defined in the system.");
             return createdShifts;
         }
 
         for (int i = 0; i < 7; i++) {
-            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
-
-            // Create morning shift
-            ShiftDTO morningShift = employeeController.createShift(currentDate, "MORNING", branchAddress);
-            if (morningShift != null) {
-                boolean managerAssigned = assignManagerToShift(morningShift, managerPositions, dayOfWeek, "MORNING");
-                if (managerAssigned) {
-                    createdShifts.add(morningShift);
-                } else {
-                    System.out.println("No available shift manager for morning shift on " + currentDate +
-                            " at " + branchAddress + ". Shift not created.");
+            if (hasAvailableManagerForShift(currentDate, "MORNING", branchAddress, managerPositions)) {
+                ShiftDTO morningShift = shiftManagementController.createShift(currentDate, "MORNING", branchAddress);
+                if (morningShift != null) {
+                    ShiftDTO updatedShift = shiftManagementController.getShiftById(morningShift.getId());
+                    createdShifts.add(updatedShift != null ? updatedShift : morningShift);
                 }
             }
-
-            // Create evening shift
-            ShiftDTO eveningShift = employeeController.createShift(currentDate, "EVENING", branchAddress);
-            if (eveningShift != null) {
-                boolean managerAssigned = assignManagerToShift(eveningShift, managerPositions, dayOfWeek, "EVENING");
-                if (managerAssigned) {
-                    createdShifts.add(eveningShift);
-                } else {
-                    System.out.println("No available shift manager for evening shift on " + currentDate +
-                            " at " + branchAddress + ". Shift not created.");
+            if (hasAvailableManagerForShift(currentDate, "EVENING", branchAddress, managerPositions)) {
+                ShiftDTO eveningShift = shiftManagementController.createShift(currentDate, "EVENING", branchAddress);
+                if (eveningShift != null) {
+                    ShiftDTO updatedShift = shiftManagementController.getShiftById(eveningShift.getId());
+                    createdShifts.add(updatedShift != null ? updatedShift : eveningShift);
                 }
             }
 
@@ -77,45 +61,42 @@ public class ShiftService {
         return createdShifts;
     }
 
-    private boolean assignManagerToShift(ShiftDTO shift, List<PositionDTO> managerPositions,
-                                         DayOfWeek dayOfWeek, String shiftType) {
-        // Get all employees
-        List<EmployeeDTO> allEmployees = employeeController.getAllEmployees();
+    private boolean hasAvailableManagerForShift(LocalDate date, String shiftType, String branchAddress,
+                                                List<PositionDTO> managerPositions) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        List<EmployeeDTO> branchEmployees = employeeManagementController.getEmployeesByBranch(branchAddress);
 
-        // Try to find an available manager
-        for (EmployeeDTO employee : allEmployees) {
-            // Check if employee is available for this shift
-            if (employeeController.isEmployeeAvailable(employee.getId(), dayOfWeek, shiftType)) {
-                // Check if employee is qualified for any manager position
-                for (PositionDTO managerPosition : managerPositions) {
-                    if (employee.getQualifiedPositions().contains(managerPosition.getName())) {
-                        // Try to assign the employee to this manager position
-                        if (employeeController.assignEmployeeToShift(shift.getId(),
-                                employee.getId(), managerPosition.getName())) {
-                            return true; // Successfully assigned manager
-                        }
-                    }
+        for (EmployeeDTO employee : branchEmployees) {
+            if (!employee.isManager()) {
+                continue;
+            }
+            if (!availabilityManagementController.isEmployeeAvailable(employee.getId(), dayOfWeek, shiftType)) {
+                continue;
+            }
+            for (PositionDTO managerPosition : managerPositions) {
+                if (employee.getQualifiedPositions().contains(managerPosition.getName())) {
+                    return true;
                 }
             }
         }
-        return false; // No manager could be assigned
+        return false;
     }
-
     public List<ShiftDTO> getFutureShifts() {
-        return employeeController.getFutureShifts();
+        return shiftManagementController.getFutureShifts();
     }
 
     public List<ShiftDTO> getHistoricalShifts() {
-        return employeeController.getHistoricalShifts();
+        return shiftManagementController.getHistoricalShifts();
     }
 
-
-
     public List<ShiftDTO> getEmployeeShiftHistory(String employeeId) {
-        List<ShiftDTO> historicalShifts = employeeController.getHistoricalShifts();
+        List<ShiftDTO> historicalShifts = shiftManagementController.getHistoricalShifts();
         List<ShiftDTO> employeeShifts = new ArrayList<>();
         for (ShiftDTO shift : historicalShifts) {
-            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {EmployeeDTO employee = employeeController.getEmployee(employeeId);return employee != null && employee.getFullName().equals(employeeName);});
+            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {
+                EmployeeDTO employee = employeeManagementController.getEmployee(employeeId);
+                return employee != null && employee.getFullName().equals(employeeName);
+            });
             if (employeeInShift) {
                 employeeShifts.add(shift);
             }
@@ -123,14 +104,14 @@ public class ShiftService {
         return employeeShifts;
     }
 
-
-
-
     public List<ShiftDTO> getEmployeeFutureShifts(String employeeId) {
-        List<ShiftDTO> futureShifts = employeeController.getFutureShifts();
+        List<ShiftDTO> futureShifts = shiftManagementController.getFutureShifts();
         List<ShiftDTO> employeeFutureShifts = new ArrayList<>();
         for (ShiftDTO shift : futureShifts) {
-            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {EmployeeDTO employee = employeeController.getEmployee(employeeId);return employee != null && employee.getFullName().equals(employeeName);});
+            boolean employeeInShift = shift.getAssignments().values().stream().anyMatch(employeeName -> {
+                EmployeeDTO employee = employeeManagementController.getEmployee(employeeId);
+                return employee != null && employee.getFullName().equals(employeeName);
+            });
             if (employeeInShift) {
                 employeeFutureShifts.add(shift);
             }
@@ -139,25 +120,19 @@ public class ShiftService {
     }
 
     public List<PositionDTO> getMissingPositionsForShift(String shiftId) {
-        return employeeController.getMissingPositionsForShift(shiftId);
+        return positionManagementController.getMissingPositionsForShift(shiftId);
     }
 
     public ShiftDTO getShiftById(String shiftId) {
-        return employeeController.getAllShifts().stream()
-                .filter(shift -> shift.getId().equals(shiftId))
-                .findFirst()
-                .orElse(null);
+        return shiftManagementController.getShiftById(shiftId);
     }
 
-
-    // Branch-specific shift operations
     public List<ShiftDTO> getShiftsByBranch(String branchAddress) {
-        return employeeController.getShiftsByBranch(branchAddress);
+        return shiftManagementController.getShiftsByBranch(branchAddress);
     }
-
 
     public List<ShiftDTO> getFutureShiftsByBranch(String branchAddress) {
-        List<ShiftDTO> branchShifts = employeeController.getShiftsByBranch(branchAddress);
+        List<ShiftDTO> branchShifts = shiftManagementController.getShiftsByBranch(branchAddress);
         List<ShiftDTO> futureShifts = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
@@ -170,9 +145,8 @@ public class ShiftService {
         return futureShifts;
     }
 
-
     public List<ShiftDTO> getHistoricalShiftsByBranch(String branchAddress) {
-        List<ShiftDTO> branchShifts = employeeController.getShiftsByBranch(branchAddress);
+        List<ShiftDTO> branchShifts = shiftManagementController.getShiftsByBranch(branchAddress);
         List<ShiftDTO> historicalShifts = new ArrayList<>();
         LocalDate today = LocalDate.now();
         for (ShiftDTO shift : branchShifts) {
@@ -185,10 +159,10 @@ public class ShiftService {
     }
 
     public String getShiftIdByTime(LocalDate startDate, String shiftTime, String branchAddress) throws SQLException {
-        return employeeController.getShiftIdByTime(startDate, shiftTime, branchAddress);
+        return shiftManagementController.getShiftIdByTime(startDate, shiftTime, branchAddress);
     }
 
     public List<ShiftDTO> getAllShifts() {
-        return employeeController.getAllShifts();
+        return shiftManagementController.getAllShifts();
     }
 }

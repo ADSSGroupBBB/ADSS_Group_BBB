@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller responsible for employee availability management.
- * Handles availability updates
+ * Handles availability updates and queries for scheduling purposes.
  */
 public class AvailabilityManagementController {
     private final AvailabilityDAO availabilityDAO;
