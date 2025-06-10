@@ -1,5 +1,6 @@
 package Domain;
 
+import dto.AgreementDto;
 import dto.OrderDto;
 import dto.PeriodAgreementDto;
 import dto.PeriodAgreementItemDto;
@@ -65,6 +66,7 @@ public class OrderController {
     //parameters:int orderNumber, int numAgreement, int numP,int amount
     //returns bool
     public boolean addItemOrder(int orderNumber, int numP,int amount) throws SQLException{
+        Stock s= Stock.getInstance();
         AgreementsController ag=AgreementsController.getInstance();
         int numAgreement=this.orderRepo.getOrder(orderNumber).get().numAgreement();
         QuantityAgreement qa=ag.productFromAgreeByIndex(numAgreement,numP);
@@ -72,13 +74,22 @@ public class OrderController {
         boolean success= o.addProductOrder(qa,amount);
         if(success){
             this.orderRepo.addProductOrder(orderNumber,numP,amount);
+            s.updateStatusOrderPro(numP,amount);
         }
         return success;
     }
     //set an order's status as status
     //parameter:int orderNumber,String status
-    public void updateStatus(int orderNumber,String status) throws SQLException{
-        this.orderRepo.updateStatus(orderNumber,status);
+    public void cancelOrder (int orderNumber) throws SQLException{
+        Stock s= Stock.getInstance();
+        this.orderRepo.updateStatus(orderNumber,"deleted");
+        s.cancelStock(orderNumber);
+    }
+
+    public void arriveOrder (int orderNumber) throws SQLException {
+        this.orderRepo.updateStatus(orderNumber, "arrived");
+        Stock s = Stock.getInstance();
+        s.updateStock(orderNumber);
     }
     //prints order
     //parameter:int orderNumber
@@ -105,14 +116,51 @@ public class OrderController {
                         amount=amount+s.getMinimumAmount(it.productAgreement().pro().productNumber());
                     }
                     addItemOrder(numOrder,productNum,amount);
-                    s.getProductStock().get(productNum).setBeOrdered(true);
                 }
         }
         String orderString= count+" orders created";
         return orderString;
     }
+    public String addMissOrder() throws SQLException{
+        int count=0;
+        AgreementDto a;
+        int numOrder;
+        String address;
+        String contactPhone;
+        LocalDate todayDate = LocalDate.now();
+        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String dateAsString = todayDate.format(formatDate);
+        Stock s= Stock.getInstance();
+        Map<Integer, Integer> agreeForOrder=new HashMap<>();
+        AgreementsController ac=AgreementsController.getInstance();
+        SupplierController sc=SupplierController.getInstance();
+        Map<Integer, ProductStock> allMiss=s.getMissProducts();
+        for(ProductStock pro:allMiss.values()){
+             a= ac.agreementMostEffectivePrice(pro.getNumProduct(),pro.getMinimumCount());
+             if(a==null){
+                 continue;
+             }
+             if (!agreeForOrder.containsKey(a.IDNumber())) {
+                 address = sc.getAddress(a.supplierNumber());
+                 contactPhone = sc.getContactPhone(a.supplierNumber());
+                 numOrder = addNewOrder(a.IDNumber(), a.supplierNumber(), address, dateAsString, contactPhone);
+                 agreeForOrder.put(a.IDNumber(),numOrder);
+             }
+             boolean b=addItemOrder(agreeForOrder.get(a.IDNumber()),pro.getNumProduct(),pro.getMinimumCount());
+             if(b==false) {
+                 if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).isPresent()) {
+                     if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).get().items().size() == 0) {
+                         cancelOrder(agreeForOrder.get(a.IDNumber()));
+                     }
+                 }
+             }
+        }
 
-
+        String orderString= agreeForOrder.size()+" orders created";
+        return orderString;
     }
+
+
+}
 
 

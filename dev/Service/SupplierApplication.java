@@ -18,8 +18,8 @@ public class SupplierApplication {
     public int numContactName(int supplierNumber){
         return sc.numContactNameSup(supplierNumber);
     }
-    public void addSup(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending){
-        sc.addNewSupplier(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending);
+    public void addSup(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending,String address,String contactPhone){
+        sc.addNewSupplier(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending,address,contactPhone);
     }
     public void deleteSupplier(int numSupplier){
         sc.deleteSup(numSupplier);
@@ -41,6 +41,12 @@ public class SupplierApplication {
     }
     public void setTelephone(int numSupplier,String telephone){
         sc.setTelephoneSup(numSupplier,telephone);
+    }
+    public void setAddress(int numSupplier,String address){
+        sc.setAddressSup(numSupplier,address);
+    }
+    public void setContactPhone(int numSupplier,String contactPhone){
+        sc.setContactPhoneSup(numSupplier,contactPhone);
     }
     public void addDeliveryDays(int numSupplier,LinkedList<String> day){
         sc.addDeliveryDaysSup(numSupplier,day);

@@ -39,8 +39,9 @@ public class ProductController {
     }
     public void addNewProduct(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException{
          this.proRepo.addPro(productName,productNumber,unitOfMeasure,manufacturer);
+         Stock s=Stock.getInstance();
+         s.addProToStock(productNumber);
     }
-    public Map<Integer,Product> getAllProducts(){ return allProducts;}
 
     public void setNamePro(int productNumber,String productName) throws SQLException {
         this.proRepo.updateName(productNumber,productName);

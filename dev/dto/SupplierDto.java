@@ -13,6 +13,8 @@ public record SupplierDto(
         String telephone,   //the contact information of the supplier
         LinkedList<String> deliveryDays,  //the days delivery according to the agreement
         String deliverySending,  // repeating the order
-        LinkedList<Integer> agreementsId
+        LinkedList<Integer> agreementsId,
+        String address, //the address for automaticOrder
+        String contactPhone //the contactPhone for automaticOrder
 ) {
 }

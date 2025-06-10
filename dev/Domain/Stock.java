@@ -1,5 +1,6 @@
 package Domain;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -8,18 +9,20 @@ import java.util.Random;
 
 public class Stock {
     private static Stock instance; // the single instance
-    private Map<Integer, ProductStock > productStock; // map of product ID to quantity
+    private Map<Integer, ProductStock > allProductStock; // map of product ID to quantity
+    private Map<Integer,ProductStock> missProducts;
 
     // private constructor to prevent external instantiation
     private Stock() {
         ProductController pc = ProductController.getInstance();
-        productStock = new HashMap<>();
+        allProductStock = new HashMap<>();
+        this.missProducts=new HashMap<>();
         for (Product product : pc.getAllProducts().values()) {
             Random rn = new Random();
             int min = rn.nextInt(5) + 1;
             int curr = rn.nextInt(6)+5;
             ProductStock pi = new ProductStock(product.getProductNumber(),min, curr);
-            productStock.put(product.getProductNumber(), pi );
+            allProductStock.put(product.getProductNumber(), pi );
         }
     }
 
@@ -31,47 +34,58 @@ public class Stock {
         return instance;
     }
     public int getCurrentAmount(int numProduct){
-        return this.productStock.get(numProduct).getCurrentAmount();
+        return this.allProductStock.get(numProduct).getCurrentAmount();
     }
     public  int getMinimumAmount(int numProduct){
-        return this.productStock.get(numProduct).getMinimumCount();
+        return this.allProductStock.get(numProduct).getMinimumCount();
     }
+
 
     // Getter
     public Map<Integer, ProductStock> getProductStock() {
-        return productStock;
+        return allProductStock;
     }
 
     public void sell(Map<Integer,Integer> soldPro){
-        ProductRepositoryImpl pri = new ProductRepositoryImpl();
+        ProductRepositoryImpl pri =  ProductRepositoryImpl.getInstance();
         String name="" ;
-        for (Map.Entry<String, PairInt> i : getProductStock().entrySet()) {
-            for (Map.Entry<Integer, Integer> j : soldPro.entrySet()) {
-                if (pri.getProd(j.getKey()).isPresent()) {
-                    name = pri.getProd(j.getKey()).get().productName();
+        for (Map.Entry<Integer, Integer> pro : soldPro.entrySet()) {
+            int productId = pro.getKey();
+            int quantitySold = pro.getValue();
+            if (getProductStock().containsKey(productId)) {
+                getProductStock().get(productId).lessCurrentAmount(quantitySold);
+                if(getProductStock().get(productId).getCurrentAmount()<getProductStock().get(productId).getMinimumCount()){
+                    missProducts.put(productId,getProductStock().get(productId));
                 }
-                if (Objects.equals(i.getKey(), name)) {
-                    int fir = i.getValue().first;
-                    int sec = i.getValue().second;
-                    PairInt cur = new PairInt(fir - soldPro.get(j.getKey()), sec);    //update the stock of sold item
-                    i.setValue(cur);
-                }
+        }
+        }
+    }
+
+    public Map<Integer, ProductStock> getMissProducts() {
+        return missProducts;
+    }
+
+    public void updateStock(int orderId)  throws SQLException {
+        OrderController oc = OrderController.getInstance();
+        Order o = oc.orderBYnum(orderId);
+        for (ItemOrder it : o.getItems()) {
+            int numP = it.getNumberItem();
+            getProductStock().get(numP).addCurrentAmount(it.getAmountOrder()); //Product status varies depending on the interior
             }
         }
-        for (Map.Entry<Integer, PairInt> entry : getProductStock().entrySet()) {
-            if (entry.getValue().first < entry.getValue().second) {  //check if the amount of product is smaller than the minimum required
-                automaticOrder.outOfStock.add(entry.getKey()); //if so add the id number of the product to the list
+    public void cancelStock(int orderId)  throws SQLException {
+        OrderController oc = OrderController.getInstance();
+        Order o = oc.orderBYnum(orderId);
+        for (ItemOrder it : o.getItems()) {
+            int numP = it.getNumberItem();
+            if (getCurrentAmount(numP) + it.getAmountOrder() >= getMinimumAmount(numP)) {
+                getProductStock().get(numP).setBeOrdered(false);
             }
         }
     }
-    public void updateStock(int orderId){
-        OrderController oc = OrderController.getInstance();
-        Order o = oc.orderBYnum(orderId);
-        for (ItemOrder io: o.getItems()){
-            int proAmountOrdered =io.getAmountOrder();
-            PairInt pi =productStock.get(io.getItem().getProd().getProductName());
-            int temp =pi.first;
-            pi.first=temp+ proAmountOrdered;
+    public void updateStatusOrderPro(int productId, int amount) {
+        if (getCurrentAmount(productId) + amount >= getMinimumAmount(productId)) {
+            getProductStock().get(productId).setBeOrdered(true);
         }
     }
 

@@ -28,14 +28,20 @@ public class OrderApplication {
     public boolean addItem(int orderNumber, int numP,int amount)throws SQLException{
         return oc.addItemOrder(orderNumber, numP, amount);
     }
-    public void setStatusOrder(int orderNumber,String status)throws SQLException{
-        oc.updateStatus(orderNumber,status);
+    public void cancelStatusOrder(int orderNumber)throws SQLException{
+        oc.cancelOrder(orderNumber);
+    }
+    public void arriveStatusOrder(int orderNumber)throws SQLException{
+        oc.arriveOrder(orderNumber);
     }
     public String printOrder(int orderNumber)throws SQLException{
         return oc.StringOrder(orderNumber);
     }
     public String createPeriodOrder() throws SQLException {
         return oc.addPeriodOrder();
+    }
+    public String createMissOrder() throws SQLException {
+        return oc.addMissOrder();
     }
 
 }

@@ -27,17 +27,19 @@ public class SupplierRepositoryImpl implements SupplierRepository{
     }
 
     @Override
-    public SupplierDto addSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending) throws SQLException {
+    public SupplierDto addSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending,String address,String contactPhone) throws SQLException {
         paymentTerms pay =SupplierMapper.StringToEnumPaymentTerms(payment);
         Delivery del=SupplierMapper.StringToEnumDelivery(deliverySending);
         LinkedList<Days> d= new LinkedList<>();
         for (String day:deliveryDays){
             d.add(SupplierMapper.StringToEnumDays(day));
         }
-        Supplier sup= new Supplier(supplierNumber, supplierName,  bankAccount,  pay, contactNames,  telephone,  d,  del, new LinkedList<Agreement>());
-        supList.put(supplierNumber,sup);
-        return this.supDao.saveSup(new SupplierDto(supplierNumber, supplierName,  bankAccount,  payment, contactNames,  telephone,  deliveryDays,  deliverySending, new LinkedList<Integer>()));
+        Supplier sup= new Supplier(supplierNumber, supplierName,  bankAccount,  pay, contactNames,  telephone,  d,  del, new LinkedList<Agreement>(),address,contactPhone);
+        SupplierDto dto = this.supDao.saveSup(new SupplierDto(supplierNumber, supplierName, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending, new LinkedList<>(), address, contactPhone));
+        supList.put(supplierNumber, sup);
+        return dto;
     }
+
     public void removeSupplier(int supplierNumber) throws SQLException{
         if(supList.containsKey(supplierNumber)){
             supList.remove(supplierNumber); //בדיקת הסכמים
@@ -73,19 +75,23 @@ public class SupplierRepositoryImpl implements SupplierRepository{
         }
          return this.supDao.getContactNameById(supplierNumber);
     }
-    //public boolean existsDay(int supplierNumber, String day) throws SQLException{
-     //   if(supList.containsKey(supplierNumber)){
-    //        if(supList.get(supplierNumber).getDeliveryDays().contains(day)){
-    //            return true;
-    //        }
-    //        return false;
-    //    }
-       // return this.supDao.findDayById(supplierNumber,day);
-    //}
+
     public void updateName(int numSupplier,String nameSupplier) throws SQLException{
         this.supDao.updateNameSupById(numSupplier,nameSupplier);
         if(supList.containsKey(numSupplier)){
             (supList.get(numSupplier)).setSupplierName(nameSupplier);
+        }
+    }
+    public void updateAddress(int numSupplier,String address) throws SQLException{
+        this.supDao.updateAddressSupById(numSupplier,address);
+        if(supList.containsKey(numSupplier)){
+            (supList.get(numSupplier)).setAddress(address);
+        }
+    }
+    public void updateContactPhone(int numSupplier,String contactPhone) throws SQLException{
+        this.supDao.updateContactPhoneSupById(numSupplier,contactPhone);
+        if(supList.containsKey(numSupplier)){
+            (supList.get(numSupplier)).setContactPhone(contactPhone);
         }
     }
     public void updateBankAccount(int numSupplier,String bankAccount) throws SQLException{
@@ -149,15 +155,4 @@ public class SupplierRepositoryImpl implements SupplierRepository{
         }
         return "";
     }
-    //public boolean isConstantSup(int supplierNumber ) throws SQLException{
-    //    if(supList.containsKey(supplierNumber)){
-    //        if((supList.get(supplierNumber)).getDeliveryDays()!=null){
-     //       return true;
-     //       }
-     //       return false;
-      //  }
-       // return this.supDao.isConstantById(supplierNumber);
-   // }
-
-
 }

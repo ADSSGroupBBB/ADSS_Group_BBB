@@ -283,8 +283,76 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
             throw e;
         }
     }
+    public List<AgreementDto> findAllStandardAgreeByProId(int numP) throws SQLException {
+            String sql = """
+                        SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                               qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                               p.productNumber, p.productName, p.unitOfMeasure, p.manufacturer
+                        FROM standardAgreements sa
+                        JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+                        JOIN products p ON qa.prodId = p.productNumber
+                        WHERE sa.type = 'standard'
+                          AND sa.IDNumber IN (
+                              SELECT IDNumber
+                              FROM quantityAgreements
+                              WHERE prodId = ?
+                          )
+                        ORDER BY sa.IDNumber
+                    """;
 
+            try {
+                Database.getConnection().setAutoCommit(false);
+
+                Map<Integer, AgreementDto> agreementsMap = new LinkedHashMap<>();
+
+                try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                    ps.setInt(1, numP);
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            int idNum = rs.getInt("IDNumber");
+
+                            AgreementDto agreement = agreementsMap.get(idNum);
+                            if (agreement == null) {
+                                agreement = new AgreementDto(
+                                        idNum,
+                                        rs.getInt("supplierNumber"),
+                                        new LinkedList<>(),
+                                        rs.getString("date")
+                                );
+                                agreementsMap.put(idNum, agreement);
+                            }
+
+                            ProductDto product = new ProductDto(
+                                    rs.getString("productName"),
+                                    rs.getInt("productNumber"),
+                                    rs.getString("unitOfMeasure"),
+                                    rs.getString("manufacturer")
+                            );
+
+                            QuantityAgreementDto quantityProduct = new QuantityAgreementDto(
+                                    product,
+                                    rs.getDouble("price"),
+                                    rs.getInt("catalogNumber"),
+                                    rs.getInt("amountToDiscount"),
+                                    rs.getInt("discount")
+                            );
+
+                            agreement.productsList().add(quantityProduct);
+                        }
+                    }
+                }
+
+                Database.getConnection().commit();
+                return new ArrayList<>(agreementsMap.values());
+
+            } catch (SQLException e) {
+                Database.getConnection().rollback();
+                throw e;
+            }
+        }
 }
+
 
 
 

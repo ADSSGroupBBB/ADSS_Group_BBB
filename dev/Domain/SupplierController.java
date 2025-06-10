@@ -107,6 +107,12 @@ public class SupplierController {
     public void setDeliverySending(int numSupplier,String deliverySending) throws SQLException{
        this.supRepo.updateDeliverySending(numSupplier,deliverySending);
     }
+    public void setAddressSup(int numSupplier,String address) throws SQLException{
+        this.supRepo.updateAddress(numSupplier,address);
+    }
+    public void setContactPhoneSup(int numSupplier,String contactPhone) throws SQLException{
+        this.supRepo.updateContactPhone(numSupplier,contactPhone);
+    }
     //add agreement to supplier
     //parameters:int supplierNumber,Agreement agree
     public void addAgreement(int supplierNumber,Agreement agree) throws SQLException{
@@ -126,11 +132,25 @@ public class SupplierController {
         }
         return "";
     }
+    public String getAddress(int num) throws SQLException{
+        Optional<SupplierDto> supDto=this.supRepo.getSupplier(num);
+        if (supDto.isPresent()) {
+            return supDto.get().address();
+        }
+        return "";
+    }
+    public String getContactPhone(int num) throws SQLException{
+        Optional<SupplierDto> supDto=this.supRepo.getSupplier(num);
+        if (supDto.isPresent()) {
+            return supDto.get().contactPhone();
+        }
+        return "";
+    }
 
     //adds a new supplier
     //parameters:int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending
-    public void addNewSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending) throws SQLException{
-        this.supRepo.addSupplier(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending);
+    public void addNewSupplier(int supplierNumber,String supplierName,String bankAccount,String payment,LinkedList<String> contactNames,String telephone,LinkedList<String> deliveryDays,String deliverySending,String address,String contactPhone) throws SQLException{
+        this.supRepo.addSupplier(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending,address,contactPhone);
     }
     //delete supplier
     //parameter:int numSupplier

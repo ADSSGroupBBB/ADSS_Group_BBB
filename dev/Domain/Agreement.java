@@ -55,6 +55,14 @@ public class Agreement {
         }
         return false;
     }
+    public QuantityAgreement searchPro(int proN) {
+        for (int i=0;i<productsList.size();i++){
+            if (productsList.get(i).getNumberProAgreement()==proN){
+                productsList.get(i);
+            }
+        }
+        return null;
+    }
     //set a unit for a product
     //gets type int and unit
     public void setUnitOfMeasure(int catalogNumber,unit unitOfMeasure) {

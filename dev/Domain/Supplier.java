@@ -15,11 +15,29 @@ public class Supplier {
     private LinkedList<Days> deliveryDays;  //the days delivery according to the agreement
     private Delivery deliverySending;  // repeating the order
     private LinkedList<Agreement> agreements;   //list of the agreements with the supplier
+    private String address; //the address for automaticOrder
+    private String contactPhone; //the contactPhone for automaticOrder
 
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
 
     //supplier constructor
     //gets:supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,deliveryDays,deliverySending,agreements
-    public Supplier(int supplierNumber, String supplierName, String bankAccount, paymentTerms payment, LinkedList<String> contactNames, String telephone, LinkedList<Days> deliveryDays, Delivery deliverySending, LinkedList<Agreement> agreements){
+    public Supplier(int supplierNumber, String supplierName, String bankAccount, paymentTerms payment, LinkedList<String> contactNames, String telephone, LinkedList<Days> deliveryDays, Delivery deliverySending, LinkedList<Agreement> agreements,String address,String contactPhone){
         this.supplierNumber=supplierNumber;
         this.supplierName=supplierName;
         this.bankAccount=bankAccount;
@@ -29,6 +47,8 @@ public class Supplier {
         this.deliveryDays=deliveryDays;
         this.deliverySending=deliverySending;
         this.agreements=agreements;
+        this.address=address;
+        this.contactPhone=contactPhone;
     }
     //supplierName getter
     public String getSupplierName() {

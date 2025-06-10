@@ -7,17 +7,6 @@ public class ItemOrder {
     private double initialPrice;
     private int numOrder;
 
-    public double getFinalPrice() {
-        return finalPrice;
-    }
-
-    public double getInitialPrice() {
-        return initialPrice;
-    }
-
-    public int getNumOrder() {
-        return numOrder;
-    }
 
     //class constructor
     public ItemOrder(QuantityAgreement item,int amountOrder,int numOrder){
@@ -30,6 +19,18 @@ public class ItemOrder {
         }
         this.numOrder=numOrder;
     }
+    public double getFinalPrice() {
+        return finalPrice;
+    }
+
+    public double getInitialPrice() {
+        return initialPrice;
+    }
+
+    public int getNumOrder() {
+        return numOrder;
+    }
+
     //set Name of Agreement
     public void setNameItem(String name){
         this.item.setNameAgreement(name);

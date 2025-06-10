@@ -3,6 +3,7 @@ package Domain;
 import dataAccess.JdbcPeriodAgreementDao;
 import dataAccess.PeriodAgreementDao;
 import dto.*;
+import util.Database;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -25,21 +26,44 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
         return instance;
     }
     public PeriodAgreementDto savePeriodAgreement (int supplierNumber, String date,String address,String contactPhone) throws SQLException {
-        SupplierRepository sRepo=SupplierRepositoryImpl.getInstance();
-        PeriodAgreement agree=new PeriodAgreement(supplierNumber,date,address,contactPhone);
-        sRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
-        this.periodAgreementsList.put(agree.getIDNumber(),agree);
-        return this.periodDao.savePeriod(new PeriodAgreementDto(agree.getIDNumber(),agree.getSupplierNumber(),new LinkedList<PeriodAgreementItemDto>(),date,address,contactPhone));
+        try {
+            Database.getConnection().setAutoCommit(false);
+            SupplierRepository sRepo = SupplierRepositoryImpl.getInstance();
+            PeriodAgreement agree = new PeriodAgreement(supplierNumber, date, address, contactPhone);
+            sRepo.addAgreementToSup(supplierNumber, agree.getIDNumber());
+            PeriodAgreementDto dto = this.periodDao.savePeriod(new PeriodAgreementDto(
+                    agree.getIDNumber(), agree.getSupplierNumber(), new LinkedList<>(), date, address, contactPhone));
+            this.periodAgreementsList.put(agree.getIDNumber(), agree); // ✅ רק אחרי הצלחה
+            Database.getConnection().commit();
+            return dto;
+        } catch (SQLException e) {
+            if (Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
     }
 
     @Override
     public void addProPeriodAgreement(int id, int numPro, double price, int catalogNumber, int amountToDiscount, int discount, int amountToOrder)  throws SQLException{
+        try {
+            Database.getConnection().setAutoCommit(false);
         ProductRepository p = ProductRepositoryImpl.getInstance();
         Optional<ProductDto> pro = p.getProd(numPro);
         if(this.periodAgreementsList.containsKey(id)) {
             this.periodAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount,amountToOrder);
         }
         this.periodDao.addProById( id, new PeriodAgreementItemDto(new QuantityAgreementDto(pro.get(),  price, catalogNumber, amountToDiscount, discount),amountToOrder));
+        Database.getConnection().commit();
+        } catch (SQLException e) {
+            if (Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
+        finally {
+            Database.getConnection().setAutoCommit(true);
+        }
     }
 
     @Override
@@ -56,9 +80,22 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
         if(this.periodAgreementsList.containsKey(numAgree)) {
             this.periodAgreementsList.remove(numAgree);
         }
-        SupplierRepository s = SupplierRepositoryImpl.getInstance();
-        s.removeAgreementToSup(numSup, numAgree);
-        this.periodDao.removePeriod(numAgree);
+        try {
+            Database.getConnection().setAutoCommit(false);
+            SupplierRepository s = SupplierRepositoryImpl.getInstance();
+            s.removeAgreementToSup(numSup, numAgree);
+            this.periodDao.removePeriod(numAgree);
+            Database.getConnection().commit();
+        }
+                catch (SQLException e) {
+            if ( Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
+        finally {
+            Database.getConnection().setAutoCommit(true);
+        }
     }
 
 
@@ -116,6 +153,4 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
         }
         return agreeToOrders;
     }
-
-
 }

@@ -198,11 +198,31 @@ public class AgreementsController {
         }
         return false;
     }
+    public AgreementDto agreementMostEffectivePrice(int numP,int amount) throws SQLException{
+        List<AgreementDto> allAgree= this.standardAgreeRepo.getAllStandardAgreeWithPro(numP);
+        double price_min=Double.MAX_VALUE;
+        AgreementDto agree_min=allAgree.getFirst();
+        for (AgreementDto agree: allAgree){
+            Agreement a= AgreementMapper.toObject(agree);
+            QuantityAgreement item=a.searchPro(numP);
+            ItemOrder it=new ItemOrder(item,amount,0);//Fictitious order number to exploit the final price calculation function
+            if(it.getFinalPrice()<price_min){
+                price_min=it.getFinalPrice();
+                agree_min=agree;
+            }
+        }
+        return agree_min;
+    }
+
+
     public List<PeriodAgreementDto> getAllPeriodToOrder()  throws SQLException{
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
         return this.periodAgreeRepo.allPeriodAgreementsToOrder(todayDate.toString(),dateAsString);
+    }
+    public List<AgreementDto> getAllAgreeByPro(int numP) throws SQLException{
+        return this.standardAgreeRepo.getAllStandardAgreeWithPro(numP);
     }
     public boolean periodAgreeCanEdit(int numS) throws SQLException {
         SupplierController sup = SupplierController.getInstance();

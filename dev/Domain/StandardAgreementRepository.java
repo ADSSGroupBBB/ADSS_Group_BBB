@@ -21,9 +21,6 @@ public interface   StandardAgreementRepository {
     void setAmountToDiscountStandardAgreement(int productNumber,int numAgree,int amountToDiscount) throws SQLException;
     void setDiscountStandardAgreement(int productNumber,int numAgree,int discount) throws SQLException;
     List<AgreementDto> allAgreementsByStandardSup(int numS ) throws SQLException;
-    boolean existProStandardAgreementByName(String nameP,int numA) throws SQLException;
-    QuantityAgreement productFromAgreementByName(int numAgree,String nameP) throws SQLException;
-    Map<Integer, Agreement> getAllStandardAgreements() throws SQLException;
     QuantityAgreementDto proFromAgreeByIndex(int numAgree, int numP) throws SQLException;
-
+    List<AgreementDto> getAllStandardAgreeWithPro(int numP) throws SQLException;
 }

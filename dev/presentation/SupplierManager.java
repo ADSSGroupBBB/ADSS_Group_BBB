@@ -392,6 +392,34 @@ public class SupplierManager {
                 }
             }
         }
+    public String enterAdress(){
+        String address;
+        Scanner scanner=new Scanner(System.in);
+        while (true) {
+            System.out.println("Enter the destination address for automatic missing orders");
+            address = scanner.nextLine().trim();
+            if (address.isEmpty()) {
+                System.out.println("The address cannot be empty, please enter again");
+            } else {
+                break;
+            }
+        }
+        return address;
+    }
+    public String enterContactPhone(){
+        String contactPhone;
+        Scanner scanner=new Scanner(System.in);
+        while (true) {
+            System.out.println("Enter contact phone number for automatic missing orders");
+            contactPhone = scanner.nextLine().trim();
+            if (contactPhone.isEmpty()) {
+                System.out.println("The contact phone number cannot be empty, please enter again");
+            } else {
+                break;
+            }
+        }
+        return contactPhone;
+    }
 
     public void addSupplier() {
         SupplierApplication sa = new SupplierApplication();
@@ -404,6 +432,8 @@ public class SupplierManager {
         String telephone;
         LinkedList<String> deliveryDays = new LinkedList<>();
         String deliverySending;
+        String address;
+        String contactPhone;
 
         while (true) {
             System.out.println("Enter supplier number");
@@ -428,8 +458,10 @@ public class SupplierManager {
         telephone=enterTelephone();
         deliveryDays=enterDeliveryDays(numSupplier);
         deliverySending=enterDeliverySending();
+        address=enterAdress();
+        contactPhone=enterContactPhone();
 
-        sa.addSup(numSupplier, nameSupplier, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending);
+        sa.addSup(numSupplier, nameSupplier, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending,address,contactPhone);
         while (true) {
             int choice=0;
             System.out.println("Do you want to add an agreement?");
@@ -487,6 +519,8 @@ public class SupplierManager {
         String payment;
         String telephone;
         String deliverySending;
+        String address;
+        String contactPhone;
         while (true) {
             System.out.println("Enter the supplier number whose details you want to edit");
             if (scanner.hasNextInt()) {
@@ -514,10 +548,12 @@ public class SupplierManager {
             System.out.println("6. Delivery dates");
             System.out.println("7. Delivery method");
             System.out.println("8. Agreements");
+            System.out.println("9. destination address for automatic missing orders");
+            System.out.println("10. contact phone number for automatic missing orders");
             if (scanner.hasNextInt()) {
                 choice = scanner.nextInt();
                 scanner.nextLine();
-                if ((choice >= 1 && choice <= 8)) {
+                if ((choice >= 1 && choice <= 10)) {
                     switch (choice) {
                         case 1: {
                             nameSupplier = enterNameSupplier();
@@ -588,6 +624,16 @@ public class SupplierManager {
                                 }
 
                             }
+                        }
+                        case 9: {
+                            address=enterAdress();
+                            ua.setAddress(numSupplier,address);
+                            return;
+                        }
+                        case 10: {
+                            contactPhone=enterContactPhone();
+                            ua.setContactPhone(numSupplier,contactPhone);
+                            return;
                         }
                     }
 

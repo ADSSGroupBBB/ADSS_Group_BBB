@@ -21,6 +21,8 @@ public class Database {
                         contactNames TEXT NOT NULL,
                         telephone TEXT NOT NULL,
                         deliverySending TEXT NOT NULL
+                        address TEXT NOT NULL,
+                        contactPhone TEXT NOT NULL
                     );
                 """);
                 st.executeUpdate("""

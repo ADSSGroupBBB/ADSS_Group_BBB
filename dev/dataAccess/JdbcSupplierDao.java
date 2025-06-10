@@ -15,7 +15,7 @@ public class JdbcSupplierDao implements SupplierDao{
         try {
             Database.getConnection().setAutoCommit(false);
         String sql= """
-                INSERT INTO suppliers(supplierNumber, supplierName, bankAccount, payment, contactNames, telephone, deliverySending) VALUES (?,?,?,?,?,?,?,?,?)
+                INSERT INTO suppliers(supplierNumber, supplierName, bankAccount, payment, contactNames, telephone, deliverySending, address, contactPhone) VALUES (?,?,?,?,?,?,?,?,?)
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setInt(1, sup.supplierNumber());
@@ -26,6 +26,8 @@ public class JdbcSupplierDao implements SupplierDao{
             ps.setString(5, contacts);
             ps.setString(6, sup.telephone());
             ps.setString(7, sup.deliverySending());
+            ps.setString(8,sup.address());
+            ps.setString(9,sup.contactPhone());
             ps.executeUpdate();
             int supplierId = sup.supplierNumber();
             String sqlDay = "INSERT INTO Supplier_Days(supplierNumber, day) VALUES (?,?)";
@@ -68,6 +70,8 @@ public class JdbcSupplierDao implements SupplierDao{
                     LinkedList<String> contactNames= new LinkedList<>(Arrays.asList(contactName.split(",")));
                     String telephone=sup.getString("telephone");
                     String deliverySending=sup.getString("deliverySending");
+                    String address=sup.getString("address");
+                    String contactPhone=sup.getString("contactPhone");
                     LinkedList<String> days=new LinkedList<>();
                     String sql_day= "SELECT day FROM Supplier_Days WHERE supplierNumber = ?";
                     try(PreparedStatement ps_days=Database.getConnection().prepareStatement(sql_day)) {
@@ -88,7 +92,7 @@ public class JdbcSupplierDao implements SupplierDao{
                             }
                         }
                     }
-                    return Optional.of(new SupplierDto(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,days,deliverySending,agreementsId)) ;
+                    return Optional.of(new SupplierDto(supplierNumber,supplierName,bankAccount,payment,contactNames,telephone,days,deliverySending,agreementsId,address,contactPhone)) ;
                 }
             }
 
@@ -125,6 +129,22 @@ public class JdbcSupplierDao implements SupplierDao{
 
         try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
             ps.setString(1, nameSupplier);
+            ps.setInt(2, numSupplier);
+            ps.executeUpdate();
+        }
+    }
+    public void updateAddressSupById(int numSupplier,String address) throws SQLException {
+        String sql = "UPDATE suppliers SET address = ? WHERE supplierNumber = ?";
+        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+            ps.setString(1, address);
+            ps.setInt(2, numSupplier);
+            ps.executeUpdate();
+        }
+    }
+    public void updateContactPhoneSupById(int numSupplier,String contactPhone) throws SQLException {
+        String sql = "UPDATE suppliers SET contactPhone = ? WHERE supplierNumber = ?";
+        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+            ps.setString(1, contactPhone);
             ps.setInt(2, numSupplier);
             ps.executeUpdate();
         }

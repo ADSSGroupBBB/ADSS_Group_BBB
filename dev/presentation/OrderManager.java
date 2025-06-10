@@ -1,75 +1,69 @@
 package presentation;
 
-import Domain.Status;
 import Service.OrderApplication;
-import Service.StockApplication;
-import util.Database;
 
 import java.sql.SQLException;
-import java.sql.Time;
-import java.text.Format;
-import java.text.SimpleDateFormat;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class OrderManager {
-    public  void OrderManagerPresentation(){
-        Scanner scanner= new Scanner(System.in);
-        int choice=0;
-        boolean flag=true;
-        while (flag){
-        while (true) {
-            System.out.println("Welcome Order Manager, What would you like to do?");
-            System.out.println("Choose option 1-4");
-            System.out.println("1.Add an order");
-            System.out.println("2.Cancel an order");
-            System.out.println("3.Update on arrival of an order");
-            System.out.println("4.Search an order");
-            System.out.println("5.Back to main menu");
-            if(scanner.hasNextInt()) {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-                if (choice >= 1 && choice <= 4) {
-                    break;
+    public void OrderManagerPresentation() {
+        Scanner scanner = new Scanner(System.in);
+        int choice = 0;
+        boolean flag = true;
+        while (flag) {
+            while (true) {
+                System.out.println("Welcome Order Manager, What would you like to do?");
+                System.out.println("Choose option 1-4");
+                System.out.println("1.Add an order");
+                System.out.println("2.Cancel an order");
+                System.out.println("3.Update on arrival of an order");
+                System.out.println("4.Search an order");
+                System.out.println("5.Back to main menu");
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    if (choice >= 1 && choice <= 4) {
+                        break;
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                        scanner.nextLine();
+
+                    }
                 } else {
                     System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
 
                 }
             }
-            else {
-                System.out.println("The number is invalid, please select again");
-                scanner.nextLine();
+            switch (choice) {
+                case 1: {
+                    addOrder();
+                    break;
+                }
+                case 2: {
+                    cancalOrder();
+                    break;
+                }
+                case 3: {
+                    searchOrder();
+                    break;
+                }
+                case 4: {
 
+                    flag = false;
+                    break;
+                }
             }
-        }
-        switch (choice) {
-            case 1: {
-                addOrder();
-                break;
-            }
-            case 2: {
-                cancalOrder();
-                break;
-            }
-            case 3: {
-                searchOrder();
-                break;
-            }
-            case 4: {
-
-                flag = false;
-                break;
-            }
-        }
-            if(!flag){
+            if (!flag) {
                 return;
             }
         }
     }
+
     public void addOrder() {
-        StockApplication sa = new StockApplication();
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
         int numSupplier;
@@ -78,8 +72,7 @@ public class OrderManager {
         String date;
         String contactPhone;
         int amount;
-        String statusOrder;
-        int a =0;
+        int a = 0;
         while (true) {
             System.out.println("Would you like to order manually or use an automatic order?");
             System.out.println("1. manual order");
@@ -98,7 +91,7 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        if (a == 1){
+        if (a == 1) {
             while (true) {
                 System.out.println("Enter the number of the supplier you would like to order from");
                 if (scanner.hasNextInt()) {
@@ -135,9 +128,9 @@ public class OrderManager {
                 String strToday = today.format(formatter);
                 if (date.isEmpty()) {
                     System.out.println("The date cannot be empty, please enter again");
-                }else if(date.equals(strToday)) {
+                } else if (date.equals(strToday)) {
                     System.out.println("The supplier won't be able to prepare your order on such short notice,");
-                    System.out.println( "please choose the date "+strTomorrow+" and forward");
+                    System.out.println("please choose the date " + strTomorrow + " and forward");
                 } else {
                     break;
                 }
@@ -168,69 +161,75 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
-            int orderNumber= oa.addOrder(numAgreement,numSupplier,address,date,contactPhone);
-            int numP = 0;
-            LinkedList<Integer> numProducts=new LinkedList<Integer>();
-            while (true) {
+            try {
+                int orderNumber = oa.addOrder(numAgreement, numSupplier, address, date, contactPhone);
+
+
+                int numP = 0;
+                LinkedList<Integer> numProducts = new LinkedList<Integer>();
                 while (true) {
-                    System.out.println("Select a product to order from the following products:");
-                    System.out.println(oa.printByAgree(numAgreement));
-                    if (scanner.hasNextInt()) {
-                        numP = scanner.nextInt();
-                        scanner.nextLine();
-                        if(numProducts.contains(numP)){
-                            System.out.println("The product is already available on order.");
-                            continue;
+                    while (true) {
+                        System.out.println("Select a product to order from the following products:");
+                        System.out.println(oa.printByAgree(numAgreement));
+                        if (scanner.hasNextInt()) {
+                            numP = scanner.nextInt();
+                            scanner.nextLine();
+                            if (numProducts.contains(numP)) {
+                                System.out.println("The product is already available on order.");
+                                continue;
+                            }
+                            if (oa.numProAgreement(numAgreement) >= numP) { //Exceeds the range of options
+                                numProducts.add(numP);
+                                break;
+                            } else {
+                                System.out.println("This is not a valid number.");
+                            }
+                        } else {
+                            System.out.println("This is not a number, please enter it again");
+                            scanner.nextLine();
                         }
-                        if (oa.numProAgreement(numAgreement) >= numP) { //Exceeds the range of options
-                            numProducts.add(numP);
+                    }
+                    while (true) {
+                        System.out.println("Enter the quantity of this item");
+                        if (scanner.hasNextInt()) {
+                            amount = scanner.nextInt();
+                            scanner.nextLine();
                             break;
                         } else {
-                            System.out.println("This is not a valid number.");
+                            System.out.println("This is not a number, please enter it again");
+                            scanner.nextLine();
                         }
-                    } else {
-                        System.out.println("This is not a number, please enter it again");
-                        scanner.nextLine();
                     }
-                }
-                while (true) {
-                    System.out.println("Enter the quantity of this item");
-                    if (scanner.hasNextInt()) {
-                        amount = scanner.nextInt();
-                        scanner.nextLine();
-                        break;
-                    } else {
-                        System.out.println("This is not a number, please enter it again");
-                        scanner.nextLine();
+                    if (!oa.addItem(orderNumber, numP, amount)) {
+                        System.out.println("The product is already available on order.");
+                        continue;
                     }
-                }
-                if(!oa.addItem(orderNumber, numP, amount)){
-                    System.out.println("The product is already available on order.");
-                    continue;
-                }
-                int secondC = 0;
-                while (true) {
-                    System.out.println("Do you want to add another product?");
-                    System.out.println("1.Yes");
-                    System.out.println("2.No");
-                    if (scanner.hasNextInt()) {
-                        secondC = scanner.nextInt();
-                        scanner.nextLine();
-                        if (secondC >= 1 && secondC <= 2) {
-                            break;
+                    int secondC = 0;
+                    while (true) {
+                        System.out.println("Do you want to add another product?");
+                        System.out.println("1.Yes");
+                        System.out.println("2.No");
+                        if (scanner.hasNextInt()) {
+                            secondC = scanner.nextInt();
+                            scanner.nextLine();
+                            if (secondC >= 1 && secondC <= 2) {
+                                break;
+                            } else {
+                                System.out.println("The number is invalid, please select again");
+                            }
                         } else {
                             System.out.println("The number is invalid, please select again");
+                            scanner.nextLine();
                         }
-                    } else {
-                        System.out.println("The number is invalid, please select again");
-                        scanner.nextLine();
+                    }
+                    if (secondC == 2) {
+                        return;
                     }
                 }
-                if (secondC == 2) {
-                    return;
-                }
+            } catch (SQLException e) {
+                System.out.println("The order was unsuccessful");
             }
-        }else {
+        } else {
             int choiceType;
             while (true) {
                 System.out.println("What type of automatic order would you like to place?");
@@ -250,27 +249,36 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
-            if (choiceType==1){
+            if (choiceType == 1) {
                 try {
                     String orders = oa.createPeriodOrder();
                     System.out.println(orders);
-                }
-             catch (SQLException e) {
-                 System.out.println("failed to create automatic order");
-            }
-
-            }else{
-                int orderID =oa.addOrder(numAgreement,numSupplier,address,date,contactPhone,statusOrder);
-                if (orderID!=-1){
-                    System.out.println("automatic order created successfully!");
-                }else{
+                } catch (SQLException e) {
                     System.out.println("failed to create automatic order");
+                    return;
                 }
+
+            } else {
+                try {
+                    String orders = oa.createMissOrder();
+                    System.out.println(orders);
+                } catch (SQLException e) {
+                    System.out.println("failed to create automatic order");
+                    return;
+                }
+                //try {
+                //int orderID = oa.addOrder(numAgreement, numSupplier, address, date, contactPhone);
+                //if (orderID != -1) {
+                //  System.out.println("automatic order created successfully!");
+                //} else {
+                //  System.out.println("failed to create automatic order");
+                //}
+
             }
         }
     }
 
-    public void cancalOrder(){
+    public void cancalOrder() {
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
         int orderNumber;
@@ -279,20 +287,30 @@ public class OrderManager {
             if (scanner.hasNextInt()) {
                 orderNumber = scanner.nextInt();
                 scanner.nextLine();
-                if (!oa.orderExist(orderNumber)) {
-                    break;
-                } else {
-                    System.out.println("The order already exists in the system");
+                try {
+                    if (!oa.orderExist(orderNumber)) {
+                        break;
+                    } else {
+                        System.out.println("The order already exists in the system");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("The cancel failed");
+                    return;
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
                 scanner.nextLine();
             }
         }
-        oa.setStatusOrder(orderNumber,"deleted");
+        try {
+            oa.cancelStatusOrder(orderNumber);
+        } catch (SQLException e) {
+            System.out.println("The cancel failed");
+            return;
+        }
     }
-    public void searchOrder(){
-        StockApplication sa = new StockApplication();
+
+    public void searchOrder() {
         OrderApplication oa = new OrderApplication();
         Scanner scanner = new Scanner(System.in);
         int orderNumber;
@@ -302,10 +320,14 @@ public class OrderManager {
             if (scanner.hasNextInt()) {
                 orderNumber = scanner.nextInt();
                 scanner.nextLine();
-                if (oa.orderExist(orderNumber)) {
-                    break;
-                } else {
-                    System.out.println("The order not exists in the system");
+                try {
+                    if (oa.orderExist(orderNumber)) {
+                        break;
+                    } else {
+                        System.out.println("The order not exists in the system");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("The search failed");
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -330,12 +352,15 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        if (choiceType ==1) {
-            System.out.println(oa.printOrder(orderNumber));
-        }else {
-            oa.setStatusOrder(orderNumber,"arrived");
+        try {
+            if (choiceType == 1) {
+                System.out.println(oa.printOrder(orderNumber));
+            } else {
+                oa.arriveStatusOrder(orderNumber);
+            }
+        } catch (SQLException e) {
+            System.out.println("The operation failed");
         }
     }
-
 }
 

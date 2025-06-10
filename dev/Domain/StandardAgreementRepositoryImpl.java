@@ -7,6 +7,7 @@ import dto.AgreementDto;
 import dto.ProductDto;
 import dto.QuantityAgreementDto;
 import dto.SupplierDto;
+import util.Database;
 
 
 import java.sql.SQLException;
@@ -30,19 +31,44 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
         return instance;
     }
     public AgreementDto saveStandardAgreement (int supplierNumber, String date) throws SQLException{
+        try {
+            Database.getConnection().setAutoCommit(false);
         Agreement agree=new Agreement(supplierNumber,date);
         SupplierRepository sRepo=SupplierRepositoryImpl.getInstance();
         sRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
-        this.standardAgreementsList.put(agree.getIDNumber(),agree);
-        return this.standardDao.saveStandard(new AgreementDto(agree.IDNumber,agree.supplierNumber,new LinkedList<QuantityAgreementDto>(),date));
+            AgreementDto saved = this.standardDao.saveStandard(new AgreementDto(agree.IDNumber, agree.supplierNumber, new LinkedList<>(), date));
+            this.standardAgreementsList.put(agree.getIDNumber(), agree);
+            Database.getConnection().commit();
+            return saved;
+        }
+        catch (SQLException e) {
+            if ( Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
+        finally {
+            Database.getConnection().setAutoCommit(true);
+        }
     }
     public void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount) throws SQLException {
-        ProductRepository p = ProductRepositoryImpl.getInstance();
-        Optional<ProductDto> pro = p.getProd(numPro);
-        if(this.standardAgreementsList.containsKey(id)) {
-            this.standardAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount);
+        try {
+            Database.getConnection().setAutoCommit(false);
+            ProductRepository p = ProductRepositoryImpl.getInstance();
+            Optional<ProductDto> pro = p.getProd(numPro);
+            if (this.standardAgreementsList.containsKey(id)) {
+                this.standardAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount);
+            }
+            this.standardDao.addProById(id, new QuantityAgreementDto(pro.get(), price, catalogNumber, amountToDiscount, discount));
+            Database.getConnection().commit();
+        } catch (SQLException e) {
+            if (Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        } finally {
+            Database.getConnection().setAutoCommit(true);
         }
-        this.standardDao.addProById( id, new QuantityAgreementDto(pro.get(),  price, catalogNumber, amountToDiscount, discount));
     }
     public void deleteProductStandardAgree(int numAgree,int productNumber) throws SQLException{
         if(this.standardAgreementsList.containsKey(numAgree)) {
@@ -61,10 +87,23 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
         if(this.standardAgreementsList.containsKey(numAgree)) {
             this.standardAgreementsList.remove(numAgree);
         }
+        try {
+            Database.getConnection().setAutoCommit(false);
         SupplierRepository s = SupplierRepositoryImpl.getInstance();
         s.removeAgreementToSup(numSup, numAgree);
         this.standardDao.removeStandard(numAgree);
+            Database.getConnection().commit();
         }
+        catch (SQLException e) {
+            if ( Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
+        finally {
+            Database.getConnection().setAutoCommit(true);
+        }
+    }
     public Optional<AgreementDto> getStandardAgreement(int numA) throws SQLException{
         if(this.standardAgreementsList.containsKey(numA)){
             return Optional.of(AgreementMapper.transfer(this.standardAgreementsList.get(numA)));
@@ -124,10 +163,12 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
         }
         return optionalAgrees;
     }
-    public boolean existProStandardAgreementByName(String nameP,int numA){
-
+    public  List<AgreementDto> getAllStandardAgreeWithPro(int numP) throws SQLException{
+        List<AgreementDto> optionalAgrees = this.standardDao.findAllStandardAgreeByProId(numP);
+        for (AgreementDto agree:optionalAgrees) {
+            standardAgreementsList.put(agree.IDNumber(), AgreementMapper.toObject(agree));
+        }
+        return optionalAgrees;
     }
-    public QuantityAgreement productFromAgreementByName(int numAgree,String nameP);
-    Map<Integer, Agreement> getAllStandardAgreements();
 
 }

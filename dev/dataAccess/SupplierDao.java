@@ -23,5 +23,6 @@ public interface SupplierDao {
      boolean isConstantById(int supplierNumber ) throws SQLException;
     Optional<SupplierDto> findSupById(int id) throws SQLException;
      void removeSupById(int id) throws SQLException;
-
+     void updateAddressSupById (int numSupplier,String address) throws SQLException;
+     void updateContactPhoneSupById (int numSupplier,String contactPhone) throws SQLException;
 }
