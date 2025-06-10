@@ -74,6 +74,14 @@ public class ProductRepositoryImpl implements ProductRepository{
             proList.get(productNumber).setManufacturer(manufacturer);
         }
     }
+    public  LinkedList<ProductDto> getAll()throws SQLException{
+
+        LinkedList<ProductDto> optionalPro = this.proDao.findAll();
+        for (ProductDto p:optionalPro){
+            proList.put(p.productNumber(), ProductMapper.toObject(p));
+        }
+        return optionalPro;
+    }
 
 
 }

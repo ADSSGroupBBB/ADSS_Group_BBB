@@ -4,6 +4,7 @@ package presentation;
 
 import Service.SupplierApplication;
 
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -168,7 +169,7 @@ public class SupplierManager {
         }
     }
 
-    private LinkedList<String> enterDeliveryDays(int num) {
+    private LinkedList<String> enterDeliveryDays(int num) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         SupplierApplication ua = new SupplierApplication();
         LinkedList<String> deliveryDays = new LinkedList<>();
@@ -317,7 +318,7 @@ public class SupplierManager {
             return "selfCollection";
         }
     }
-    private void editContactNames(SupplierApplication ua,int numSupplier) {
+    private void editContactNames(SupplierApplication ua,int numSupplier) throws SQLException{
         Scanner scanner = new Scanner(System.in);
         int choice = 0;
         while (true) {
@@ -356,7 +357,7 @@ public class SupplierManager {
         }
     }
 
-    public void editDeliveryDays(SupplierApplication ua,int numSupplier){
+    public void editDeliveryDays(SupplierApplication ua,int numSupplier) throws SQLException{
         Scanner scanner = new Scanner(System.in);
         int choice = 0;
         while (true) {
@@ -422,240 +423,258 @@ public class SupplierManager {
     }
 
     public void addSupplier() {
-        SupplierApplication sa = new SupplierApplication();
-        Scanner scanner = new Scanner(System.in);
-        int numSupplier;
-        String nameSupplier;
-        String bankAccount;
-        String payment;
-        LinkedList<String> contactNames = new LinkedList<>();
-        String telephone;
-        LinkedList<String> deliveryDays = new LinkedList<>();
-        String deliverySending;
-        String address;
-        String contactPhone;
+        try {
 
-        while (true) {
-            System.out.println("Enter supplier number");
-            if (scanner.hasNextInt()) {
-                numSupplier = scanner.nextInt();
-                scanner.nextLine();
-                if (!supplierExist(numSupplier)) {
-                    break;
-                } else {
-                    System.out.println("The supplier already exists in the system");
-                    return;
-                }
-            } else {
-                System.out.println("This is not a number, please enter it again");
-                scanner.nextLine();
-            }
-        }
-        nameSupplier = enterNameSupplier();
-        bankAccount = enterBankAccount();
-        payment = enterPayment();
-        contactNames = enterContactNames();
-        telephone=enterTelephone();
-        deliveryDays=enterDeliveryDays(numSupplier);
-        deliverySending=enterDeliverySending();
-        address=enterAdress();
-        contactPhone=enterContactPhone();
+            SupplierApplication sa = new SupplierApplication();
+            Scanner scanner = new Scanner(System.in);
+            int numSupplier;
+            String nameSupplier;
+            String bankAccount;
+            String payment;
+            LinkedList<String> contactNames = new LinkedList<>();
+            String telephone;
+            LinkedList<String> deliveryDays = new LinkedList<>();
+            String deliverySending;
+            String address;
+            String contactPhone;
 
-        sa.addSup(numSupplier, nameSupplier, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending,address,contactPhone);
-        while (true) {
-            int choice=0;
-            System.out.println("Do you want to add an agreement?");
-            System.out.println("1.Yes");
-            System.out.println("2.No");
-            if (scanner.hasNextInt()) {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-                if (choice >= 1 && choice <= 2) {
-                    if (choice == 2) {
+            while (true) {
+                System.out.println("Enter supplier number");
+                if (scanner.hasNextInt()) {
+                    numSupplier = scanner.nextInt();
+                    scanner.nextLine();
+                    if (!supplierExist(numSupplier)) {
                         break;
                     } else {
-                        AgreementsManager am = new AgreementsManager();
-                        am.addAgreementBySup(numSupplier);
+                        System.out.println("The supplier already exists in the system");
+                        return;
+                    }
+                } else {
+                    System.out.println("This is not a number, please enter it again");
+                    scanner.nextLine();
+                }
+            }
+            nameSupplier = enterNameSupplier();
+            bankAccount = enterBankAccount();
+            payment = enterPayment();
+            contactNames = enterContactNames();
+            telephone = enterTelephone();
+            deliveryDays = enterDeliveryDays(numSupplier);
+            deliverySending = enterDeliverySending();
+            address = enterAdress();
+            contactPhone = enterContactPhone();
+
+            sa.addSup(numSupplier, nameSupplier, bankAccount, payment, contactNames, telephone, deliveryDays, deliverySending, address, contactPhone);
+            while (true) {
+                int choice = 0;
+                System.out.println("Do you want to add an agreement?");
+                System.out.println("1.Yes");
+                System.out.println("2.No");
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    if (choice >= 1 && choice <= 2) {
+                        if (choice == 2) {
+                            break;
+                        } else {
+                            AgreementsManager am = new AgreementsManager();
+                            am.addAgreementBySup(numSupplier);
+                        }
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+                    }
+                } else {
+                    System.out.println("The number is invalid, please select again");
+                }
+            }
+        }
+     catch (SQLException e) {
+        System.out.println("Add supplier failed");
+        return;
+    }
+    }
+    public void deleteSupplier(){
+        try {
+
+            SupplierApplication ua = new SupplierApplication();
+            Scanner scanner = new Scanner(System.in);
+            int numSupplier;
+            while (true) {
+                System.out.println("Enter supplier number");
+                if (scanner.hasNextInt()) {
+                    numSupplier = scanner.nextInt();
+                    scanner.nextLine();
+                    if (supplierExist(numSupplier)) {
+                        ua.deleteSupplier(numSupplier);
+                        break;
+                    } else {
+                        System.out.println("The supplier not exists in the system");
+                        return;
+                    }
+                } else {
+                    System.out.println("This is not a number, please enter it again");
+                    scanner.nextLine();
+                }
+            }
+          } catch (SQLException e) {
+        System.out.println("Delete supplier failed");
+        return;
+    }
+    }
+    public void editSupplier() {
+        try {
+
+
+            SupplierApplication ua = new SupplierApplication();
+            Scanner scanner = new Scanner(System.in);
+            int numSupplier;
+            String nameSupplier;
+            String bankAccount;
+            String payment;
+            String telephone;
+            String deliverySending;
+            String address;
+            String contactPhone;
+            while (true) {
+                System.out.println("Enter the supplier number whose details you want to edit");
+                if (scanner.hasNextInt()) {
+                    numSupplier = scanner.nextInt();
+                    scanner.nextLine();
+                    if (supplierExist(numSupplier)) {
+                        break;
+                    } else {
+                        System.out.println("The supplier is not exists in the system");
+                        return;
+                    }
+                } else {
+                    System.out.println("This is not a number, please enter it again");
+                    scanner.nextLine();
+                }
+            }
+            int choice = 0;
+            while (true) {
+                System.out.println("What detail would you like to edit?");
+                System.out.println("1. Supplier name");
+                System.out.println("2. Bank account number");
+                System.out.println("3. Payment method");
+                System.out.println("4. Contact names");
+                System.out.println("5. Phone");
+                System.out.println("6. Delivery dates");
+                System.out.println("7. Delivery method");
+                System.out.println("8. Agreements");
+                System.out.println("9. destination address for automatic missing orders");
+                System.out.println("10. contact phone number for automatic missing orders");
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    if ((choice >= 1 && choice <= 10)) {
+                        switch (choice) {
+                            case 1: {
+                                nameSupplier = enterNameSupplier();
+                                ua.setName(numSupplier, nameSupplier);
+                                return;
+                            }
+                            case 2: {
+                                bankAccount = enterBankAccount();
+                                ua.setBankAccount(numSupplier, bankAccount);
+                                return;
+                            }
+                            case 3: {
+                                payment = enterPayment();
+                                ua.setPayment(numSupplier, payment);
+                                return;
+                            }
+                            case 4: {
+                                editContactNames(ua, numSupplier);
+                                return;
+                            }
+                            case 5: {
+                                telephone = enterTelephone();
+                                ua.setTelephone(numSupplier, telephone);
+                                return;
+                            }
+                            case 6: {
+                                editDeliveryDays(ua, numSupplier);  //לשנות להוספה. מחיקה
+                                return;
+                            }
+                            case 7: {
+                                deliverySending = enterDeliverySending();
+                                ua.setDeliverySending(numSupplier, deliverySending);
+                                return;
+                            }
+                            case 8: {
+                                int c = 0;
+                                AgreementsManager am = new AgreementsManager();
+                                while (true) {
+                                    System.out.println("What would you like to do?");
+                                    System.out.println("1.Add Agreement");
+                                    System.out.println("2. Edit Agreement");
+                                    System.out.println("3. Delete Agreement");
+                                    if (scanner.hasNextInt()) {
+                                        c = scanner.nextInt();
+                                        scanner.nextLine();
+                                        if ((c >= 1 && c <= 3)) {
+                                            switch (c) {
+                                                case 1: {
+                                                    am.addAgreementBySup(numSupplier);
+                                                    return;
+                                                }
+                                                case 2: {
+                                                    am.editAgreementBySup(numSupplier);
+                                                    return;
+                                                }
+                                                case 3: {
+                                                    am.cancelAgreementBySup(numSupplier);
+                                                    return;
+                                                }
+                                            }
+                                        } else {
+                                            System.out.println("The number is invalid, please select again");
+
+                                        }
+                                    } else {
+                                        System.out.println("The number is invalid, please select again");
+                                        scanner.nextLine();
+                                    }
+
+                                }
+                            }
+                            case 9: {
+                                address = enterAdress();
+                                ua.setAddress(numSupplier, address);
+                                return;
+                            }
+                            case 10: {
+                                contactPhone = enterContactPhone();
+                                ua.setContactPhone(numSupplier, contactPhone);
+                                return;
+                            }
+                        }
+
+                    } else {
+                        System.out.println("The number is invalid, please select again");
+
                     }
                 } else {
                     System.out.println("The number is invalid, please select again");
                     scanner.nextLine();
                 }
-            } else {
-                System.out.println("The number is invalid, please select again");
-                scanner.nextLine();
+
             }
         }
-
-    }
-    public void deleteSupplier(){
-        SupplierApplication ua = new SupplierApplication();
-        Scanner scanner = new Scanner(System.in);
-        int numSupplier;
-        while (true) {
-            System.out.println("Enter supplier number");
-            if (scanner.hasNextInt()) {
-                numSupplier = scanner.nextInt();
-                scanner.nextLine();
-                if (supplierExist(numSupplier)) {
-                    ua.deleteSupplier(numSupplier);
-                    break;
-                } else {
-                    System.out.println("The supplier not exists in the system");
-                    return;
-                }
-            } else {
-                System.out.println("This is not a number, please enter it again");
-                scanner.nextLine();
-            }
+        catch (SQLException e) {
+            System.out.println("Edit supplier failed");
+            return;
         }
     }
-    public void editSupplier(){
-        SupplierApplication ua = new SupplierApplication();
-        Scanner scanner = new Scanner(System.in);
-        int numSupplier;
-        String nameSupplier;
-        String bankAccount;
-        String payment;
-        String telephone;
-        String deliverySending;
-        String address;
-        String contactPhone;
-        while (true) {
-            System.out.println("Enter the supplier number whose details you want to edit");
-            if (scanner.hasNextInt()) {
-                numSupplier = scanner.nextInt();
-                scanner.nextLine();
-                if (supplierExist(numSupplier)) {
-                    break;
-                } else {
-                    System.out.println("The supplier is not exists in the system");
-                    return;
-                }
-            } else {
-                System.out.println("This is not a number, please enter it again");
-                scanner.nextLine();
-            }
-        }
-        int choice=0;
-        while (true) {
-            System.out.println("What detail would you like to edit?");
-            System.out.println("1. Supplier name");
-            System.out.println("2. Bank account number");
-            System.out.println("3. Payment method");
-            System.out.println("4. Contact names");
-            System.out.println("5. Phone");
-            System.out.println("6. Delivery dates");
-            System.out.println("7. Delivery method");
-            System.out.println("8. Agreements");
-            System.out.println("9. destination address for automatic missing orders");
-            System.out.println("10. contact phone number for automatic missing orders");
-            if (scanner.hasNextInt()) {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-                if ((choice >= 1 && choice <= 10)) {
-                    switch (choice) {
-                        case 1: {
-                            nameSupplier = enterNameSupplier();
-                            ua.setName(numSupplier,nameSupplier);
-                            return;
-                        }
-                        case 2: {
-                            bankAccount = enterBankAccount();
-                            ua.setBankAccount(numSupplier,bankAccount);
-                            return;
-                        }
-                        case 3: {
-                            payment = enterPayment();
-                            ua.setPayment(numSupplier,payment);
-                            return;
-                        }
-                        case 4: {
-                            editContactNames(ua,numSupplier);
-                            return;
-                        }
-                        case 5: {
-                            telephone=enterTelephone();
-                            ua.setTelephone(numSupplier,telephone);
-                            return;
-                        }
-                        case 6: {
-                            editDeliveryDays(ua,numSupplier);  //לשנות להוספה. מחיקה
-                            return;
-                        }
-                        case 7: {
-                            deliverySending=enterDeliverySending();
-                            ua.setDeliverySending(numSupplier,deliverySending);
-                            return;
-                        }
-                        case 8: {
-                            int c = 0;
-                            AgreementsManager am = new AgreementsManager();
-                            while (true) {
-                                System.out.println("What would you like to do?");
-                                System.out.println("1.Add Agreement");
-                                System.out.println("2. Edit Agreement");
-                                System.out.println("3. Delete Agreement");
-                                if (scanner.hasNextInt()) {
-                                    c = scanner.nextInt();
-                                    scanner.nextLine();
-                                    if ((c >= 1 && c <= 3)) {
-                                        switch (c) {
-                                            case 1: {
-                                                am.addAgreementBySup(numSupplier);
-                                                return;
-                                            }
-                                            case 2: {
-                                                am.editAgreementBySup(numSupplier);
-                                                return;
-                                            }
-                                            case 3: {
-                                                am.cancelAgreementBySup(numSupplier);
-                                                return;
-                                            }
-                                        }
-                                    } else {
-                                        System.out.println("The number is invalid, please select again");
-
-                                    }
-                                } else {
-                                    System.out.println("The number is invalid, please select again");
-                                    scanner.nextLine();
-                                }
-
-                            }
-                        }
-                        case 9: {
-                            address=enterAdress();
-                            ua.setAddress(numSupplier,address);
-                            return;
-                        }
-                        case 10: {
-                            contactPhone=enterContactPhone();
-                            ua.setContactPhone(numSupplier,contactPhone);
-                            return;
-                        }
-                    }
-
-                } else {
-                    System.out.println("The number is invalid, please select again");
-
-                }
-            } else {
-                System.out.println("The number is invalid, please select again");
-                scanner.nextLine();
-            }
-
-        }
-    }
-    public boolean supplierExist(int num) {
+    public boolean supplierExist(int num) throws SQLException{
         SupplierApplication sa = new SupplierApplication();
         if (sa.existSupplier(num)) {
             return true;
         }
         return false;
     }
-    public boolean constantSupplier(int num){
+    public boolean constantSupplier(int num) throws SQLException{
         SupplierApplication sa = new SupplierApplication();
         if (sa.isConstantSupplier(num)){
             return true;

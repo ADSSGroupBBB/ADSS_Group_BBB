@@ -2,6 +2,7 @@ package presentation;
 
 import Service.ProductApplication;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ProductManager {
@@ -125,27 +126,35 @@ public class ProductManager {
         int productNumber;
         String unitOfMeasure;
         String manufacturer;
-        while (true) {
-            System.out.println("Enter product number");
-            if (scanner.hasNextInt()) {
-                productNumber = scanner.nextInt();
-                scanner.nextLine();
-                if (!productExist(productNumber)) {
-                    break;
+        try {
+
+
+            while (true) {
+                System.out.println("Enter product number");
+                if (scanner.hasNextInt()) {
+                    productNumber = scanner.nextInt();
+                    scanner.nextLine();
+                    if (!productExist(productNumber)) {
+                        break;
+                    } else {
+                        System.out.println("The product already exists in the system");
+                        return productNumber;
+                    }
                 } else {
-                    System.out.println("The product already exists in the system");
-                    return productNumber;
+                    System.out.println("This is not a number, please enter it again");
+                    scanner.nextLine();
                 }
-            } else {
-                System.out.println("This is not a number, please enter it again");
-                scanner.nextLine();
             }
-        }
-        productName = enterName();
-        unitOfMeasure = enterUnit();
-        manufacturer = enterManufacturer();
-        pa.addPro(productName, productNumber, unitOfMeasure, manufacturer);
-        return productNumber;
+            productName = enterName();
+            unitOfMeasure = enterUnit();
+            manufacturer = enterManufacturer();
+            pa.addPro(productName, productNumber, unitOfMeasure, manufacturer);
+            return productNumber;
+
+    } catch (SQLException e) {
+        System.out.println("Add product failed");
+        return -1; //error
+    }
     }
 
     public void editProduct() {
@@ -155,6 +164,7 @@ public class ProductManager {
         int productNumber;
         String unitOfMeasure;
         String manufacturer;
+        try {
 
         while (true) {
             System.out.println("Enter the product number you would like to edit");
@@ -172,8 +182,6 @@ public class ProductManager {
                 scanner.nextLine();
             }
         }
-
-            //בדיקה שקיים בכלל
             int choice = 0;
             while (true) {
                 System.out.println("What would you like to edit?");
@@ -233,10 +241,14 @@ public class ProductManager {
 
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("Edit product failed");
+            return;
+        }
 
         }
 
-        public boolean productExist ( int num){
+        public boolean productExist ( int num) throws SQLException {
             ProductApplication ua = new ProductApplication();
             if (ua.existProduct(num)) {
                 return true;

@@ -1,27 +1,34 @@
 package Service;
 
-import Domain.ProductRepositoryImpl;
-import Domain.Stock;
+import Domain.StockController;
 import Domain.PairInt;
 
+import java.sql.SQLException;
 import java.util.Map;
-import java.util.Objects;
 
 public class StockApplication {
-    Stock st = Stock.getInstance();
-    PairInt pi;
-    public Stock getSt() {
-        return st;
+
+    private StockController st;
+    private PairInt pi;
+
+    public StockApplication() throws SQLException{
+        try {
+            st = StockController.getInstance();
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 
-    public PairInt getPi() {
-        return pi;
+    public int getAmountByPid(int numP) {
+        return st.getCurrentAmount(numP);
     }
 
     public void selling(Map<Integer,Integer> soldPro){
         st.sell(soldPro);
     }
-    public void upStock(int numId){
-        st.updateStock(numId);
-    }
+
+    // public void upStock(int numId){
+    //     st.updateStock(numId);
+    // }
 }
+

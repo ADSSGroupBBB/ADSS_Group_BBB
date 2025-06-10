@@ -91,7 +91,9 @@ public class OrderManager {
                 scanner.nextLine();
             }
         }
-        if (a == 1) {
+        try {
+
+            if (a == 1) {
             while (true) {
                 System.out.println("Enter the number of the supplier you would like to order from");
                 if (scanner.hasNextInt()) {
@@ -151,6 +153,7 @@ public class OrderManager {
                     numAgreement = scanner.nextInt();
                     scanner.nextLine();
                     AgreementsManager am = new AgreementsManager();
+
                     if (am.regularAgreeExist(numSupplier, numAgreement)) {
                         break;
                     } else {
@@ -161,7 +164,6 @@ public class OrderManager {
                     scanner.nextLine();
                 }
             }
-            try {
                 int orderNumber = oa.addOrder(numAgreement, numSupplier, address, date, contactPhone);
 
 
@@ -226,10 +228,10 @@ public class OrderManager {
                         return;
                     }
                 }
-            } catch (SQLException e) {
-                System.out.println("The order was unsuccessful");
-            }
-        } else {
+
+        }
+
+        else {
             int choiceType;
             while (true) {
                 System.out.println("What type of automatic order would you like to place?");
@@ -275,6 +277,9 @@ public class OrderManager {
                 //}
 
             }
+        }
+        } catch (SQLException e) {
+            System.out.println("The order was unsuccessful");
         }
     }
 

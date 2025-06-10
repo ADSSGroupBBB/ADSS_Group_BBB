@@ -66,7 +66,7 @@ public class OrderController {
     //parameters:int orderNumber, int numAgreement, int numP,int amount
     //returns bool
     public boolean addItemOrder(int orderNumber, int numP,int amount) throws SQLException{
-        Stock s= Stock.getInstance();
+        StockController s= StockController.getInstance();
         AgreementsController ag=AgreementsController.getInstance();
         int numAgreement=this.orderRepo.getOrder(orderNumber).get().numAgreement();
         QuantityAgreement qa=ag.productFromAgreeByIndex(numAgreement,numP);
@@ -81,14 +81,14 @@ public class OrderController {
     //set an order's status as status
     //parameter:int orderNumber,String status
     public void cancelOrder (int orderNumber) throws SQLException{
-        Stock s= Stock.getInstance();
+        StockController s= StockController.getInstance();
         this.orderRepo.updateStatus(orderNumber,"deleted");
         s.cancelStock(orderNumber);
     }
 
     public void arriveOrder (int orderNumber) throws SQLException {
         this.orderRepo.updateStatus(orderNumber, "arrived");
-        Stock s = Stock.getInstance();
+        StockController s = StockController.getInstance();
         s.updateStock(orderNumber);
     }
     //prints order
@@ -101,7 +101,7 @@ public class OrderController {
     public String addPeriodOrder() throws SQLException{
         AgreementsController ac=AgreementsController.getInstance();
         int count=0;
-        Stock s= Stock.getInstance();
+        StockController s= StockController.getInstance();
         LocalDate todayDate = LocalDate.now();
         List<PeriodAgreementDto> todayPeriodOrder=ac.getAllPeriodToOrder(); //לבדוק שמעל המלאי ולפני עריכה תופעל הפונקציה
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -130,7 +130,7 @@ public class OrderController {
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
-        Stock s= Stock.getInstance();
+        StockController s= StockController.getInstance();
         Map<Integer, Integer> agreeForOrder=new HashMap<>();
         AgreementsController ac=AgreementsController.getInstance();
         SupplierController sc=SupplierController.getInstance();

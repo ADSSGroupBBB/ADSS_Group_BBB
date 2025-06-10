@@ -75,4 +75,23 @@ public class JdbcProductDao implements ProductDao{
             ps.executeUpdate();
         }
     }
+    public LinkedList<ProductDto> findAll() throws SQLException{
+        LinkedList<ProductDto> products = new LinkedList<>();
+        String sql = "SELECT * FROM products";
+
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)){
+             try   (ResultSet rs = ps.executeQuery()){
+                 while (rs.next()) {
+                     String productName = rs.getString("productName");
+                     int productNumber = rs.getInt("productNumber");
+                     String unitOfMeasure = rs.getString("unitOfMeasure");
+                     String manufacturer = rs.getString("manufacturer");
+
+                     ProductDto product = new ProductDto(productName, productNumber, unitOfMeasure, manufacturer);
+                     products.add(product);
+                 }
+             }
+        }
+        return products;
+    }
 }

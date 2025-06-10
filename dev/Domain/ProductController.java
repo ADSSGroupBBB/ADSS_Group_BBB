@@ -1,11 +1,9 @@
 package Domain;
 
 import dto.ProductDto;
-import dto.SupplierDto;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
 import java.util.Optional;
 
 //a class for the manager (the controller) of Product
@@ -37,9 +35,13 @@ public class ProductController {
     public Optional<ProductDto> getPro(int num) throws SQLException{
         return this.proRepo.getProd(num);
     }
+    public LinkedList<ProductDto> getAllProducts() throws SQLException{
+        return this.proRepo.getAll();
+    }
+
     public void addNewProduct(String productName, int productNumber, String unitOfMeasure, String manufacturer) throws SQLException{
          this.proRepo.addPro(productName,productNumber,unitOfMeasure,manufacturer);
-         Stock s=Stock.getInstance();
+         StockController s= StockController.getInstance();
          s.addProToStock(productNumber);
     }
 

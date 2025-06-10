@@ -30,7 +30,7 @@ class SupplierTest {
         agreements.add(agreement1);
         agreements.add(agreement2);
         supplier = new Supplier(1,"sup","bank",paymentTerms.Cash,contactNames,"0505050505"
-        ,deliveryDays,Delivery.invitation,agreements);
+        ,deliveryDays,Delivery.invitation,agreements,"t","e");
 
     }
 

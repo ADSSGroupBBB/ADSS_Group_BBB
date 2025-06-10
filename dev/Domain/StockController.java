@@ -1,35 +1,43 @@
 package Domain;
 
+import dto.ProductDto;
+
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 
-public class Stock {
-    private static Stock instance; // the single instance
+public class StockController {
+    private static StockController instance; // the single instance
     private Map<Integer, ProductStock > allProductStock; // map of product ID to quantity
     private Map<Integer,ProductStock> missProducts;
 
     // private constructor to prevent external instantiation
-    private Stock() {
+    private StockController() throws SQLException{
         ProductController pc = ProductController.getInstance();
         allProductStock = new HashMap<>();
         this.missProducts=new HashMap<>();
-        for (Product product : pc.getAllProducts().values()) {
+        for (ProductDto product : pc.getAllProducts()) {
             Random rn = new Random();
             int min = rn.nextInt(5) + 1;
             int curr = rn.nextInt(6)+5;
-            ProductStock pi = new ProductStock(product.getProductNumber(),min, curr);
-            allProductStock.put(product.getProductNumber(), pi );
+            ProductStock pi = new ProductStock(product.productNumber(),min, curr);
+            allProductStock.put(product.productNumber(), pi );
         }
+    }
+    public void addProToStock(int productNumber){
+        Random rn = new Random();
+        int min = rn.nextInt(5) + 1;
+        int curr = rn.nextInt(6)+5;
+        ProductStock pi = new ProductStock(productNumber,min, curr);
+        allProductStock.put(productNumber, pi );
     }
 
     // public method to access the instance, with initialization on first call
-    public static Stock getInstance() {
+    public static StockController getInstance() throws SQLException{
         if (instance == null) {
-            instance = new Stock();
+            instance = new StockController();
         }
         return instance;
     }
