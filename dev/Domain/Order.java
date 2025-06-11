@@ -4,7 +4,6 @@ import java.util.LinkedList;
 //a class to represent the supplier orders
 public class Order {
     private int orderNumber;//order ID
-    private static int counterID=1;
     private int numAgreement;
     private String supplierName;    //the name of the supplier the order is from
     private int supplierNumber; //the number of the supplier the order is from
@@ -18,9 +17,8 @@ public class Order {
 
     //order constructor
     //parameters: int orderNumber,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder
-    public Order(int numAgreement,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder){
-        this.orderNumber=counterID;
-        counterID++;
+    public Order(int orderNumber,int numAgreement,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder){
+        this.orderNumber=orderNumber;
         this.numAgreement=numAgreement;
         this.supplierName=supplierName;
         this.supplierNumber=supplierNumber;

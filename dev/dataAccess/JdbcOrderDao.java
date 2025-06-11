@@ -3,10 +3,12 @@ package dataAccess;
 import Domain.ItemOrder;
 import dto.*;
 import util.Database;
+import util.DatabaseManager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -15,51 +17,56 @@ import java.util.Optional;
 public class JdbcOrderDao implements OrderDao{
     @Override
     public OrderDto saveOrder(OrderDto o) throws SQLException {
+        int generatedId=-1;
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlS = """
-                    INSERT INTO orders(orderNumber, numAgreement, supplierName, supplierNumber,address,date,contactPhone,statusOrder) VALUES (?,?,?,?,?,?,?,?)
+                    INSERT INTO orders(numAgreement, supplierName, supplierNumber,address,date,contactPhone,statusOrder) VALUES (?,?,?,?,?,?,?)
                     """;
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sqlS)) {
-                ps.setInt(1, o.orderNumber());
-                ps.setInt(2, o.numAgreement());
-                ps.setString(3, o.supplierName());
-                ps.setInt(4, o.supplierNumber());
-                ps.setString(5, o.address());
-                ps.setString(6, o.date());
-                ps.setString(7, o.contactPhone());
-                ps.setString(8, o.statusOrder());
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sqlS, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, o.numAgreement());
+                ps.setString(2, o.supplierName());
+                ps.setInt(3, o.supplierNumber());
+                ps.setString(4, o.address());
+                ps.setString(5, o.date());
+                ps.setString(6, o.contactPhone());
+                ps.setString(7, o.statusOrder());
                 ps.executeUpdate();
-                String sqlItem = """
-                        INSERT INTO itemOrders(IDNumber, prodId, numOrder, amountOrder, finalPrice, initialPrice) VALUES (?,?,?,?,?,?)
-                        """;
-                try (PreparedStatement psItems = Database.getConnection().prepareStatement(sqlItem)) {
-                    for (ItemOrderDto it : o.items()) {
-                        psItems.setInt(1, o.orderNumber());
-                        psItems.setInt(2, it.itemDto().pro().productNumber());
-                        psItems.setInt(3, o.numAgreement());
-                        psItems.setInt(4, it.amountOrder());
-                        psItems.setDouble(5, it.finalPrice());
-                        psItems.setDouble(6, it.initialPrice());
-                        psItems.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedId = rs.getInt(1);
+                        String sqlItem = """
+                                INSERT INTO itemOrders(IDNumber, prodId, numOrder, amountOrder, finalPrice, initialPrice) VALUES (?,?,?,?,?,?)
+                                """;
+                        try (PreparedStatement psItems = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
+                            for (ItemOrderDto it : o.items()) {
+                                psItems.setInt(1, generatedId);
+                                psItems.setInt(2, it.itemDto().pro().productNumber());
+                                psItems.setInt(3, o.numAgreement());
+                                psItems.setInt(4, it.amountOrder());
+                                psItems.setDouble(5, it.finalPrice());
+                                psItems.setDouble(6, it.initialPrice());
+                                psItems.executeUpdate();
+                            }
+                        }
                     }
                 }
             }
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
-        return o;
+        return new OrderDto(generatedId,o.numAgreement(),o.supplierName(),o.supplierNumber(),o.address(),o.date(),o.contactPhone(),o.items(),o.statusOrder());
     }
 
     @Override
     public Optional<OrderDto> findOrderById(int orderNumber) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
 
             String sqlOrder = "SELECT * FROM orders WHERE orderNumber = ?";
-            try (PreparedStatement psOrder = Database.getConnection().prepareStatement(sqlOrder)) {
+            try (PreparedStatement psOrder = DatabaseManager.getConnection().prepareStatement(sqlOrder)) {
                 psOrder.setInt(1, orderNumber);
                 try (ResultSet rsOrder = psOrder.executeQuery()) {
                     if (rsOrder.next()) {
@@ -84,7 +91,7 @@ public class JdbcOrderDao implements OrderDao{
                         WHERE oi.orderNumber = ?
                     """;
 
-                        try (PreparedStatement psItems = Database.getConnection().prepareStatement(sqlItems)) {
+                        try (PreparedStatement psItems = DatabaseManager.getConnection().prepareStatement(sqlItems)) {
                             psItems.setInt(1, orderNumber);
                             try (ResultSet rsItems = psItems.executeQuery()) {
                                 while (rsItems.next()) {
@@ -114,7 +121,7 @@ public class JdbcOrderDao implements OrderDao{
                             }
                         }
 
-                        Database.getConnection().commit();
+                        DatabaseManager.getConnection().commit();
 
                         OrderDto order = new OrderDto(
                                 orderNum,
@@ -132,9 +139,9 @@ public class JdbcOrderDao implements OrderDao{
                     }
                 }
             }
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
         return Optional.empty();
@@ -145,11 +152,11 @@ public class JdbcOrderDao implements OrderDao{
     @Override
     public Optional<ItemOrderDto> addProById(int numAgree,ItemOrderDto it ) throws SQLException{
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlP = """
                     INSERT INTO itemOrders(IDNumber, prodId, numOrder, amountOrder, finalPrice, initialPrice) VALUES (?,?,?,?,?,?)
                     """;
-            try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
+            try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, numAgree);
                 psPro.setInt(2,it.itemDto().pro().productNumber());
                 psPro.setInt(3, it.numOrder());
@@ -159,9 +166,9 @@ public class JdbcOrderDao implements OrderDao{
                 psPro.executeUpdate();
             }
 
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
         return Optional.of(it);
@@ -170,13 +177,13 @@ public class JdbcOrderDao implements OrderDao{
     @Override
     public void updateStatusById(int orderNumber, String status) throws SQLException {
         String sql = "UPDATE orders SET statusOrder = ? WHERE orderNumber = ?";
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderNumber);
            ps.executeUpdate();
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }

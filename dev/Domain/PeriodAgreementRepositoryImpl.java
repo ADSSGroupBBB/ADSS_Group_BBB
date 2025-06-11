@@ -4,6 +4,7 @@ import dataAccess.JdbcPeriodAgreementDao;
 import dataAccess.PeriodAgreementDao;
 import dto.*;
 import util.Database;
+import util.DatabaseManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -27,18 +28,18 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
     }
     public PeriodAgreementDto savePeriodAgreement (int supplierNumber, String date,String address,String contactPhone) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
+
+            PeriodAgreementDto dto = this.periodDao.savePeriod(new PeriodAgreementDto(-1,supplierNumber, new LinkedList<>(), date, address, contactPhone)); //-1 -fictive value
             SupplierRepository sRepo = SupplierRepositoryImpl.getInstance();
-            PeriodAgreement agree = new PeriodAgreement(supplierNumber, date, address, contactPhone);
+            PeriodAgreement agree = new PeriodAgreement(dto.IDNumber(),supplierNumber, date, address, contactPhone);
             sRepo.addAgreementToSup(supplierNumber, agree.getIDNumber());
-            PeriodAgreementDto dto = this.periodDao.savePeriod(new PeriodAgreementDto(
-                    agree.getIDNumber(), agree.getSupplierNumber(), new LinkedList<>(), date, address, contactPhone));
-            this.periodAgreementsList.put(agree.getIDNumber(), agree); // ✅ רק אחרי הצלחה
-            Database.getConnection().commit();
+            this.periodAgreementsList.put(agree.getIDNumber(), agree);
+            DatabaseManager.getConnection().commit();
             return dto;
         } catch (SQLException e) {
-            if (Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if (DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
@@ -47,22 +48,22 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
     @Override
     public void addProPeriodAgreement(int id, int numPro, double price, int catalogNumber, int amountToDiscount, int discount, int amountToOrder)  throws SQLException{
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
         ProductRepository p = ProductRepositoryImpl.getInstance();
         Optional<ProductDto> pro = p.getProd(numPro);
         if(this.periodAgreementsList.containsKey(id)) {
             this.periodAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount,amountToOrder);
         }
         this.periodDao.addProById( id, new PeriodAgreementItemDto(new QuantityAgreementDto(pro.get(),  price, catalogNumber, amountToDiscount, discount),amountToOrder));
-        Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            if (Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if (DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
 
@@ -81,20 +82,20 @@ public class PeriodAgreementRepositoryImpl implements PeriodAgreementRepository{
             this.periodAgreementsList.remove(numAgree);
         }
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             SupplierRepository s = SupplierRepositoryImpl.getInstance();
             s.removeAgreementToSup(numSup, numAgree);
             this.periodDao.removePeriod(numAgree);
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         }
                 catch (SQLException e) {
-            if ( Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if ( DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
 

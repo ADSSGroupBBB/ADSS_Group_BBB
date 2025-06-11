@@ -6,13 +6,8 @@ public class PeriodAgreement extends Agreement {
     private String address; //the address for shipment
     private String contactPhone;
 
-    public PeriodAgreement(int supplierNumber, String date, String address, String contactPhone) {
-        super(supplierNumber, date);
-        this.address=address; //the address for shipment
-        this.contactPhone=contactPhone;
-    }
     public PeriodAgreement(int IDNumber, int supplierNumber, String date, String address, String contactPhone) {
-        super(supplierNumber, date);
+        super(IDNumber,supplierNumber, date);
         this.IDNumber = IDNumber;
         this.address = address;
         this.contactPhone = contactPhone;

@@ -3,6 +3,7 @@ package dataAccess;
 import dto.ProductDto;
 import dto.SupplierDto;
 import util.Database;
+import util.DatabaseManager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +16,7 @@ public class JdbcProductDao implements ProductDao{
     @Override
     public Optional<ProductDto> findProById(int num) throws SQLException {
         String sql= "SELECT * FROM products WHERE productNumber = ?";
-        try (PreparedStatement psPro= Database.getConnection().prepareStatement(sql)){
+        try (PreparedStatement psPro= DatabaseManager.getConnection().prepareStatement(sql)){
             psPro.setInt(1,num);
             try (ResultSet pro=psPro.executeQuery()){
                 if(pro.next()){
@@ -36,7 +37,7 @@ public class JdbcProductDao implements ProductDao{
         String sql = """
                 INSERT INTO products(productName, productNumber, unitOfMeasure, manufacturer) VALUES (?,?,?,?)
                 """;
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
             ps.setString(1, pro.productName());
             ps.setInt(2, pro.productNumber());
             ps.setString(3, pro.unitOfMeasure());
@@ -49,7 +50,7 @@ public class JdbcProductDao implements ProductDao{
     @Override
     public void updateNameProById(int productNumber, String productName) throws SQLException{
         String sql = "UPDATE products SET productName = ? WHERE productNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setString(1, productName);
             ps.setInt(2, productNumber);
             ps.executeUpdate();
@@ -59,7 +60,7 @@ public class JdbcProductDao implements ProductDao{
     @Override
     public void updateUnitOfMeasureById(int productNumber, String unitOfMeasure) throws SQLException {
         String sql = "UPDATE products SET unitOfMeasure = ? WHERE productNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setString(1, unitOfMeasure);
             ps.setInt(2, productNumber);
             ps.executeUpdate();
@@ -69,7 +70,7 @@ public class JdbcProductDao implements ProductDao{
     @Override
     public void updateManufacturerById(int productNumber, String manufacturer) throws SQLException {
         String sql = "UPDATE products SET manufacturer = ? WHERE productNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setString(1, manufacturer);
             ps.setInt(2, productNumber);
             ps.executeUpdate();
@@ -79,7 +80,7 @@ public class JdbcProductDao implements ProductDao{
         LinkedList<ProductDto> products = new LinkedList<>();
         String sql = "SELECT * FROM products";
 
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)){
+        try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)){
              try   (ResultSet rs = ps.executeQuery()){
                  while (rs.next()) {
                      String productName = rs.getString("productName");

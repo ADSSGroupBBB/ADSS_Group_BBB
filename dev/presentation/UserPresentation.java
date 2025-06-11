@@ -10,32 +10,43 @@ public class UserPresentation {
     OrderApplication oa = new OrderApplication();
 
     public void UserPresentationInit() {
-        try {
-
-
             Scanner scanner = new Scanner(System.in);
             int choice = 0;
-            int choose = 0;
             int secondC = 0;
             boolean flag = true;
-            boolean det = true;
+        try {
             while (true) {
-                System.out.println("Would you like to log in with existing data?");
-                System.out.println("1.Yes");
-                System.out.println("2.No");
+                System.out.println("Choose your database option:");
+                System.out.println("1. Empty database");
+                System.out.println("2. Load database with default data");
                 if (scanner.hasNextInt()) {
                     secondC = scanner.nextInt();
                     scanner.nextLine();
-                    if (secondC >= 1 && secondC <= 2) {
-                        break;
-                    } else {
-                        System.out.println("The number is invalid, please select again");
-                    }
-                } else {
-                    System.out.println("The number is invalid, please select again");
-                    scanner.nextLine();
+                    if (secondC == 1 || secondC == 2) break;
                 }
+                System.out.println("Invalid input. Please select 1 or 2.");
             }
+
+            // קביעת נתיב DB לפי הבחירה
+            String dbPath;
+            if (secondC == 1) {
+                dbPath = "data/empty.db";
+            } else {
+                dbPath = "data/default_data.db";
+            }
+
+            // התחברות ל-DB
+            util.DatabaseManager.connect(dbPath);
+
+            // יצירת טבלאות אם צריך
+            util.Database.createTablesIfNotExist(util.DatabaseManager.getConnection());
+
+            // אם אופציה 2 - טען נתוני דיפולט אם טרם נטענו
+            if (secondC == 2) {
+                util.DataLoad.loadDefaultData(util.DatabaseManager.getConnection());
+            }
+
+
             if (secondC == 1) {
                 SupplierApplication s = new SupplierApplication();
                 ProductApplication p = new ProductApplication();
@@ -127,7 +138,7 @@ public class UserPresentation {
                 }
 
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Boot failed");
         }
     }

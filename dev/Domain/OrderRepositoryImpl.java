@@ -4,6 +4,7 @@ import dataAccess.JdbcOrderDao;
 import dataAccess.OrderDao;
 import dto.*;
 import util.Database;
+import util.DatabaseManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -47,33 +48,34 @@ public class OrderRepositoryImpl implements OrderRepository{
     @Override
     public OrderDto addOrder(int numAgree, int numSupplier, String address, String date, String contactPhone, String statusOrder) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             SupplierRepository s = SupplierRepositoryImpl.getInstance();
             String name = s.getNameById(numSupplier);
             Status st = OrderMapper.stringToEnumStatus(statusOrder);
-            Order o = new Order(numAgree, name, numSupplier, address, date, contactPhone, st);
+            OrderDto ordto= this.orDao.saveOrder(new OrderDto(-1,numAgree,name,numSupplier,address,date,contactPhone,new LinkedList<ItemOrderDto>(),statusOrder)); //-1 -fictive value
+            Order o = new Order(ordto.orderNumber(),numAgree, name, numSupplier, address, date, contactPhone, st);
             this.orderList.put(o.getOrderNumber(), o);
-            Database.getConnection().commit();
-            return this.orDao.saveOrder(OrderMapper.transfer(o));
+            DatabaseManager.getConnection().commit();
+            return ordto;
         }
      catch (SQLException e) {
-        if ( Database.getConnection() != null) {
-            Database.getConnection().rollback();
+        if ( DatabaseManager.getConnection() != null) {
+            DatabaseManager.getConnection().rollback();
         }
         throw e;
     }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
 }
 
     @Override
     public Optional<ItemOrderDto> addProductOrder(int numOrder,int numP, int amount) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             Optional<OrderDto> orderOpt = getOrder(numOrder);
             if (orderOpt.isEmpty()) {
-                Database.getConnection().rollback();
+                DatabaseManager.getConnection().rollback();
                 return Optional.empty();
             }
             int numAgree = orderOpt.get().numAgreement();
@@ -83,32 +85,32 @@ public class OrderRepositoryImpl implements OrderRepository{
             if(this.orderList.containsKey(numOrder)) {
                 boolean bool = this.orderList.get(numOrder).addProductOrder(q, amount);
                 if (!bool) {
-                    Database.getConnection().rollback();
+                    DatabaseManager.getConnection().rollback();
                     return Optional.empty();
                 }
             }
             ItemOrder it = new ItemOrder(q, amount, numOrder);
             Optional<ItemOrderDto> result = this.orDao.addProById(numAgree, ItemOrderMapper.transfer(it));
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
             return result;
         }
         catch (SQLException e) {
-            if ( Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if ( DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
 
     public Optional<ItemOrderDto> addProductOrderAutomat(int numOrder,int numP, int amount) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             Optional<OrderDto> orderOpt = getOrder(numOrder);
             if (orderOpt.isEmpty()) {
-                Database.getConnection().rollback();
+                DatabaseManager.getConnection().rollback();
                 return Optional.empty();
             }
             int numAgree = orderOpt.get().numAgreement();
@@ -118,23 +120,23 @@ public class OrderRepositoryImpl implements OrderRepository{
             if(this.orderList.containsKey(numOrder)) {
                 boolean bool = this.orderList.get(numOrder).addProductOrder(q, amount);
                 if (!bool) {
-                    Database.getConnection().rollback();
+                    DatabaseManager.getConnection().rollback();
                     return Optional.empty();
                 }
             }
             ItemOrder it = new ItemOrder(q, amount, numOrder);
             Optional<ItemOrderDto> result = this.orDao.addProById(numAgree, ItemOrderMapper.transfer(it));
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
             return result;
         }
         catch (SQLException e) {
-            if ( Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if ( DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
 

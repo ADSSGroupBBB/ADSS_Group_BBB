@@ -28,6 +28,7 @@ public class OrderMapper {
 
     public static Order toObject(OrderDto dto) {
         Order order = new Order(
+                dto.orderNumber(),
                 dto.numAgreement(),
                 dto.supplierName(),
                 dto.supplierNumber(),

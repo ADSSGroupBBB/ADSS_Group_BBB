@@ -3,7 +3,6 @@ package Domain;
 import java.util.LinkedList;
 //a class to represent an agreement between the store and the supplier
 public class Agreement {
-    protected static int counterID=1; //a counter to keep track of the amount of agreements
     protected int IDNumber;   //agreement ID
     protected int supplierNumber; //the supplier this agreement belongs to
     protected LinkedList<QuantityAgreement> productsList; //the list of products for this agreement
@@ -15,8 +14,8 @@ public class Agreement {
 
     //the agreement constructor
     //gets supplierNumber, date
-    public Agreement(int supplierNumber,String date){
-        this.IDNumber=counterID++;
+    public Agreement(int IDNumber ,int supplierNumber,String date){
+        this.IDNumber=IDNumber;
         this.supplierNumber=supplierNumber;
         this.productsList=new LinkedList<QuantityAgreement>();
         this.date=date;

@@ -3,29 +3,30 @@ package dataAccess;
 import Domain.QuantityAgreement;
 import dto.*;
 import util.Database;
+import util.DatabaseManager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     public PeriodAgreementDto savePeriod (PeriodAgreementDto agree) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlS = """
-                    INSERT INTO standardAgreements(IDNumber, supplierNumber, date, type) VALUES (?,?,?,?)
+                    INSERT INTO standardAgreements(supplierNumber, date, type) VALUES (?,?,?)
                     """;
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sqlS)) {
-                ps.setInt(1, agree.IDNumber());
-                ps.setInt(2, agree.supplierNumber());
-                ps.setString(3, agree.date());
-                ps.setString(4, "period");
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sqlS, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, agree.supplierNumber());
+                ps.setString(2, agree.date());
+                ps.setString(3, "period");
                 ps.executeUpdate();
                 String sqlPeriod = """
                         INSERT INTO periodAgreements(IDNumber, address, contactPhone) VALUES (?,?,?)
                         """;
-                try (PreparedStatement psPeriod = Database.getConnection().prepareStatement(sqlPeriod)) {
+                try (PreparedStatement psPeriod = DatabaseManager.getConnection().prepareStatement(sqlPeriod)) {
                     psPeriod.setInt(1, agree.IDNumber());
                     psPeriod.setString(2, agree.address());
                     psPeriod.setString(3, agree.contactPhone());
@@ -33,7 +34,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     String sqlP = """
                             INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
                             """;
-                    try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
+                    try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                         for (PeriodAgreementItemDto pro : agree.productsList()) {
                             psPro.setInt(1, agree.IDNumber());
                             psPro.setInt(2, pro.productAgreement().pro().productNumber());
@@ -47,7 +48,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     String sqlItem = """
                             INSERT INTO periodAgreementItems(IDNumber, prodId, amountToOrder) VALUES (?,?,?)
                             """;
-                    try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
+                    try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
                         for (PeriodAgreementItemDto pro : agree.productsList()) {
                             psItem.setInt(1, agree.IDNumber());
                             psItem.setInt(2, pro.productAgreement().pro().productNumber());
@@ -57,9 +58,9 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                     }
                 }
         }
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
         return agree;
@@ -69,11 +70,11 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void addProById(int id, PeriodAgreementItemDto pro) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlP = """
                     INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
                     """;
-            try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
+            try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, id);
                 psPro.setInt(2, pro.productAgreement().pro().productNumber());
                 psPro.setDouble(3, pro.productAgreement().price());
@@ -85,16 +86,16 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             String sqlItem = """
                             INSERT INTO periodAgreementItems(IDNumber, prodId, amountToOrder) VALUES (?,?,?)
                             """;
-            try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
+            try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
                     psItem.setInt(1, id);
                     psItem.setInt(2, pro.productAgreement().pro().productNumber());
                     psItem.setInt(3, pro.amountToOrder());
                     psItem.executeUpdate();
                 }
 
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }
@@ -102,22 +103,22 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void removeProById(int numAgree, int productNumber) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlP = "DELETE FROM quantityAgreements WHERE IDNumber = ? AND prodId = ?";
-            try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
+            try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, numAgree);
                 psPro.setInt(2, productNumber);
                 psPro.executeUpdate();
             }
             String sqlItem = "DELETE FROM periodAgreementItems WHERE IDNumber = ? AND prodId = ?";
-            try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
+            try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
                 psItem.setInt(1, numAgree);
                 psItem.setInt(2, productNumber);
                 psItem.executeUpdate();
             }
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }
@@ -125,30 +126,30 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void removePeriod(int numAgree) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sqlS = "DELETE FROM standardAgreements WHERE IDNumber = ?";
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sqlS)) {
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sqlS)) {
                 ps.setInt(1, numAgree);
                 ps.executeUpdate();
             }
             String sqlPeriod = "DELETE FROM periodAgreements WHERE IDNumber = ?";
-            try (PreparedStatement psPeriod = Database.getConnection().prepareStatement(sqlPeriod)) {
+            try (PreparedStatement psPeriod = DatabaseManager.getConnection().prepareStatement(sqlPeriod)) {
                 psPeriod.setInt(1, numAgree);
                 psPeriod.executeUpdate();
             }
             String sqlP = "DELETE FROM quantityAgreements WHERE IDNumber = ?";
-            try (PreparedStatement psPro = Database.getConnection().prepareStatement(sqlP)) {
+            try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, numAgree);
                 psPro.executeUpdate();
             }
             String sqlItem = "DELETE FROM periodAgreementItems WHERE IDNumber = ?";
-            try (PreparedStatement psItem = Database.getConnection().prepareStatement(sqlItem)) {
+            try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
                 psItem.setInt(1, numAgree);
                 psItem.executeUpdate();
             }
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }
@@ -156,7 +157,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public Optional<PeriodAgreementDto> findPeriodAgreeById(int numA) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
 
             String sql = """
             SELECT sa.IDNumber, sa.supplierNumber, sa.date,
@@ -172,7 +173,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             WHERE sa.IDNumber = ? AND sa.type = 'period'
         """;
 
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
                 ps.setInt(1, numA);
 
                 try (ResultSet rs = ps.executeQuery()) {
@@ -216,7 +217,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                         }
                     }
 
-                    Database.getConnection().commit();
+                    DatabaseManager.getConnection().commit();
 
                     if (idNum != -1) {
                         return Optional.of(new PeriodAgreementDto(idNum, supplierNumber, items, date, address, contactPhone));
@@ -225,7 +226,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             }
 
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
         return Optional.empty();
@@ -236,7 +237,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void updateAddressPeriodById(int numAgreement, String address) throws SQLException {
         String sql = "UPDATE periodAgreements SET address = ? WHERE IDNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setString(1, address);
             ps.setInt(2, numAgreement);
             ps.executeUpdate();
@@ -246,7 +247,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void updateContactPhonePeriodById(int numAgreement, String ContactPhone) throws SQLException {
         String sql = "UPDATE periodAgreements SET contactPhone = ? WHERE IDNumber = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setString(1, ContactPhone);
             ps.setInt(2, numAgreement);
             ps.executeUpdate();
@@ -256,7 +257,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public void updateAmountById(int numAgreement, int productNumber, int amount) throws SQLException {
         String sql = "UPDATE periodAgreementItems SET amount = ? WHERE IDNumber = ? AND prodId = ?";
-        try (PreparedStatement ps = (Database.getConnection().prepareStatement(sql))) {
+        try (PreparedStatement ps = (DatabaseManager.getConnection().prepareStatement(sql))) {
             ps.setInt(1, amount);
             ps.setInt(2, numAgreement);
             ps.setInt(3, productNumber);
@@ -267,7 +268,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     @Override
     public List<PeriodAgreementDto> findAllPeriodAgreeBySupId(int numS) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
 
             String sql = """
             SELECT sa.IDNumber, sa.supplierNumber, sa.date,
@@ -284,7 +285,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             ORDER BY sa.IDNumber
         """;
 
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
                 ps.setInt(1, numS);
 
                 try (ResultSet rs = ps.executeQuery()) {
@@ -329,7 +330,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                         }
                     }
 
-                    Database.getConnection().commit();
+                    DatabaseManager.getConnection().commit();
 
                     List<PeriodAgreementDto> result = new LinkedList<>(agreementsMap.values());
                     return result;
@@ -337,14 +338,14 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             }
 
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }
     public LinkedList<PeriodAgreementDto> findPeriodAgreementsToOrder(String todayDay, String todayDate) throws SQLException {
         LinkedList<PeriodAgreementDto> result = new LinkedList<>();
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             String sql = """
                         SELECT sa.IDNumber, sa.supplierNumber, sa.date,
                                pa.address, pa.contactPhone,
@@ -367,7 +368,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                           )
                     """;
 
-            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
                 ps.setString(1, todayDay);
                 ps.setString(2, todayDate);
 
@@ -424,7 +425,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
 
             return result;
         } catch (SQLException e) {
-            Database.getConnection().rollback();
+            DatabaseManager.getConnection().rollback();
             throw e;
         }
     }

@@ -8,6 +8,7 @@ import dto.ProductDto;
 import dto.QuantityAgreementDto;
 import dto.SupplierDto;
 import util.Database;
+import util.DatabaseManager;
 
 
 import java.sql.SQLException;
@@ -32,42 +33,42 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
     }
     public AgreementDto saveStandardAgreement (int supplierNumber, String date) throws SQLException{
         try {
-            Database.getConnection().setAutoCommit(false);
-        Agreement agree=new Agreement(supplierNumber,date);
-        SupplierRepository sRepo=SupplierRepositoryImpl.getInstance();
-        sRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
-            AgreementDto saved = this.standardDao.saveStandard(new AgreementDto(agree.IDNumber, agree.supplierNumber, new LinkedList<>(), date));
+            DatabaseManager.getConnection().setAutoCommit(false);
+            AgreementDto saved = this.standardDao.saveStandard(new AgreementDto(-1, supplierNumber, new LinkedList<>(), date)); //-1 -fictive value
+            Agreement agree=new Agreement(saved.IDNumber(),supplierNumber,date);
+            SupplierRepository sRepo=SupplierRepositoryImpl.getInstance();
+            sRepo.addAgreementToSup(supplierNumber,agree.getIDNumber());
             this.standardAgreementsList.put(agree.getIDNumber(), agree);
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
             return saved;
         }
         catch (SQLException e) {
-            if ( Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if ( DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
     public void addProStandardAgreement(int id,int numPro, double price,int catalogNumber,int amountToDiscount,int discount) throws SQLException {
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
             ProductRepository p = ProductRepositoryImpl.getInstance();
             Optional<ProductDto> pro = p.getProd(numPro);
             if (this.standardAgreementsList.containsKey(id)) {
                 this.standardAgreementsList.get(id).addProductAgreement(ProductMapper.toObject(pro.get()), price, catalogNumber, amountToDiscount, discount);
             }
             this.standardDao.addProById(id, new QuantityAgreementDto(pro.get(), price, catalogNumber, amountToDiscount, discount));
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         } catch (SQLException e) {
-            if (Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if (DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         } finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
     public void deleteProductStandardAgree(int numAgree,int productNumber) throws SQLException{
@@ -88,20 +89,20 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
             this.standardAgreementsList.remove(numAgree);
         }
         try {
-            Database.getConnection().setAutoCommit(false);
+            DatabaseManager.getConnection().setAutoCommit(false);
         SupplierRepository s = SupplierRepositoryImpl.getInstance();
         s.removeAgreementToSup(numSup, numAgree);
         this.standardDao.removeStandard(numAgree);
-            Database.getConnection().commit();
+            DatabaseManager.getConnection().commit();
         }
         catch (SQLException e) {
-            if ( Database.getConnection() != null) {
-                Database.getConnection().rollback();
+            if ( DatabaseManager.getConnection() != null) {
+                DatabaseManager.getConnection().rollback();
             }
             throw e;
         }
         finally {
-            Database.getConnection().setAutoCommit(true);
+            DatabaseManager.getConnection().setAutoCommit(true);
         }
     }
     public Optional<AgreementDto> getStandardAgreement(int numA) throws SQLException{
