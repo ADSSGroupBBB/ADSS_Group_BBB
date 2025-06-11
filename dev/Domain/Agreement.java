@@ -58,7 +58,7 @@ public class Agreement {
     public QuantityAgreement searchPro(int proN) {
         for (int i=0;i<productsList.size();i++){
             if (productsList.get(i).getNumberProAgreement()==proN){
-                productsList.get(i);
+                return productsList.get(i);
             }
         }
         return null;

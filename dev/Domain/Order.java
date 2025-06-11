@@ -19,7 +19,8 @@ public class Order {
     //order constructor
     //parameters: int orderNumber,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder
     public Order(int numAgreement,String supplierName,int supplierNumber,String address,String date,String contactPhone,Status statusOrder){
-        this.orderNumber=counterID++;
+        this.orderNumber=counterID;
+        counterID++;
         this.numAgreement=numAgreement;
         this.supplierName=supplierName;
         this.supplierNumber=supplierNumber;

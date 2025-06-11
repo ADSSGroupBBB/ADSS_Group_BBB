@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 
 //a class for the controller of agreement (manager)
@@ -127,6 +128,10 @@ public class AgreementsController {
         }
         return null;
     }
+    public QuantityAgreement searchPro(int numAgree,int numP) throws SQLException{
+        Agreement a=AgreementMapper.toObject(this.standardAgreeRepo.getGeneralAgreement(numAgree).get());
+        return a.searchPro(numP);
+    }
 
     //finds the amount of products
     //parameters:int numAgreement
@@ -201,14 +206,17 @@ public class AgreementsController {
     public AgreementDto agreementMostEffectivePrice(int numP,int amount) throws SQLException{
         List<AgreementDto> allAgree= this.standardAgreeRepo.getAllStandardAgreeWithPro(numP);
         double price_min=Double.MAX_VALUE;
-        AgreementDto agree_min=allAgree.getFirst();
-        for (AgreementDto agree: allAgree){
-            Agreement a= AgreementMapper.toObject(agree);
-            QuantityAgreement item=a.searchPro(numP);
-            ItemOrder it=new ItemOrder(item,amount,0);//Fictitious order number to exploit the final price calculation function
-            if(it.getFinalPrice()<price_min){
-                price_min=it.getFinalPrice();
-                agree_min=agree;
+        AgreementDto agree_min=null;
+        if (allAgree.size() > 0) {
+            agree_min = allAgree.get(0);
+            for (AgreementDto agree : allAgree) {
+                Agreement a = AgreementMapper.toObject(agree);
+                QuantityAgreement item = a.searchPro(numP);
+                ItemOrder it = new ItemOrder(item, amount, 0);//Fictitious order number to exploit the final price calculation function
+                if (it.getFinalPrice() < price_min) {
+                    price_min = it.getFinalPrice();
+                    agree_min = agree;
+                }
             }
         }
         return agree_min;
@@ -219,7 +227,10 @@ public class AgreementsController {
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
-        return this.periodAgreeRepo.allPeriodAgreementsToOrder(todayDate.toString(),dateAsString);
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        String day = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        return this.periodAgreeRepo.allPeriodAgreementsToOrder(day,dateAsString);
     }
     public List<AgreementDto> getAllAgreeByPro(int numP) throws SQLException{
         return this.standardAgreeRepo.getAllStandardAgreeWithPro(numP);

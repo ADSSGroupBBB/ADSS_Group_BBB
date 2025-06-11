@@ -117,7 +117,6 @@ public class UserPresentation {
                     case 5: {
                         StockManager sm = new StockManager();
                         sm.StockManagerPresentation();
-                        flag = false;
                         break;
                     }
                     case 6: {

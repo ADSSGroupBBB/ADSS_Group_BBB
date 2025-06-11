@@ -103,6 +103,41 @@ public class OrderRepositoryImpl implements OrderRepository{
         }
     }
 
+    public Optional<ItemOrderDto> addProductOrderAutomat(int numOrder,int numP, int amount) throws SQLException {
+        try {
+            Database.getConnection().setAutoCommit(false);
+            Optional<OrderDto> orderOpt = getOrder(numOrder);
+            if (orderOpt.isEmpty()) {
+                Database.getConnection().rollback();
+                return Optional.empty();
+            }
+            int numAgree = orderOpt.get().numAgreement();
+            StandardAgreementRepository agree = StandardAgreementRepositoryImpl.getInstance();
+            QuantityAgreementDto pro = agree.searchPro(numAgree, numP);
+            QuantityAgreement q = QuantityAgreementMapper.toObject(pro, numAgree);
+            if(this.orderList.containsKey(numOrder)) {
+                boolean bool = this.orderList.get(numOrder).addProductOrder(q, amount);
+                if (!bool) {
+                    Database.getConnection().rollback();
+                    return Optional.empty();
+                }
+            }
+            ItemOrder it = new ItemOrder(q, amount, numOrder);
+            Optional<ItemOrderDto> result = this.orDao.addProById(numAgree, ItemOrderMapper.transfer(it));
+            Database.getConnection().commit();
+            return result;
+        }
+        catch (SQLException e) {
+            if ( Database.getConnection() != null) {
+                Database.getConnection().rollback();
+            }
+            throw e;
+        }
+        finally {
+            Database.getConnection().setAutoCommit(true);
+        }
+    }
+
     @Override
     public void updateStatus(int orderNumber, String status) throws SQLException{
         if(this.orderList.containsKey(orderNumber)) {

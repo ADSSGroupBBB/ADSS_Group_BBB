@@ -178,6 +178,73 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
 
         return Optional.empty();
     }
+    public Optional<AgreementDto> getAgreement(int numAgree) throws SQLException{
+        try {
+            Database.getConnection().setAutoCommit(false);
+
+            String sql = """
+            SELECT sa.IDNumber, sa.supplierNumber, sa.date,
+                   qa.prodId, qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
+                   p.productNumber, p.productName, p.unitOfMeasure, p.manufacturer
+            FROM standardAgreements sa
+            LEFT JOIN quantityAgreements qa ON sa.IDNumber = qa.IDNumber
+            LEFT JOIN products p ON qa.prodId = p.productNumber
+            WHERE sa.IDNumber = ?
+        """;
+
+            try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+                ps.setInt(1, numAgree);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    LinkedList<QuantityAgreementDto> products = new LinkedList<>();
+                    int idNum = -1;
+                    int supplierNumber = -1;
+                    String date = null;
+
+                    while (rs.next()) {
+                        if (idNum == -1) {
+                            idNum = rs.getInt("IDNumber");
+                            supplierNumber = rs.getInt("supplierNumber");
+                            date = rs.getString("date");
+                        }
+
+                        if (rs.getObject("prodId") == null) {
+                            continue;
+                        }
+
+                        ProductDto product = new ProductDto(
+                                rs.getString("productName"),
+                                rs.getInt("productNumber"),
+                                rs.getString("unitOfMeasure"),
+                                rs.getString("manufacturer")
+                        );
+
+                        QuantityAgreementDto qProduct = new QuantityAgreementDto(
+                                product,
+                                rs.getDouble("price"),
+                                rs.getInt("catalogNumber"),
+                                rs.getInt("amountToDiscount"),
+                                rs.getInt("discount")
+                        );
+
+                        products.add(qProduct);
+                    }
+
+                    Database.getConnection().commit();
+
+                    if (idNum != -1) {
+                        return Optional.of(new AgreementDto(idNum, supplierNumber, products, date));
+                    }
+                }
+            }
+            Database.getConnection().commit();
+        } catch (SQLException e) {
+            Database.getConnection().rollback();
+            throw e;
+        }
+
+        return Optional.empty();
+    }
 
 
     public void updateCatalogById(int numAgree,int productNumber,int catalogNumber) throws SQLException{

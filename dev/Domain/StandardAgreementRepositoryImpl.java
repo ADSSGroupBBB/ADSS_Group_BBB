@@ -143,7 +143,7 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
     }
     public QuantityAgreementDto proFromAgreeByIndex(int numAgree, int numP) throws SQLException{
         int i=1;
-        Optional<AgreementDto> agree=getStandardAgreement(numAgree);
+        Optional<AgreementDto> agree=this.standardDao.findStandardAgreeById(numAgree);
         if(agree.isPresent()) {
             List<QuantityAgreementDto> products = agree.get().productsList();
             for (QuantityAgreementDto qa : products) {
@@ -154,6 +154,17 @@ public class StandardAgreementRepositoryImpl implements StandardAgreementReposit
             }
         }
         return null;
+    }
+    public QuantityAgreementDto searchPro(int numAgree,int numP) throws SQLException{
+        Agreement a=AgreementMapper.toObject(getGeneralAgreement(numAgree).get());
+        return QuantityAgreementMapper.transfer(a.searchPro(numP));
+    }
+    public  Optional<AgreementDto> getGeneralAgreement(int numA) throws SQLException {
+        if (this.standardAgreementsList.containsKey(numA)) {
+            return Optional.of(AgreementMapper.transfer(this.standardAgreementsList.get(numA)));
+        }
+       return this.standardDao.getAgreement(numA);
+
     }
     public List<AgreementDto> allAgreementsByStandardSup(int numS ) throws SQLException{
         List<AgreementDto> optionalAgrees = this.standardDao.findAllStandardAgreeBySupId(numS);

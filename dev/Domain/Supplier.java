@@ -258,7 +258,7 @@ private paymentTerms StringToEnumPaymentTerms(String pay){
         return paymentTerms.Cash;
     }
     else if(pay.equals("Credit")) {
-        return paymentTerms.credit;
+        return paymentTerms.Credit;
     }
     return null;
 }

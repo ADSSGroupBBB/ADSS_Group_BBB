@@ -12,7 +12,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="ADSS_Group_BBB" options="-sourcepath dev/dataAccess:dev/Domain:dev/dto:dev/presentation:dev/Service:dev/util" />
+      <module name="ADSS_Group_BBB" options="" />
     </option>
   </component>
 </project>

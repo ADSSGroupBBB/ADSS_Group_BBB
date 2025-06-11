@@ -12,5 +12,6 @@ public interface OrderRepository {
     Optional<OrderDto> getOrder(int orderNumber) throws SQLException;
     OrderDto addOrder(int numAgree,int numSupplier,String address,String date,String contactPhone,String statusOrder) throws SQLException;
     Optional<ItemOrderDto> addProductOrder(int numOrder, int numP, int amount) throws SQLException;
+    Optional<ItemOrderDto> addProductOrderAutomat(int numOrder,int numP, int amount) throws SQLException;
     void updateStatus(int orderNumber,String status)throws SQLException;
 }

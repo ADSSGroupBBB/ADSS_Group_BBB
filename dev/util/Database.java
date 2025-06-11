@@ -20,7 +20,7 @@ public class Database {
                         payment TEXT NOT NULL,
                         contactNames TEXT NOT NULL,
                         telephone TEXT NOT NULL,
-                        deliverySending TEXT NOT NULL
+                        deliverySending TEXT NOT NULL,
                         address TEXT NOT NULL,
                         contactPhone TEXT NOT NULL
                     );
@@ -86,7 +86,7 @@ public class Database {
                         prodId INTEGER NOT NULL,
                         amountToOrder INTEGER NOT NULL,
                         PRIMARY KEY (IDNumber, prodId),
-                        FOREIGN KEY (IDNumber, prodId) REFERENCES quantityAgreements(IDNumber, prodId),
+                        FOREIGN KEY (IDNumber, prodId) REFERENCES quantityAgreements(IDNumber, prodId)
                     );
                 """);
                 st.executeUpdate("""

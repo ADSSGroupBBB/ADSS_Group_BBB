@@ -23,4 +23,7 @@ public interface   StandardAgreementRepository {
     List<AgreementDto> allAgreementsByStandardSup(int numS ) throws SQLException;
     QuantityAgreementDto proFromAgreeByIndex(int numAgree, int numP) throws SQLException;
     List<AgreementDto> getAllStandardAgreeWithPro(int numP) throws SQLException;
-}
+    Optional<AgreementDto> getGeneralAgreement(int numA) throws SQLException ;
+    QuantityAgreementDto searchPro(int numAgree,int numP) throws SQLException;
+
+    }

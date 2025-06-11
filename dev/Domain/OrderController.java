@@ -78,6 +78,19 @@ public class OrderController {
         }
         return success;
     }
+    public boolean addItemOrderAutomat(int orderNumber, int numP,int amount) throws SQLException{
+        StockController s= StockController.getInstance();
+        AgreementsController ag=AgreementsController.getInstance();
+        int numAgreement=this.orderRepo.getOrder(orderNumber).get().numAgreement();
+        QuantityAgreement qa=ag.searchPro(numAgreement,numP);
+        Order o=OrderMapper.toObject(this.orderRepo.getOrder(orderNumber).get());
+        boolean success= o.addProductOrder(qa,amount);
+        if(success){
+            this.orderRepo.addProductOrderAutomat(orderNumber,numP,amount);
+            s.updateStatusOrderPro(numP,amount);
+        }
+        return success;
+    }
     //set an order's status as status
     //parameter:int orderNumber,String status
     public void cancelOrder (int orderNumber) throws SQLException{
@@ -115,7 +128,7 @@ public class OrderController {
                     if(!(s.getCurrentAmount(productNum)+it.amountToOrder()>=s.getMinimumAmount(productNum))){
                         amount=amount+s.getMinimumAmount(it.productAgreement().pro().productNumber());
                     }
-                    addItemOrder(numOrder,productNum,amount);
+                    addItemOrderAutomat(numOrder,productNum,amount);
                 }
         }
         String orderString= count+" orders created";
@@ -146,7 +159,7 @@ public class OrderController {
                  numOrder = addNewOrder(a.IDNumber(), a.supplierNumber(), address, dateAsString, contactPhone);
                  agreeForOrder.put(a.IDNumber(),numOrder);
              }
-             boolean b=addItemOrder(agreeForOrder.get(a.IDNumber()),pro.getNumProduct(),pro.getMinimumCount());
+             boolean b=addItemOrderAutomat(agreeForOrder.get(a.IDNumber()),pro.getNumProduct(),pro.getMinimumCount());
              if(b==false) {
                  if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).isPresent()) {
                      if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).get().items().size() == 0) {

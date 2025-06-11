@@ -19,9 +19,8 @@ public class OrderManager {
                 System.out.println("Choose option 1-4");
                 System.out.println("1.Add an order");
                 System.out.println("2.Cancel an order");
-                System.out.println("3.Update on arrival of an order");
-                System.out.println("4.Search an order");
-                System.out.println("5.Back to main menu");
+                System.out.println("3.Search an order");
+                System.out.println("4.Back to main menu");
                 if (scanner.hasNextInt()) {
                     choice = scanner.nextInt();
                     scanner.nextLine();
@@ -52,7 +51,6 @@ public class OrderManager {
                     break;
                 }
                 case 4: {
-
                     flag = false;
                     break;
                 }

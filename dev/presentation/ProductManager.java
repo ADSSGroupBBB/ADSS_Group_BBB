@@ -85,7 +85,6 @@ public class ProductManager {
                     break;
                 } else {
                     System.out.println("The number is invalid, please select again");
-                    scanner.nextLine();
                 }
             } else {
                 System.out.println("The number is invalid, please select again");
@@ -175,7 +174,6 @@ public class ProductManager {
                     break;
                 } else {
                     System.out.println("The product not exists in the system");
-                    scanner.nextLine();
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");

@@ -20,9 +20,9 @@ public class StockController {
         this.missProducts=new HashMap<>();
         for (ProductDto product : pc.getAllProducts()) {
             Random rn = new Random();
-            int min = rn.nextInt(5) + 1;
-            int curr = rn.nextInt(6)+5;
-            ProductStock pi = new ProductStock(product.productNumber(),min, curr);
+            int min = rn.nextInt(5) + 10;
+            int curr = rn.nextInt(6)+15;
+            ProductStock pi = new ProductStock(product.productNumber(),curr,min);
             allProductStock.put(product.productNumber(), pi );
         }
     }
