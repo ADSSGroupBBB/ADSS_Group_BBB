@@ -54,7 +54,7 @@ public class OrderRepositoryImpl implements OrderRepository{
             Status st = OrderMapper.stringToEnumStatus(statusOrder);
             OrderDto ordto= this.orDao.saveOrder(new OrderDto(-1,numAgree,name,numSupplier,address,date,contactPhone,new LinkedList<ItemOrderDto>(),statusOrder)); //-1 -fictive value
             Order o = new Order(ordto.orderNumber(),numAgree, name, numSupplier, address, date, contactPhone, st);
-            this.orderList.put(o.getOrderNumber(), o);
+            this.orderList.put(ordto.orderNumber(), o);
             DatabaseManager.getConnection().commit();
             return ordto;
         }

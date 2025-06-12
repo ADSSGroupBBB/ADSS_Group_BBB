@@ -13,6 +13,7 @@ import java.util.*;
 
 public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
     public PeriodAgreementDto savePeriod (PeriodAgreementDto agree) throws SQLException {
+    int generatedId=0;
         try {
             DatabaseManager.getConnection().setAutoCommit(false);
             String sqlS = """
@@ -23,37 +24,42 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
                 ps.setString(2, agree.date());
                 ps.setString(3, "period");
                 ps.executeUpdate();
-                String sqlPeriod = """
-                        INSERT INTO periodAgreements(IDNumber, address, contactPhone) VALUES (?,?,?)
-                        """;
-                try (PreparedStatement psPeriod = DatabaseManager.getConnection().prepareStatement(sqlPeriod)) {
-                    psPeriod.setInt(1, agree.IDNumber());
-                    psPeriod.setString(2, agree.address());
-                    psPeriod.setString(3, agree.contactPhone());
-                    psPeriod.executeUpdate();
-                    String sqlP = """
-                            INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
-                            """;
-                    try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
-                        for (PeriodAgreementItemDto pro : agree.productsList()) {
-                            psPro.setInt(1, agree.IDNumber());
-                            psPro.setInt(2, pro.productAgreement().pro().productNumber());
-                            psPro.setDouble(3, pro.productAgreement().price());
-                            psPro.setInt(4, pro.productAgreement().catalogNumber());
-                            psPro.setInt(5, pro.productAgreement().amountToDiscount());
-                            psPro.setInt(6, pro.productAgreement().discount());
-                            psPro.executeUpdate();
-                        }
-                    }
-                    String sqlItem = """
-                            INSERT INTO periodAgreementItems(IDNumber, prodId, amountToOrder) VALUES (?,?,?)
-                            """;
-                    try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
-                        for (PeriodAgreementItemDto pro : agree.productsList()) {
-                            psItem.setInt(1, agree.IDNumber());
-                            psItem.setInt(2, pro.productAgreement().pro().productNumber());
-                            psItem.setInt(3, pro.amountToOrder());
-                            psItem.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedId = rs.getInt(1);
+                        String sqlPeriod = """
+                                INSERT INTO periodAgreements(IDNumber, address, contactPhone) VALUES (?,?,?)
+                                """;
+                        try (PreparedStatement psPeriod = DatabaseManager.getConnection().prepareStatement(sqlPeriod)) {
+                            psPeriod.setInt(1, generatedId);
+                            psPeriod.setString(2, agree.address());
+                            psPeriod.setString(3, agree.contactPhone());
+                            psPeriod.executeUpdate();
+                            String sqlP = """
+                                    INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
+                                    """;
+                            try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
+                                for (PeriodAgreementItemDto pro : agree.productsList()) {
+                                    psPro.setInt(1, generatedId);
+                                    psPro.setInt(2, pro.productAgreement().pro().productNumber());
+                                    psPro.setDouble(3, pro.productAgreement().price());
+                                    psPro.setInt(4, pro.productAgreement().catalogNumber());
+                                    psPro.setInt(5, pro.productAgreement().amountToDiscount());
+                                    psPro.setInt(6, pro.productAgreement().discount());
+                                    psPro.executeUpdate();
+                                }
+                            }
+                            String sqlItem = """
+                                    INSERT INTO periodAgreementItems(IDNumber, prodId, amountToOrder) VALUES (?,?,?)
+                                    """;
+                            try (PreparedStatement psItem = DatabaseManager.getConnection().prepareStatement(sqlItem)) {
+                                for (PeriodAgreementItemDto pro : agree.productsList()) {
+                                    psItem.setInt(1, generatedId);
+                                    psItem.setInt(2, pro.productAgreement().pro().productNumber());
+                                    psItem.setInt(3, pro.amountToOrder());
+                                    psItem.executeUpdate();
+                                }
+                            }
                         }
                     }
                 }
@@ -63,7 +69,7 @@ public class JdbcPeriodAgreementDao implements PeriodAgreementDao {
             DatabaseManager.getConnection().rollback();
             throw e;
         }
-        return agree;
+        return new PeriodAgreementDto(generatedId,agree.supplierNumber(),agree.productsList(),agree.date(),agree.address(),agree.contactPhone());
     }
 
 

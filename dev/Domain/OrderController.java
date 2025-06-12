@@ -149,7 +149,7 @@ public class OrderController {
         SupplierController sc=SupplierController.getInstance();
         Map<Integer, ProductStock> allMiss=s.getMissProducts();
         for(ProductStock pro:allMiss.values()){
-             a= ac.agreementMostEffectivePrice(pro.getNumProduct(),pro.getMinimumCount());
+            a= ac.agreementMostEffectivePrice(pro.getNumProduct(),pro.getMinimumCount());
              if(a==null){
                  continue;
              }

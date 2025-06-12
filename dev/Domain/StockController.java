@@ -4,6 +4,7 @@ import dto.ProductDto;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
@@ -70,6 +71,15 @@ public class StockController {
     }
 
     public Map<Integer, ProductStock> getMissProducts() {
+        LinkedList<Integer> pro_remove=new LinkedList<>();
+        for (ProductStock pro:this.missProducts.values()) {
+            if (pro.isBeOrdered()) {
+                pro_remove.add(pro.getNumProduct());
+            }
+        }
+        for (Integer numP:pro_remove) {
+            this.missProducts.remove(numP);
+        }
         return missProducts;
     }
 
@@ -89,12 +99,15 @@ public class StockController {
             if (getCurrentAmount(numP) + it.getAmountOrder() >= getMinimumAmount(numP)) {
                 getProductStock().get(numP).setBeOrdered(false);
             }
+            if (getCurrentAmount(numP) < getMinimumAmount(numP)) {
+                this.missProducts.put(numP,this.allProductStock.get(numP));
+            }
         }
     }
     public void updateStatusOrderPro(int productId, int amount) {
         if (getCurrentAmount(productId) + amount >= getMinimumAmount(productId)) {
             getProductStock().get(productId).setBeOrdered(true);
-        }
+            }
     }
 
 

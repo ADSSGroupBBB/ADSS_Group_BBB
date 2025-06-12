@@ -27,54 +27,19 @@ public class UserPresentation {
                 System.out.println("Invalid input. Please select 1 or 2.");
             }
 
-            // קביעת נתיב DB לפי הבחירה
             String dbPath;
             if (secondC == 1) {
-                dbPath = "data/empty.db";
+                dbPath = "empty.db";
             } else {
-                dbPath = "data/default_data.db";
+                dbPath = "default_data.db";
             }
 
-            // התחברות ל-DB
             util.DatabaseManager.connect(dbPath);
 
-            // יצירת טבלאות אם צריך
             util.Database.createTablesIfNotExist(util.DatabaseManager.getConnection());
 
-            // אם אופציה 2 - טען נתוני דיפולט אם טרם נטענו
             if (secondC == 2) {
                 util.DataLoad.loadDefaultData(util.DatabaseManager.getConnection());
-            }
-
-
-            if (secondC == 1) {
-                SupplierApplication s = new SupplierApplication();
-                ProductApplication p = new ProductApplication();
-                AgreementsApplication a = new AgreementsApplication();
-                OrderApplication o = new OrderApplication();
-                LinkedList<String> contactNames1 = new LinkedList<>();
-                contactNames1.add("John Doe");
-                LinkedList<String> deliveryDays1 = new LinkedList<>();
-                deliveryDays1.add("Monday");
-                s.addSup(1, "sup1", "bank", "Cash", contactNames1, "0505050505", deliveryDays1, "constant","beer","m");
-                LinkedList<String> contactNames2 = new LinkedList<>();
-                contactNames1.add("dov");
-                LinkedList<String> deliveryDays2 = new LinkedList<>();
-                s.addSup(2, "sup2", "bank", "credit", contactNames2, "0505050508", deliveryDays2, "selfCollection","beer","m");
-                p.addPro("p1", 1, "g", "man");
-                p.addPro("p2", 2, "kg", "man");
-                p.addPro("p3", 3, "g", "man");
-                p.addPro("p4", 4, "kg", "ma");
-                a.addStandardAgreement(1, "01-01-2025");
-                a.addStandardAgreement(1, "02-02-2025");
-                a.addProductToStandardAgreement(1, 1, 20.5, 1, 10, 10);
-                a.addProductToStandardAgreement(2, 2, 11, 2, 8, 8);
-                a.addStandardAgreement(2, "03-03-2025");
-                a.addProductToStandardAgreement(3, 3, 12, 3, 5, 5);
-                a.addProductToStandardAgreement(3, 4, 10, 4, 6, 5);
-                o.addOrder(1, 2, "Beer", "01-03-2025", "tom");
-                o.addItem(1, 1, 7);
-                o.addItem(1, 2, 8);
             }
 
             while (flag) {
@@ -140,6 +105,8 @@ public class UserPresentation {
             }
         } catch (Exception e) {
             System.out.println("Boot failed");
+            e.printStackTrace();
+
         }
     }
 }

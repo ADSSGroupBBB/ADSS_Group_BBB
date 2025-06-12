@@ -85,10 +85,10 @@ public class JdbcOrderDao implements OrderDao{
                         SELECT oi.prodId, oi.amountOrder, oi.finalPrice, oi.initialPrice, oi.numOrder,
                                qa.price, qa.catalogNumber, qa.amountToDiscount, qa.discount,
                                p.productName, p.unitOfMeasure, p.manufacturer
-                        FROM orderItems oi
+                        FROM itemOrders oi
                         LEFT JOIN quantityAgreements qa ON oi.prodId = qa.prodId
                         LEFT JOIN products p ON oi.prodId = p.productNumber
-                        WHERE oi.orderNumber = ?
+                        WHERE oi.numOrder = ?
                     """;
 
                         try (PreparedStatement psItems = DatabaseManager.getConnection().prepareStatement(sqlItems)) {
@@ -121,7 +121,6 @@ public class JdbcOrderDao implements OrderDao{
                             }
                         }
 
-                        DatabaseManager.getConnection().commit();
 
                         OrderDto order = new OrderDto(
                                 orderNum,
@@ -134,7 +133,7 @@ public class JdbcOrderDao implements OrderDao{
                                 items,
                                 statusOrder
                         );
-
+                        DatabaseManager.getConnection().commit();
                         return Optional.of(order);
                     }
                 }

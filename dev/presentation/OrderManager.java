@@ -331,6 +331,8 @@ public class OrderManager {
                     }
                 } catch (SQLException e) {
                     System.out.println("The search failed");
+                    e.printStackTrace();
+                    return;
                 }
             } else {
                 System.out.println("This is not a number, please enter it again");
@@ -360,6 +362,7 @@ public class OrderManager {
                 System.out.println(oa.printOrder(orderNumber));
             } else {
                 oa.arriveStatusOrder(orderNumber);
+                System.out.println("The update was success");
             }
         } catch (SQLException e) {
             System.out.println("The operation failed");
