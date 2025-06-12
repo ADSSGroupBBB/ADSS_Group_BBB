@@ -119,6 +119,7 @@ public class OrderController {
         List<PeriodAgreementDto> todayPeriodOrder=ac.getAllPeriodToOrder(); //לבדוק שמעל המלאי ולפני עריכה תופעל הפונקציה
         DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String dateAsString = todayDate.format(formatDate);
+        StringBuilder fullPrint = new StringBuilder();
         for (PeriodAgreementDto agree:todayPeriodOrder){
                 int numOrder=addNewOrder(agree.IDNumber(), agree.supplierNumber(), agree.address(), dateAsString, agree.contactPhone());
                 count++;
@@ -130,12 +131,16 @@ public class OrderController {
                     }
                     addItemOrderAutomat(numOrder,productNum,amount);
                 }
+            fullPrint.append("\n--- Order ---\n");
+            fullPrint.append(OrderMapper.toObject(orderRepo.getOrder(numOrder).get()).print_Order());
+            fullPrint.append("\n--------------\n");
         }
-        String orderString= count+" orders created";
+        String orderString= count+" orders created"+fullPrint.toString();
         return orderString;
     }
+
+
     public String addMissOrder() throws SQLException{
-        int count=0;
         AgreementDto a;
         int numOrder;
         String address;
@@ -148,28 +153,39 @@ public class OrderController {
         AgreementsController ac=AgreementsController.getInstance();
         SupplierController sc=SupplierController.getInstance();
         Map<Integer, ProductStock> allMiss=s.getMissProducts();
-        for(ProductStock pro:allMiss.values()){
-            a= ac.agreementMostEffectivePrice(pro.getNumProduct(),pro.getMinimumCount());
-             if(a==null){
-                 continue;
-             }
-             if (!agreeForOrder.containsKey(a.IDNumber())) {
-                 address = sc.getAddress(a.supplierNumber());
-                 contactPhone = sc.getContactPhone(a.supplierNumber());
-                 numOrder = addNewOrder(a.IDNumber(), a.supplierNumber(), address, dateAsString, contactPhone);
-                 agreeForOrder.put(a.IDNumber(),numOrder);
-             }
-             boolean b=addItemOrderAutomat(agreeForOrder.get(a.IDNumber()),pro.getNumProduct(),pro.getMinimumCount());
-             if(b==false) {
-                 if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).isPresent()) {
-                     if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).get().items().size() == 0) {
-                         cancelOrder(agreeForOrder.get(a.IDNumber()));
-                     }
-                 }
-             }
+        StringBuilder fullPrint = new StringBuilder();
+        for(ProductStock pro:allMiss.values()) {
+            a = ac.agreementMostEffectivePrice(pro.getNumProduct(), pro.getMinimumCount());
+            if (a == null) {
+                continue;
+            }
+            if (!agreeForOrder.containsKey(a.IDNumber())) {
+                address = sc.getAddress(a.supplierNumber());
+                contactPhone = sc.getContactPhone(a.supplierNumber());
+                numOrder = addNewOrder(a.IDNumber(), a.supplierNumber(), address, dateAsString, contactPhone);
+                agreeForOrder.put(a.IDNumber(), numOrder);
+            }
+            boolean b = addItemOrderAutomat(agreeForOrder.get(a.IDNumber()), pro.getNumProduct(), pro.getMinimumCount());
+            if (b == false) {
+                if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).isPresent()) {
+                    if (this.orderRepo.getOrder(agreeForOrder.get(a.IDNumber())).get().items().size() == 0) {
+                        cancelOrder(agreeForOrder.get(a.IDNumber()));
+                    }
+                }
+            }
         }
+        for (Integer orderNum : agreeForOrder.values()) {
+            Optional<OrderDto> o = orderRepo.getOrder(orderNum);
+            if (o.isPresent()) {
+                Order ord=OrderMapper.toObject(o.get());
+                fullPrint.append("\n--- Order ---\n");
+                fullPrint.append(ord.print_Order());
+                fullPrint.append("\n--------------\n");
+                }
+            }
 
-        String orderString= agreeForOrder.size()+" orders created";
+
+        String orderString= agreeForOrder.size()+" orders created"+fullPrint.toString();
         return orderString;
     }
 

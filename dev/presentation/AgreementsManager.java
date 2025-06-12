@@ -633,10 +633,9 @@ public class AgreementsManager {
                             System.out.println("The standard agreement not exists in the system");
                         }
                     } else {
-                        if (PeriodAgreeExist(supplierNumber, numAgreement)) {
-                            break;
-                        } else {
+                        if (!PeriodAgreeExist(supplierNumber, numAgreement)) {
                             System.out.println("The periodic agreement not exists in the system");
+                            return;
                         }
                         if (!aa.periodAgreementCanEdit(supplierNumber)) {
                             System.out.println("The agreement cannot be edited on the same day");

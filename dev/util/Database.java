@@ -19,19 +19,6 @@ public class Database {
                 );
             """);
                 st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS suppliers(
-                        supplierNumber INTEGER PRIMARY KEY ,
-                        supplierName TEXT NOT NULL,
-                        bankAccount TEXT NOT NULL,
-                        payment TEXT NOT NULL,
-                        contactNames TEXT NOT NULL,
-                        telephone TEXT NOT NULL,
-                        deliverySending TEXT NOT NULL,
-                        address TEXT NOT NULL,
-                        contactPhone TEXT NOT NULL
-                    );
-                """);
-                st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS Supplier_Agreements(
                         supplierNumber INTEGER NOT NULL,
                         agreementId INTEGER NOT NULL,
@@ -126,7 +113,11 @@ public class Database {
             throw new ExceptionInInitializerError(e);
         }
     }
+
+
+
 }
+
 
 
 

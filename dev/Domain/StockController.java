@@ -48,6 +48,9 @@ public class StockController {
     public  int getMinimumAmount(int numProduct){
         return this.allProductStock.get(numProduct).getMinimumCount();
     }
+    public  boolean getBeOrder(int numProduct){
+        return this.allProductStock.get(numProduct).isBeOrdered();
+    }
 
 
     // Getter
@@ -73,7 +76,7 @@ public class StockController {
     public Map<Integer, ProductStock> getMissProducts() {
         LinkedList<Integer> pro_remove=new LinkedList<>();
         for (ProductStock pro:this.missProducts.values()) {
-            if (pro.isBeOrdered()) {
+            if (pro.isBeOrdered()||pro.getCurrentAmount()>=pro.getMinimumCount()) {
                 pro_remove.add(pro.getNumProduct());
             }
         }

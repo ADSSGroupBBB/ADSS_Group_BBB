@@ -179,6 +179,8 @@ public class SupplierController {
     public LinkedList<String> getDays(int numSupplier) throws SQLException{
         return this.supRepo.getDaysById(numSupplier);
     }
-
+    public Optional<SupplierDto> getSupplier(int id) throws SQLException {
+        return this.supRepo.getSupplier(id);
+    }
 
 }

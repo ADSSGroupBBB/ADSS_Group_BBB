@@ -239,8 +239,10 @@ public class AgreementsController {
         SupplierController sup = SupplierController.getInstance();
         OrderController ord=OrderController.getInstance();
         LinkedList<String> days = sup.getDays(numS);
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
-        if(days.contains(today.getValue())){
+        LocalDate today = LocalDate.now();
+        DayOfWeek dayOfWeek = today.getDayOfWeek();
+        String day = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        if(days.contains(day)){
             if(days.size()==1){
                 return false;
             }

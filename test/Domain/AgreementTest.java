@@ -11,7 +11,7 @@ class AgreementTest {
 
     @BeforeEach
     void setUp() {
-        agreement = new Agreement(123, "01-01-2025");
+        agreement = new Agreement(1,123, "01-01-2025");
         product = new Product( "ProductName",  3, unit.g, "manufacturer");
     }
 

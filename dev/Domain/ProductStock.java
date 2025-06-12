@@ -16,7 +16,7 @@ public class ProductStock {
 
     public void addCurrentAmount(int currentAmount) {
         this.currentAmount = this.currentAmount+currentAmount;
-        if(this.currentAmount>this.minimumCount) {
+        if(this.currentAmount>=this.minimumCount) {
             setBeOrdered(false);
         }
     }

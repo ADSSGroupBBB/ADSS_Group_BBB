@@ -115,11 +115,50 @@ public class DataLoad {
                         prodCursor++;
                     }
                 }
+                int agreementId;
+                try (PreparedStatement psStd = conn.prepareStatement("""
+                        INSERT INTO standardAgreements(supplierNumber, date, type) VALUES (?, ?, 'standard');
+                    """, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+                    psStd.setInt(1, 2);
+                    psStd.setString(2, "2025-01-" + String.format("%02d", 2));
+                    psStd.executeUpdate();
+
+                    try (ResultSet rs = psStd.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            agreementId = rs.getInt(1);
+                        } else {
+                            throw new SQLException("Failed to generate standard agreement ID");
+                        }
+                    }
+                }
+
+                try (PreparedStatement psQty = conn.prepareStatement("""
+                        INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber, amountToDiscount, discount)
+                        VALUES (?, ?, ?, ?, ?, ?);
+                    """);
+                     PreparedStatement psSupAgr = conn.prepareStatement("""
+                        INSERT INTO Supplier_Agreements(supplierNumber, agreementId) VALUES (?, ?);
+                    """)) {
+
+                    psQty.setInt(1, agreementId);
+                    psQty.setInt(2, 1);
+                    psQty.setDouble(3, 11);
+                    psQty.setInt(4, 1000 + agreementId);
+                    psQty.setInt(5, 5);
+                    psQty.setInt(6, 5);
+                    psQty.executeUpdate();
+
+                    psSupAgr.setInt(1, 2);
+                    psSupAgr.setInt(2, agreementId);
+                    psSupAgr.executeUpdate();
+
+                }
+
 
                 for (int supId = 1; supId <= 5; supId++) {
                     int count = (supId == 5) ? 3 : 1;
                     for (int k = 0; k < count; k++) {
-                        int agreementId;
                         try (PreparedStatement psPer = conn.prepareStatement("""
                             INSERT INTO standardAgreements(supplierNumber, date, type) VALUES (?, ?, 'period');
                         """, PreparedStatement.RETURN_GENERATED_KEYS)) {

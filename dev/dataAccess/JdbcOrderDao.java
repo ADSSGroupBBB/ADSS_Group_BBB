@@ -179,11 +179,7 @@ public class JdbcOrderDao implements OrderDao{
         try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderNumber);
-           ps.executeUpdate();
-            DatabaseManager.getConnection().commit();
-        } catch (SQLException e) {
-            DatabaseManager.getConnection().rollback();
-            throw e;
+            ps.executeUpdate();
         }
     }
 

@@ -13,7 +13,7 @@ class OrderTest {
     @BeforeEach
     void setUp() {
         // Assuming Status is an enum or class you have
-        order = new Order(1, "SupplierName", 123, "123 Main St", "2025-01-01", "123-4567890", Status.arrived);
+        order = new Order(1,1, "SupplierName", 123, "123 Main St", "2025-01-01", "123-4567890", Status.arrived);
         product = new Product("pro",21,unit.g,"man");
         // Mock QuantityAgreement
         quantityAgreement = new QuantityAgreement( 3, product, 101.0, 5, 10, 30);
@@ -30,7 +30,7 @@ class OrderTest {
         order.addProductOrder(quantityAgreement, 5);
         String output = order.print_Order();
 
-        assertTrue(output.contains("orderNumber:2"));
+        assertTrue(output.contains("orderNumber:1"));
         assertTrue(output.contains("supplierName:SupplierName"));
         assertTrue(output.contains("Product"));
     }

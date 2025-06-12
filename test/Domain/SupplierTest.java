@@ -24,8 +24,8 @@ class SupplierTest {
         LinkedList<Agreement> agreements = new LinkedList<>();
         product = new Product("pro",1,unit.g,"man");
         quantityAgreement = new QuantityAgreement( 1, product, 100.0, 1, 10, 5);
-        agreement1 = new Agreement(1,"01-01-2025");
-        agreement2=new Agreement(1,"02-02-2025");
+        agreement1 = new Agreement(1,1,"01-01-2025");
+        agreement2=new Agreement(1,1,"02-02-2025");
         agreement1.addProductAgreement(product,43,3,22,10);
         agreements.add(agreement1);
         agreements.add(agreement2);
@@ -46,7 +46,7 @@ class SupplierTest {
 
     @Test
     void testAddAndRemoveAgreement() {
-        Agreement agreement3 = new Agreement(3,"02-03-2025");
+        Agreement agreement3 = new Agreement(3,3,"02-03-2025");
         supplier.addAgreements(agreement3);
 
         assertTrue(supplier.numAgree().contains(Integer.toString(agreement3.getIDNumber())));
