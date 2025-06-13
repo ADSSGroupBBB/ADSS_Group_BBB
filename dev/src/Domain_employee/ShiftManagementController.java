@@ -266,7 +266,7 @@ private boolean hasAvailableShiftManagerForShift(LocalDate date, String shiftTyp
                 return false;
             }
 
-            // Check if employee is already assigned to THIS SPECIFIC shift (not others!)
+
             if (assignmentDAO.isEmployeeAssigned(shiftId, employeeId)) {
                 return false; // Employee already assigned to this exact shift
             }

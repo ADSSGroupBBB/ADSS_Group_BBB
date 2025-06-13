@@ -614,7 +614,7 @@ public final class Database {
         if (branches.isEmpty()) return;
         for (int i=0; i < branches.size(); i++){
             createShiftsForWeek(conn, LocalDate.now().minusWeeks(1), branches.get(i), false);
-            createShiftsForWeek(conn, LocalDate.now().plusWeeks(1), branches.get(i), true);
+            createShiftsForWeek(conn, LocalDate.of(2025, 7, 20), branches.get(i), true);
         }
     }
 
@@ -665,8 +665,8 @@ public final class Database {
                     assignPs.setInt(4, 1);
                     assignPs.executeUpdate();
 
-                    // NEW: Assign drivers and store keepers for June 15, 2025
-                    if (currentDate.equals(LocalDate.of(2025, 6, 15))) {
+
+                    if (currentDate.equals(LocalDate.of(2025, 7, 20))) {
                         assignDriversAndStoreKeepersForDate(conn, assignPs, morningShiftId, eveningShiftId, branchAddress);
                     }
 
