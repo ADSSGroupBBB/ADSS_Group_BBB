@@ -14,6 +14,7 @@ public class ItemOrder {
         this.amountOrder=amountOrder;
         double initialPrice=amountOrder*(item.getPriceAgreement());
         this.initialPrice=initialPrice;
+        this.finalPrice=initialPrice;
         if(amountOrder>=item.getAmountToDiscountAgreement()){
             this.finalPrice=initialPrice*((100-item.getDiscountAgreement())/100.0);
         }
