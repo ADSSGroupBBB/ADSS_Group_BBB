@@ -641,6 +641,7 @@ public class AgreementsManager {
                             System.out.println("The agreement cannot be edited on the same day");
                             return;
                         }
+                        break;
                     }
                 } else {
                     System.out.println("This is not a number, please enter it again");
@@ -804,7 +805,7 @@ public class AgreementsManager {
 
     public int constantSupplier(int supplierNumber,Scanner scanner ) throws SQLException{
         SupplierManager sm = new SupplierManager();
-        int typeChoice=0;
+        int typeChoice=1;
         if (sm.constantSupplier(supplierNumber)) {
             while (true) {
                 System.out.println("What type of agreement would you like to edit?");

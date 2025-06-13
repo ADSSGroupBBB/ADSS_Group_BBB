@@ -143,7 +143,7 @@ public class DataLoad {
 
                     psQty.setInt(1, agreementId);
                     psQty.setInt(2, 1);
-                    psQty.setDouble(3, 11);
+                    psQty.setDouble(3, 9);
                     psQty.setInt(4, 1000 + agreementId);
                     psQty.setInt(5, 5);
                     psQty.setInt(6, 5);

@@ -121,16 +121,8 @@ public class OrderManager {
             while (true) {
                 System.out.println("Enter the booking date");
                 date = scanner.nextLine().trim();
-                LocalDate today = LocalDate.now();
-                LocalDate tomorrow = today.plusDays(1);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                String strTomorrow = tomorrow.format(formatter);
-                String strToday = today.format(formatter);
                 if (date.isEmpty()) {
                     System.out.println("The date cannot be empty, please enter again");
-                } else if (date.equals(strToday)) {
-                    System.out.println("The supplier won't be able to prepare your order on such short notice,");
-                    System.out.println("please choose the date " + strTomorrow + " and forward");
                 } else {
                     break;
                 }
@@ -266,13 +258,7 @@ public class OrderManager {
                     System.out.println("failed to create automatic order");
                     return;
                 }
-                //try {
-                //int orderID = oa.addOrder(numAgreement, numSupplier, address, date, contactPhone);
-                //if (orderID != -1) {
-                //  System.out.println("automatic order created successfully!");
-                //} else {
-                //  System.out.println("failed to create automatic order");
-                //}
+
 
             }
         }

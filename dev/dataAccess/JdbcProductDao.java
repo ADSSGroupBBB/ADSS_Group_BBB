@@ -35,7 +35,7 @@ public class JdbcProductDao implements ProductDao{
     @Override
     public ProductDto savePro(ProductDto pro) throws SQLException {
         String sql = """
-                INSERT INTO products(productName, productNumber, unitOfMeasure, manufacturer) VALUES (?,?,?,?)
+                 INSERT OR REPLACE INTO products(productName, productNumber, unitOfMeasure, manufacturer) VALUES (?,?,?,?)
                 """;
         try (PreparedStatement ps = DatabaseManager.getConnection().prepareStatement(sql)) {
             ps.setString(1, pro.productName());

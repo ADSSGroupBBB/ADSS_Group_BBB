@@ -1,7 +1,6 @@
 package Service;
 
 import Domain.StockController;
-import Domain.PairInt;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Map;
 public class StockApplication {
 
     private StockController st;
-    private PairInt pi;
 
     public StockApplication() throws SQLException{
         try {
@@ -27,8 +25,6 @@ public class StockApplication {
         st.sell(soldPro);
     }
 
-    // public void upStock(int numId){
-    //     st.updateStock(numId);
-    // }
+
 }
 

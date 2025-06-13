@@ -57,7 +57,7 @@ public class JdbcStandardAgreementDao implements StandardAgreementDAO{
         try {
             DatabaseManager.getConnection().setAutoCommit(false);
             String sqlP = """
-                    INSERT INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
+                     INSERT OR REPLACE INTO quantityAgreements(IDNumber, prodId, price, catalogNumber,amountToDiscount,discount) VALUES (?,?,?,?,?,?)
                     """;
             try (PreparedStatement psPro = DatabaseManager.getConnection().prepareStatement(sqlP)) {
                 psPro.setInt(1, id);
