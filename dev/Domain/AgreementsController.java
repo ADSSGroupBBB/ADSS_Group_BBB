@@ -21,13 +21,6 @@ public class AgreementsController {
     private StandardAgreementRepository standardAgreeRepo;
     private PeriodAgreementRepository periodAgreeRepo;
 
-    //public PeriodAgreementRepository getPeriodAgreeRepo() {
-    //    return periodAgreeRepo;
-    //}
-
-    //public StandardAgreementRepository getStandardAgreeRepo() {
-    //    return standardAgreeRepo;
-    //}
 
     private AgreementsController() {
         standardAgreeRepo =  StandardAgreementRepositoryImpl.getInstance();
