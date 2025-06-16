@@ -12,6 +12,8 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- ADDED: Encoding property for consistent builds -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -38,6 +40,10 @@
     </dependencies>
 
     <build>
+        <!-- CHANGED: Configure Maven to look for source code inside dev directory -->
+        <sourceDirectory>dev/src/main/java</sourceDirectory>
+        <testSourceDirectory>dev/src/test/java</testSourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -45,12 +51,14 @@
                 <version>3.11.0</version>
                 <configuration>
                     <release>17</release>
+                    <!-- REMOVED: Problematic native access flag -->
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
+                <!-- REMOVED: Problematic native access configuration -->
             </plugin>
         </plugins>
     </build>
