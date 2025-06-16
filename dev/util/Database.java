@@ -1,7 +1,7 @@
 package util;
 
 import java.sql.*;
-
+///
 public class Database {
     public static void createTablesIfNotExist(Connection conn) throws SQLException {
         try (Statement st = conn.createStatement()) {
