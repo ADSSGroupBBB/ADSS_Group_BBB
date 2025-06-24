@@ -127,9 +127,6 @@ public class DeliveriesManagerIO {
                     locationsMenu.addItemToLocation();
                     break;
                 case 13:
-                    // Move to employee menu code here
-                    break;
-                case 14:
                     NavigationManager navigationManager = new NavigationManager();
                     navigationManager.start();
                     break;

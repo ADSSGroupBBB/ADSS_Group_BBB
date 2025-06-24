@@ -7,11 +7,13 @@ import ServiceD.LocationApplication;
 import ServiceD.TrucksApplication;
 import ServiceD.ZonesApplication;
 import Service_employee.*;
-import ServiceD.*;
 import org.junit.jupiter.api.*;
+import util.Database_HR_DL;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -62,6 +64,7 @@ public class SystemTest {
             locationApp = new LocationApplication();
             trucksApp = new TrucksApplication();
             zonesApp = new ZonesApplication();
+            Database_HR_DL.useSampleDatabase();
         } catch (Exception e) {
             // Restore output to show this error
             System.setOut(originalOut);
@@ -332,20 +335,42 @@ public class SystemTest {
 
     @AfterAll
     static void cleanup() {
-        // Cleanup test data if needed
         try {
-            // Try to clean up test data
-            trucksApp.deleteTruck(TEST_TRUCK_ID);
-            employeeService.removeEmployee(TEST_EMPLOYEE_ID);
-            employeeService.removeEmployee(TEST_DRIVER_ID);
-            employeeService.removeEmployee(TEST_MANAGER_ID);
-        } catch (Exception e) {
-            // Ignore cleanup errors
-        }
+            // First close any open connections
+            Database_HR_DL.closeAllConnections(); // if such method exists
 
-        // Restore console output
-        System.setOut(originalOut);
-        System.setErr(originalErr);
-        System.out.println("All tests completed successfully");
+            // Delete the database file
+            File dbFile = new File("company_system_sample.db");; // adjust path
+            if (dbFile.exists()) {
+                boolean deleted = dbFile.delete();
+                if (deleted) {
+                    System.out.println("Database file deleted successfully");
+                } else {
+                    System.out.println("Failed to delete database file");
+                }
+            }
+
+            // Also delete any related files (journal, wal, etc. for SQLite)
+            deleteRelatedFiles("path/to/your/database");
+
+        } catch (Exception e) {
+            System.err.println("Error during cleanup: " + e.getMessage());
+        } finally {
+            // Restore console output
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+            System.out.println("All tests completed successfully");
+        }
+    }
+
+    private static void deleteRelatedFiles(String dbPath) {
+        // For SQLite, also delete .db-journal, .db-wal, .db-shm files
+        String[] extensions = {".db-journal", ".db-wal", ".db-shm"};
+        for (String ext : extensions) {
+            File file = new File(dbPath + ext);
+            if (file.exists()) {
+                file.delete();
+            }
+        }
     }
 }

@@ -4,22 +4,23 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.DayOfWeek;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
- * Unified Database class for both Employee and Delivery modules
+ * Unified Database class with support for separate sample and production databases
  */
 public final class Database_HR_DL {
-    private static final String DB_URL = "jdbc:sqlite:company_system.db";
-    private static boolean initializeWithSampleData = true; // Control sample data insertion
+    private static final String PRODUCTION_DB_URL = "jdbc:sqlite:company_system.db";
+    private static final String SAMPLE_DB_URL = "jdbc:sqlite:company_system_sample.db";
+    private static final Set<Connection> activeConnections = Collections.synchronizedSet(new HashSet<>());
+    private static String currentDbUrl = PRODUCTION_DB_URL; // Default to production
+    private static boolean isInitialized = false;
 
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            initializeDatabase();
         } catch (Exception e) {
-            System.err.println("Error in connecting to database: " + e.getMessage());
+            System.err.println("Error loading SQLite JDBC driver: " + e.getMessage());
             e.printStackTrace();
             throw new ExceptionInInitializerError(e);
         }
@@ -28,29 +29,51 @@ public final class Database_HR_DL {
     private Database_HR_DL() {}
 
     /**
-     * Call this method BEFORE first database access to start with empty tables
+     * Initialize the database in production mode (empty tables, no sample data)
      */
-    public static void initializeEmptyDatabase() {
-        initializeWithSampleData = false;
+    public static void useProductionDatabase() {
+        currentDbUrl = PRODUCTION_DB_URL;
         try {
-            // Delete existing database file to start fresh
-            deleteDatabase();
-            // Force re-initialization without sample data
-            initializeDatabase();
+            if (!databaseExists(PRODUCTION_DB_URL)) {
+                deleteDatabase(PRODUCTION_DB_URL);
+                initializeDatabase(false); // No sample data
+            }
         } catch (SQLException e) {
-            System.err.println("Error initializing empty database: " + e.getMessage());
+            System.err.println("Error with production database: " + e.getMessage());
             e.printStackTrace();
         }
+        System.out.println("Using production database (empty tables).");
     }
 
     /**
-     * Call this method to reset database with sample data
+     * Initialize the database in sample mode (with sample data for testing/demo)
      */
-    public static void resetWithSampleData() {
-        initializeWithSampleData = true;
+    public static void useSampleDatabase() {
+        currentDbUrl = SAMPLE_DB_URL;
         try {
-            deleteDatabase();
-            initializeDatabase();
+            if (!databaseExists(SAMPLE_DB_URL)) {
+                deleteDatabase(SAMPLE_DB_URL);
+                initializeDatabase(true); // With sample data
+            }
+        } catch (SQLException e) {
+            System.err.println("Error with sample database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("Using sample database (with demo data).");
+    }
+
+    /**
+     * LEGACY METHODS - for backward compatibility with existing code
+     */
+    public static void initializeEmptyDatabase() {
+        useProductionDatabase();
+    }
+
+    public static void resetWithSampleData() {
+        currentDbUrl = SAMPLE_DB_URL;
+        try {
+            deleteDatabase(SAMPLE_DB_URL);
+            initializeDatabase(true);
         } catch (SQLException e) {
             System.err.println("Error resetting database: " + e.getMessage());
             e.printStackTrace();
@@ -58,74 +81,109 @@ public final class Database_HR_DL {
     }
 
     /**
-     * Delete all data from tables (keep structure)
+     * Get the current database mode
      */
-    public static void clearAllData() throws SQLException {
-        try (Connection conn = getConnection();
-             Statement st = conn.createStatement()) {
-
-            // Disable foreign keys temporarily
-            st.execute("PRAGMA foreign_keys = OFF");
-
-            // Delete data from all tables (order matters due to foreign keys)
-            String[] tablesToClear = {
-                    "shift_assignments", "employee_availability", "employee_qualifications",
-                    "required_positions", "shifts", "employees", "positions",
-                    "doc_locations", "doc_items", "documents", "locations",
-                    "shipment_items", "trucks", "shipping_zones"
-            };
-
-            for (String table : tablesToClear) {
-                st.executeUpdate("DELETE FROM " + table);
-            }
-
-            // Re-enable foreign keys
-            st.execute("PRAGMA foreign_keys = ON");
-
-            System.out.println("All data cleared from database tables.");
-        }
+    public static String getCurrentDatabaseMode() {
+        return currentDbUrl.equals(PRODUCTION_DB_URL) ? "Production" : "Sample";
     }
 
-    private static void deleteDatabase() {
+    /**
+     * Check if a database file exists
+     */
+    private static boolean databaseExists(String dbUrl) {
+        String fileName = dbUrl.replace("jdbc:sqlite:", "");
+        return new java.io.File(fileName).exists();
+    }
+
+    /**
+     * Delete a specific database file
+     */
+    private static void deleteDatabase(String dbUrl) {
         try {
-            java.io.File dbFile = new java.io.File("company_system.db");
+            String fileName = dbUrl.replace("jdbc:sqlite:", "");
+            java.io.File dbFile = new java.io.File(fileName);
             if (dbFile.exists()) {
-                dbFile.delete();
+                boolean deleted = dbFile.delete();
+                if (deleted) {
+                    System.out.println("Deleted existing database: " + fileName);
+                }
             }
         } catch (Exception e) {
             System.err.println("Could not delete database file: " + e.getMessage());
         }
     }
 
+    /**
+     * Get connection to the currently active database
+     */
     public static Connection getConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(DB_URL);
-        // Enable foreign keys for this connection
+        Connection conn = DriverManager.getConnection(currentDbUrl);
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("PRAGMA foreign_keys = ON");
         }
+
+        // Track the connection
+        activeConnections.add(conn);
         return conn;
     }
 
-    private static void initializeDatabase() throws SQLException {
+    public static void closeAllConnections() {
+        synchronized (activeConnections) {
+            for (Connection conn : new ArrayList<>(activeConnections)) {
+                try {
+                    if (conn != null && !conn.isClosed()) {
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Error closing connection: " + e.getMessage());
+                }
+            }
+            activeConnections.clear();
+        }
+        System.out.println("All database connections closed.");
+    }
+
+    // Add method to remove closed connections from tracking
+    public static void removeConnection(Connection conn) {
+        activeConnections.remove(conn);
+    }
+
+    // Add method to check for active connections
+    public static boolean hasActiveConnections() {
+        synchronized (activeConnections) {
+            // Remove any connections that are already closed
+            activeConnections.removeIf(conn -> {
+                try {
+                    return conn.isClosed();
+                } catch (SQLException e) {
+                    return true; // Remove if we can't check
+                }
+            });
+            return !activeConnections.isEmpty();
+        }
+    }
+
+    /**
+     * Initialize database with or without sample data
+     */
+    private static void initializeDatabase(boolean withSampleData) throws SQLException {
         try (Connection conn = getConnection();
              Statement st = conn.createStatement()) {
 
-            // Enable foreign keys
             st.execute("PRAGMA foreign_keys = ON");
-
-            // Create all tables
             createDeliveryTables(st);
             createEmployeeTables(st);
         }
 
-        // Only insert sample data if flag is true AND data doesn't already exist
-        if (initializeWithSampleData && !dataExists()) {
+        if (withSampleData && !dataExists()) {
             insertDeliveryData();
             insertEmployeeData();
             System.out.println("Database initialized with sample data.");
-        } else if (!initializeWithSampleData) {
+        } else if (!withSampleData) {
             System.out.println("Database initialized with empty tables.");
         }
+
+        isInitialized = true;
     }
 
     /**
@@ -136,15 +194,44 @@ public final class Database_HR_DL {
              PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM trucks")) {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1) > 0; // If trucks table has data, assume all sample data exists
+                return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            // If table doesn't exist or error, assume no data
             return false;
         }
         return false;
     }
 
+    /**
+     * Clear all data from the current database (keep structure)
+     */
+    public static void clearAllData() throws SQLException {
+        try (Connection conn = getConnection();
+             Statement st = conn.createStatement()) {
+
+            st.execute("PRAGMA foreign_keys = OFF");
+
+            String[] tablesToClear = {
+                    "shift_assignments", "employee_availability", "employee_qualifications",
+                    "required_positions", "shifts", "drivers", "employees", "positions",
+                    "doc_locations", "doc_items", "documents", "locations",
+                    "shipment_items", "trucks", "shipping_zones"
+            };
+
+            for (String table : tablesToClear) {
+                try {
+                    st.executeUpdate("DELETE FROM " + table);
+                } catch (SQLException e) {
+                    // Table might not exist, continue
+                }
+            }
+
+            st.execute("PRAGMA foreign_keys = ON");
+            System.out.println("All data cleared from database tables.");
+        }
+    }
+
+    // ALL YOUR ORIGINAL TABLE CREATION METHODS - UNCHANGED
     private static void createDeliveryTables(Statement st) throws SQLException {
         st.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS shipping_zones (
@@ -317,7 +404,7 @@ public final class Database_HR_DL {
         """);
     }
 
-    // Keep all your existing insert methods unchanged...
+    // ALL YOUR ORIGINAL DATA INSERTION METHODS - COMPLETELY UNCHANGED
     private static void insertDeliveryData() throws SQLException {
         try (Connection conn = getConnection()) {
             // Insert shipping zones
@@ -586,8 +673,6 @@ public final class Database_HR_DL {
         }
     }
 
-
-
     private static void insertAvailability(Connection conn) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO employee_availability (employee_id, day_of_week, morning_available, evening_available) VALUES (?, ?, ?, ?)")) {
             // Include ALL employees: admin, regular employees, shift manager, drivers, and store keepers
@@ -795,7 +880,6 @@ public final class Database_HR_DL {
             }
         }
     }
-
 
     /**
      * Get all available branches from the locations table

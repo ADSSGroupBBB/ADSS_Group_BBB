@@ -180,7 +180,7 @@ public class DriverController extends DeliveriesController {
         for (DriverDTO dto : list) {
             if (!dto.id().equals(lastId)) {
                 if (dto.on_drive() == 0){
-                    sb.append("Driver: ").append(dto.id()).append(" ").append(dto.license()).append(" free to drive\n");
+                    sb.append("Driver: ").append(dto.id()).append(" Licenses: ").append(dto.license()).append(" free to drive\n");
                 }
                 else {
                     sb.append("Driver: ").append(dto.id()).append(" ").append(dto.license()).append(" currently on another delivery\n");

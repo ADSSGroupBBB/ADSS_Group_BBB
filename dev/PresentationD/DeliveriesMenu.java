@@ -68,7 +68,13 @@ public class DeliveriesMenu {
 
                     route = new ArrayList<>();
                     System.out.println("Choose origin from known locations: ");
-                    System.out.println(la.printLocations());
+                    String result = la.printLocations();
+                    if (result != null){
+                        System.out.println(la.printLocations());
+                    }
+                    else {
+                        System.out.println("Empty database.");
+                    }
 
                     while (!added_succesfully) {  // Keep asking for origin until added successfully
                         originAddress = scanner.nextLine();
